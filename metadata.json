@@ -1,0 +1,6 @@
+{
+  "name": "TERRASYNX",
+  "description": "Global Career Intelligence & Real-Time Opportunity Radar System",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
