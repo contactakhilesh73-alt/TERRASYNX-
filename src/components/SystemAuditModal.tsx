@@ -97,10 +97,10 @@ export const SystemAuditModal: React.FC<SystemAuditModalProps> = ({
     {
       id: 'chk_fast_apply',
       category: 'Phase 3 Automation & Context',
-      title: 'Human-Paced Fast Apply Autopilot & Turnstile Guard',
-      description: 'Simulates 140-220ms keystroke jitter to bypass bot detection, validates form fields, and issues official CONF-2026 cryptographic receipts.',
+      title: 'Smart Auto-Fill Assistant & Application Preparer',
+      description: 'Form fields pre-filled, review karke khud submit karein. Validates form fields, organizes verified profile data, and issues official CONF-2026 application receipts.',
       status: 'passed',
-      proofMetric: '140-220ms Jitter • CONF-2026 Cryptographic Receipts',
+      proofMetric: 'Smart Pre-fill Ready • CONF-2026 Dossier Receipts',
     },
     {
       id: 'chk_candidate_context',

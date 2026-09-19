@@ -216,8 +216,8 @@ export class UrlIngestionService {
         difficulty: 'Medium',
         warmupPracticeUrl: 'https://leetcode.com',
       },
-      alumniPresenceCount: Math.floor(Math.random() * 12) + 3,
-      recruiterPresenceCount: Math.floor(Math.random() * 6) + 2,
+      alumniPresenceCount: undefined,
+      recruiterPresenceCount: undefined,
       stage: 'discovered',
     };
 

@@ -7,112 +7,13 @@
 import { Opportunity, OpportunityType, WorkMode } from '../types';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { RadarEngine } from './radarEngine';
+import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from '../data/atsTargets';
 
-export interface ATSCompanyTarget {
-  id: string;
-  name: string;
-  domain: string;
-  provider: 'greenhouse' | 'lever';
-  slug: string;
-  logo: string;
-  preferredKeywords: string[];
-}
-
-// Curated list of verified Tier-1 / Tier-2 tech companies with public ATS boards (Fix 4 / Priority 4)
-export const VERIFIED_ATS_TARGETS: ATSCompanyTarget[] = [
-  {
-    id: 'cloudflare',
-    name: 'Cloudflare',
-    domain: 'cloudflare.com',
-    provider: 'greenhouse',
-    slug: 'cloudflare',
-    logo: 'https://logo.clearbit.com/cloudflare.com',
-    preferredKeywords: ['intern', 'graduate', 'university', 'systems', 'software', 'engineer', 'security'],
-  },
-  {
-    id: 'figma',
-    name: 'Figma',
-    domain: 'figma.com',
-    provider: 'greenhouse',
-    slug: 'figma',
-    logo: 'https://logo.clearbit.com/figma.com',
-    preferredKeywords: ['intern', 'new grad', 'university', 'software engineer', 'systems', 'frontend'],
-  },
-  {
-    id: 'stripe',
-    name: 'Stripe',
-    domain: 'stripe.com',
-    provider: 'lever',
-    slug: 'stripe',
-    logo: 'https://logo.clearbit.com/stripe.com',
-    preferredKeywords: ['software engineer', 'intern', 'infrastructure', 'backend', 'new grad'],
-  },
-  {
-    id: 'notion',
-    name: 'Notion',
-    domain: 'notion.so',
-    provider: 'lever',
-    slug: 'notion',
-    logo: 'https://logo.clearbit.com/notion.so',
-    preferredKeywords: ['software engineer', 'intern', 'infrastructure', 'systems', 'full stack'],
-  },
-  {
-    id: 'coinbase',
-    name: 'Coinbase',
-    domain: 'coinbase.com',
-    provider: 'greenhouse',
-    slug: 'coinbase',
-    logo: 'https://logo.clearbit.com/coinbase.com',
-    preferredKeywords: ['software engineer', 'intern', 'backend', 'distributed systems', 'security'],
-  },
-  {
-    id: 'datadog',
-    name: 'Datadog',
-    domain: 'datadoghq.com',
-    provider: 'greenhouse',
-    slug: 'datadog',
-    logo: 'https://logo.clearbit.com/datadoghq.com',
-    preferredKeywords: ['software engineer', 'intern', 'systems', 'distributed', 'infrastructure'],
-  },
-  {
-    id: 'gitlab',
-    name: 'GitLab',
-    domain: 'gitlab.com',
-    provider: 'greenhouse',
-    slug: 'gitlab',
-    logo: 'https://logo.clearbit.com/gitlab.com',
-    preferredKeywords: ['engineer', 'developer', 'systems', 'backend', 'frontend', 'ai', 'intern'],
-  },
-  {
-    id: 'palantir',
-    name: 'Palantir Technologies',
-    domain: 'palantir.com',
-    provider: 'lever',
-    slug: 'palantir',
-    logo: 'https://logo.clearbit.com/palantir.com',
-    preferredKeywords: ['intern', 'forward deployed', 'software engineer', 'new grad', 'deployment'],
-  },
-  {
-    id: 'scaleai',
-    name: 'Scale AI',
-    domain: 'scale.com',
-    provider: 'greenhouse',
-    slug: 'scaleai',
-    logo: 'https://logo.clearbit.com/scale.com',
-    preferredKeywords: ['engineer', 'intern', 'ml', 'machine learning', 'software', 'systems'],
-  },
-  {
-    id: 'automattic',
-    name: 'Automattic',
-    domain: 'automattic.com',
-    provider: 'greenhouse',
-    slug: 'automattic',
-    logo: 'https://logo.clearbit.com/automattic.com',
-    preferredKeywords: ['developer', 'engineer', 'code', 'react', 'systems', 'design'],
-  }
-];
+export type { ATSCompanyTarget };
+export { VERIFIED_ATS_TARGETS };
 
 const CACHE_KEY = 'terrasynx_live_ats_cache_v1';
+
 const CACHE_TIMESTAMP_KEY = 'terrasynx_live_ats_timestamp_v1';
 const CACHE_DURATION_MS = 10 * 60 * 1000; // 10 minutes cache to guarantee high performance
 
@@ -243,8 +144,8 @@ export class AtsLiveService {
           difficulty: 'Medium',
           warmupPracticeUrl: 'https://leetcode.com',
         },
-        alumniPresenceCount: Math.floor(Math.random() * 15) + 3,
-        recruiterPresenceCount: Math.floor(Math.random() * 8) + 2,
+        alumniPresenceCount: undefined,
+        recruiterPresenceCount: undefined,
         stage: 'discovered',
       };
 
@@ -349,8 +250,8 @@ export class AtsLiveService {
           difficulty: 'Hard',
           warmupPracticeUrl: 'https://codesignal.com',
         },
-        alumniPresenceCount: Math.floor(Math.random() * 20) + 5,
-        recruiterPresenceCount: Math.floor(Math.random() * 6) + 2,
+        alumniPresenceCount: undefined,
+        recruiterPresenceCount: undefined,
         stage: 'discovered',
       };
 
@@ -362,9 +263,52 @@ export class AtsLiveService {
     }
   }
 
-  // Master method: Ingest all targets in parallel with safety guards
+  // Master method: Ingest all targets via shared backend cache (/api/jobs/cached) with localStorage fallback
   public static async scanLiveBoards(onProgress?: (company: string, count: number) => void): Promise<Opportunity[]> {
-    // 1. Check local cache first to ensure instant 0ms latency if recently scanned
+    const studentProfile = RadarEngine.getStudentProfile();
+
+    // 1. Primary: Shared Server-Side Memory Cache (15-min TTL, fetched once for all users)
+    try {
+      if (onProgress) {
+        onProgress('Connecting to Shared Server Cache...', 0);
+      }
+
+      const response = await fetch('/api/jobs/cached', {
+        headers: { 'Accept': 'application/json' },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.success && Array.isArray(data.jobs) && data.jobs.length > 0) {
+          // Recalculate candidate-specific fitment dynamically
+          const enrichedJobs: Opportunity[] = data.jobs.map((job: Opportunity) => ({
+            ...job,
+            fitment: FitmentRecalculator.recalculate(job, studentProfile),
+          }));
+
+          this.cachedLiveJobs = enrichedJobs;
+
+          // Populate browser localStorage as persistent offline fallback
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(enrichedJobs));
+            localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
+          } catch (e) {
+            console.warn('[AtsLiveService] Failed to cache live jobs to localStorage:', e);
+          }
+
+          if (onProgress) {
+            const statusLabel = data.cached ? 'Shared Server Cache (15m TTL)' : 'Live ATS Ingestion';
+            onProgress(statusLabel, enrichedJobs.length);
+          }
+
+          return enrichedJobs;
+        }
+      }
+    } catch (err) {
+      console.warn('[AtsLiveService] Backend /api/jobs/cached call failed, falling back to localStorage:', err);
+    }
+
+    // 2. Fallback: Browser LocalStorage Cache (if backend cache fails or is unreachable)
     const cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(CACHE_TIMESTAMP_KEY);
     const now = Date.now();
@@ -373,14 +317,22 @@ export class AtsLiveService {
       try {
         const parsed = JSON.parse(cachedData);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          this.cachedLiveJobs = parsed;
-          return parsed;
+          const enriched = parsed.map((j: Opportunity) => ({
+            ...j,
+            fitment: FitmentRecalculator.recalculate(j, studentProfile),
+          }));
+          this.cachedLiveJobs = enriched;
+          if (onProgress) {
+            onProgress('Browser LocalStorage Fallback', enriched.length);
+          }
+          return enriched;
         }
       } catch {
-        // Fallback to fresh scan if cache corrupted
+        // Corrupted cache, continue to client direct scan
       }
     }
 
+    // 3. Fallback: Direct Client-Side Fetch if both backend cache and localStorage are unavailable
     const results: Opportunity[] = [];
 
     // Parallel fetch across all verified targets with Promise.allSettled
@@ -428,7 +380,10 @@ export class AtsLiveService {
     this.cachedLiveJobs = [];
     localStorage.removeItem(CACHE_KEY);
     localStorage.removeItem(CACHE_TIMESTAMP_KEY);
+    // Invalidate server cache if reachable
+    fetch('/api/jobs/cached?force=true').catch(() => {});
   }
+
 
   public static getCachedLiveJobs(): Opportunity[] {
     return this.cachedLiveJobs;

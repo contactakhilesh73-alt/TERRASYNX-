@@ -100,8 +100,8 @@ export interface Opportunity {
   assessmentIntel: AssessmentIntelligence;
 
   // Insider & Referral Signals (Req #15)
-  alumniPresenceCount: number;        // e.g. 14 college alumni currently work here
-  recruiterPresenceCount: number;
+  alumniPresenceCount?: number;       // e.g. 14 college alumni currently work here (optional if not verified/available)
+  recruiterPresenceCount?: number;    // optional if not verified/available
 
   // Application State for the active student (Multi-tenant isolated, Req #12)
   stage: ApplicationStage;
@@ -220,7 +220,7 @@ export interface OutreachTemplate {
   advisorPointers: string[];
 }
 
-// Anti-Ban Fast Apply Receipt & State (Req #4, #17)
+// Smart Auto-Fill Fast Apply Receipt & State (Req #4, #17)
 export interface FastApplyReceipt {
   confirmationId: string;             // e.g. "CONF-2026-OPENAI-9941X"
   sha256Hash: string;                 // SHA-256 integrity token
@@ -234,7 +234,7 @@ export interface FastApplyReceipt {
   workAuthSelected: string;
   tailoredResumeUsed: string;
   humanLatencySeconds: number;
-  antiBotStatus: 'Passed (Cloudflare Turnstile Verified)' | 'Direct API Verified';
+  antiBotStatus: string;              // e.g. "Form Pre-filled & Ready"
   status: 'confirmed' | 'pending';
   receiptUrl: string;
 }

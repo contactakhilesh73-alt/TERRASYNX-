@@ -1,109 +1,582 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="100%" height="100%" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
   <defs>
-    <!-- Deep Space Radial Background -->
-    <radialGradient id="spaceBg" cx="50%" cy="50%" r="60%">
-      <stop offset="0%" stop-color="#071739"/>
-      <stop offset="60%" stop-color="#040b1e"/>
-      <stop offset="100%" stop-color="#020612"/>
+    <!-- Background Space Radials -->
+    <radialGradient id="spaceDeepBg" cx="50%" cy="46%" r="65%">
+      <stop offset="0%" stop-color="#071b40"/>
+      <stop offset="35%" stop-color="#040e24"/>
+      <stop offset="70%" stop-color="#020713"/>
+      <stop offset="100%" stop-color="#010309"/>
     </radialGradient>
 
-    <!-- Glowing Cyan/Blue Gradients -->
-    <linearGradient id="neonBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Earth Atmosphere Glow -->
+    <radialGradient id="earthGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#0284c7" stop-opacity="0"/>
+      <stop offset="88%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#67e8f9" stop-opacity="0.8"/>
+    </radialGradient>
+
+    <radialGradient id="earthOcean" cx="42%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#1e4e8c"/>
+      <stop offset="45%" stop-color="#0d2b59"/>
+      <stop offset="85%" stop-color="#071738"/>
+      <stop offset="100%" stop-color="#030b1e"/>
+    </radialGradient>
+
+    <!-- Central Core Core Gradients -->
+    <linearGradient id="chromeBezel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#7dd3fc"/>
+      <stop offset="50%" stop-color="#0284c7"/>
+      <stop offset="75%" stop-color="#082f49"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+
+    <linearGradient id="brandA_Left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5f3fc"/>
+      <stop offset="40%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="brandA_Right" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#38bdf8"/>
       <stop offset="50%" stop-color="#0284c7"/>
-      <stop offset="100%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
     </linearGradient>
 
-    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#67e8f9"/>
-      <stop offset="100%" stop-color="#06b6d4"/>
-    </linearGradient>
-
-    <linearGradient id="silverTrim" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="brandText" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="50%" stop-color="#94a3b8"/>
-      <stop offset="100%" stop-color="#e2e8f0"/>
+      <stop offset="45%" stop-color="#e0f2fe"/>
+      <stop offset="70%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#0284c7"/>
     </linearGradient>
 
-    <!-- Filters for Laser Glow -->
-    <filter id="laserGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="6" result="blur1"/>
-      <feGaussianBlur stdDeviation="14" result="blur2"/>
+    <linearGradient id="goldBeam" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+
+    <!-- Filters for High-Precision Laser Glow -->
+    <filter id="softLaser" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
       <feMerge>
-        <feMergeNode in="blur2"/>
-        <feMergeNode in="blur1"/>
+        <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
 
-    <filter id="intenseGlow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="4" result="blur"/>
-      <feComponentTransfer in="blur" result="glow">
-        <feFuncA type="linear" slope="2"/>
-      </feComponentTransfer>
+    <filter id="heavyLaser" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="glow"/>
       <feMerge>
         <feMergeNode in="glow"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
+
+    <filter id="flareGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="16" result="bigGlow"/>
+      <feGaussianBlur stdDeviation="4" result="sharpGlow"/>
+      <feMerge>
+        <feMergeNode in="bigGlow"/>
+        <feMergeNode in="sharpGlow"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Background Base -->
-  <rect width="500" height="500" rx="60" fill="url(#spaceBg)"/>
+  <!-- Deep Cosmos Canvas Base -->
+  <rect width="1200" height="1200" fill="url(#spaceDeepBg)"/>
 
-  <!-- Radar Grid Target Rings -->
-  <circle cx="250" cy="220" r="190" fill="none" stroke="#0ea5e9" stroke-width="1" stroke-opacity="0.15" stroke-dasharray="4 8"/>
-  <circle cx="250" cy="220" r="150" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="6 6"/>
-  <circle cx="250" cy="220" r="110" fill="none" stroke="#0284c7" stroke-width="2" stroke-opacity="0.4"/>
-  <circle cx="250" cy="220" r="70" fill="none" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.5"/>
-
-  <!-- Global Longitude / Latitude Arc Lines -->
-  <ellipse cx="250" cy="220" rx="170" ry="60" fill="none" stroke="#0284c7" stroke-width="1.2" stroke-opacity="0.3" transform="rotate(-15 250 220)"/>
-  <ellipse cx="250" cy="220" rx="170" ry="60" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-opacity="0.35" transform="rotate(35 250 220)"/>
-
-  <!-- Radar Crosshairs -->
-  <line x1="250" y1="40" x2="250" y2="400" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.25" stroke-dasharray="5 5"/>
-  <line x1="60" y1="220" x2="440" y2="220" stroke="#38bdf8" stroke-width="1" stroke-opacity="0.25" stroke-dasharray="5 5"/>
-
-  <!-- Satellite Network Data Nodes -->
-  <circle cx="110" cy="140" r="4" fill="#38bdf8" filter="url(#intenseGlow)"/>
-  <circle cx="390" cy="130" r="4" fill="#38bdf8" filter="url(#intenseGlow)"/>
-  <circle cx="90" cy="290" r="3.5" fill="#67e8f9"/>
-  <circle cx="410" cy="280" r="3.5" fill="#67e8f9"/>
-  <line x1="110" y1="140" x2="250" y2="220" stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.4"/>
-  <line x1="390" y1="130" x2="250" y2="220" stroke="#38bdf8" stroke-width="0.8" stroke-opacity="0.4"/>
-
-  <!-- Outer Metallic Shield Ring -->
-  <circle cx="250" cy="220" r="105" fill="#030c1d" stroke="url(#silverTrim)" stroke-width="5" stroke-opacity="0.8" filter="url(#laserGlow)"/>
-  <circle cx="250" cy="220" r="100" fill="none" stroke="#0284c7" stroke-width="3" stroke-opacity="0.9"/>
-
-  <!-- Inner Orbital Swirling Ring -->
-  <ellipse cx="250" cy="220" rx="130" ry="38" fill="none" stroke="#38bdf8" stroke-width="5" stroke-linecap="round" filter="url(#intenseGlow)" transform="rotate(-28 250 220)"/>
-  <ellipse cx="250" cy="220" rx="130" ry="38" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" transform="rotate(-28 250 220)"/>
-
-  <!-- Central Cybernetic "A" Emblem (Exact Replica of TerraSynx Crest) -->
-  <g filter="url(#intenseGlow)">
-    <!-- Apex Back Glow -->
-    <circle cx="250" cy="150" r="12" fill="#38bdf8" opacity="0.6" filter="url(#laserGlow)"/>
-    <polygon points="250,135 240,150 250,165 260,150" fill="#ffffff"/>
-
-    <!-- Left Leg of A -->
-    <path d="M 250 145 L 185 285 L 212 285 L 250 200 Z" fill="url(#neonCyan)"/>
-    <!-- Right Leg of A -->
-    <path d="M 250 145 L 315 285 L 288 285 L 250 200 Z" fill="url(#neonBlue)"/>
-    <!-- Central Crossbeam Core -->
-    <polygon points="215,255 285,255 280,270 220,270" fill="url(#silverTrim)"/>
-    <!-- Bright Center Prism Core -->
-    <polygon points="250,175 230,240 270,240" fill="#04122c" stroke="#38bdf8" stroke-width="2"/>
-    <polygon points="250,185 240,230 260,230" fill="#38bdf8" opacity="0.8"/>
+  <!-- Background Stars & Ambient Flares -->
+  <g opacity="0.6">
+    <circle cx="150" cy="90" r="1.5" fill="#bae6fd"/>
+    <circle cx="280" cy="140" r="1" fill="#ffffff"/>
+    <circle cx="950" cy="80" r="1.5" fill="#bae6fd"/>
+    <circle cx="1080" cy="180" r="1.2" fill="#ffffff"/>
+    <circle cx="120" cy="380" r="1" fill="#7dd3fc"/>
+    <circle cx="1060" cy="420" r="1.5" fill="#bae6fd"/>
+    <circle cx="180" cy="720" r="1.2" fill="#ffffff"/>
+    <circle cx="1020" cy="760" r="1.5" fill="#7dd3fc"/>
+    <circle cx="600" cy="120" r="2" fill="#e0f2fe" filter="url(#softLaser)"/>
+    <!-- Nebula Dust Glows -->
+    <ellipse cx="600" cy="460" rx="360" ry="360" fill="#0284c7" opacity="0.12" filter="url(#flareGlow)"/>
+    <ellipse cx="600" cy="800" rx="420" ry="180" fill="#0369a1" opacity="0.15" filter="url(#flareGlow)"/>
   </g>
 
-  <!-- TERRASYNX Typography -->
-  <text x="250" y="420" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" letter-spacing="8" fill="#ffffff" filter="url(#intenseGlow)">TERRASYNX</text>
-  
-  <text x="250" y="445" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="12" letter-spacing="6" fill="#38bdf8" opacity="0.9">GLOBAL INTELLIGENCE SYSTEM</text>
+  <!-- Cybernetic Grid Floor / Stage Surface -->
+  <g opacity="0.4">
+    <ellipse cx="600" cy="880" rx="460" ry="110" fill="none" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="6 8"/>
+    <ellipse cx="600" cy="880" rx="540" ry="130" fill="none" stroke="#0369a1" stroke-width="1" stroke-opacity="0.5"/>
+    <ellipse cx="600" cy="880" rx="360" ry="85" fill="none" stroke="#38bdf8" stroke-width="2" filter="url(#softLaser)"/>
+    <!-- Perspective radial floor ticks -->
+    <line x1="600" y1="880" x2="180" y2="1000" stroke="#0284c7" stroke-width="1" stroke-opacity="0.3"/>
+    <line x1="600" y1="880" x2="380" y2="1000" stroke="#0284c7" stroke-width="1" stroke-opacity="0.3"/>
+    <line x1="600" y1="880" x2="820" y2="1000" stroke="#0284c7" stroke-width="1" stroke-opacity="0.3"/>
+    <line x1="600" y1="880" x2="1020" y2="1000" stroke="#0284c7" stroke-width="1" stroke-opacity="0.3"/>
+  </g>
 
-  <!-- Bottom Cyber Accent Line -->
-  <line x1="120" y1="465" x2="380" y2="465" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.6"/>
-  <circle cx="250" cy="465" r="3" fill="#ffffff" filter="url(#intenseGlow)"/>
+  <!-- SATELLITE 1 (Top Left) -->
+  <g transform="translate(380, 110)">
+    <!-- Radar cone projection downwards onto earth -->
+    <polygon points="40,25 -20,320 180,300" fill="url(#brandA_Left)" opacity="0.14" filter="url(#softLaser)"/>
+    <!-- Main bus -->
+    <rect x="25" y="15" width="28" height="20" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <!-- Solar wings left -->
+    <rect x="-35" y="18" width="55" height="14" rx="2" fill="#0284c7" stroke="#67e8f9" stroke-width="1.2"/>
+    <line x1="-20" y1="18" x2="-20" y2="32" stroke="#bae6fd" stroke-width="0.8"/>
+    <line x1="-5" y1="18" x2="-5" y2="32" stroke="#bae6fd" stroke-width="0.8"/>
+    <!-- Solar wings right -->
+    <rect x="58" y="18" width="55" height="14" rx="2" fill="#0284c7" stroke="#67e8f9" stroke-width="1.2"/>
+    <line x1="75" y1="18" x2="75" y2="32" stroke="#bae6fd" stroke-width="0.8"/>
+    <line x1="92" y1="18" x2="92" y2="32" stroke="#bae6fd" stroke-width="0.8"/>
+    <!-- Antenna dish -->
+    <path d="M 39 35 Q 39 48 28 55" stroke="#38bdf8" stroke-width="1.5" fill="none"/>
+    <circle cx="28" cy="55" r="3" fill="#38bdf8" filter="url(#softLaser)"/>
+  </g>
+
+  <!-- SATELLITE 2 (Top Right) -->
+  <g transform="translate(810, 140) rotate(24)">
+    <rect x="25" y="15" width="26" height="18" rx="3" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <!-- Solar wings -->
+    <rect x="-32" y="18" width="52" height="12" rx="2" fill="#0284c7" stroke="#67e8f9" stroke-width="1.2"/>
+    <rect x="56" y="18" width="52" height="12" rx="2" fill="#0284c7" stroke="#67e8f9" stroke-width="1.2"/>
+    <!-- Beam down -->
+    <line x1="38" y1="33" x2="-80" y2="280" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 4" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- CENTRAL PLANET EARTH & ATMOSPHERE -->
+  <g id="centralPlanet">
+    <!-- Atmospheric outer glow -->
+    <circle cx="600" cy="430" r="265" fill="url(#earthGlow)"/>
+    <!-- Ocean sphere -->
+    <circle cx="600" cy="430" r="255" fill="url(#earthOcean)" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.8"/>
+
+    <!-- High-Definition Continents Vector Silhouettes (Eurasia, Africa, Americas, Asia) -->
+    <g fill="#10325e" stroke="#22d3ee" stroke-width="0.8" stroke-opacity="0.6">
+      <!-- North America / Europe visible top-left / center -->
+      <path d="M 520 280 Q 560 270 590 290 Q 640 285 660 315 Q 670 345 640 370 Q 610 390 580 375 Q 540 370 520 340 Z" fill="#143e74"/>
+      <!-- Africa / Mediterranean -->
+      <path d="M 560 380 Q 620 380 650 420 Q 660 480 610 520 Q 580 540 560 500 Q 545 450 560 380 Z" fill="#174580"/>
+      <!-- South America East -->
+      <path d="M 440 440 Q 480 430 495 470 Q 510 520 480 560 Q 450 540 440 490 Z" fill="#143e74"/>
+      <!-- Asia / Orient North East -->
+      <path d="M 670 290 Q 740 280 770 330 Q 780 380 730 400 Q 680 390 660 340 Z" fill="#16437d"/>
+      <!-- Island clusters -->
+      <circle cx="750" cy="420" r="7" fill="#1e4e8c"/>
+      <circle cx="735" cy="445" r="5" fill="#1e4e8c"/>
+      <circle cx="505" cy="385" r="4" fill="#1e4e8c"/>
+    </g>
+
+    <!-- Glowing City Lights Network -->
+    <g fill="#fef08a" opacity="0.85" filter="url(#softLaser)">
+      <circle cx="585" cy="320" r="2.5"/>
+      <circle cx="610" cy="310" r="2"/>
+      <circle cx="640" cy="330" r="3"/>
+      <circle cx="630" cy="360" r="2"/>
+      <circle cx="590" cy="410" r="2.5"/>
+      <circle cx="620" cy="430" r="3"/>
+      <circle cx="690" cy="320" r="2"/>
+      <circle cx="720" cy="350" r="2.5"/>
+      <circle cx="475" cy="460" r="2"/>
+      <line x1="585" y1="320" x2="610" y2="310" stroke="#fef08a" stroke-width="0.8" stroke-opacity="0.6"/>
+      <line x1="610" y1="310" x2="640" y2="330" stroke="#fef08a" stroke-width="0.8" stroke-opacity="0.6"/>
+      <line x1="590" y1="410" x2="620" y2="430" stroke="#fef08a" stroke-width="0.8" stroke-opacity="0.6"/>
+    </g>
+
+    <!-- Longitude & Latitude High-Tech Grid Arcs -->
+    <g stroke="#38bdf8" stroke-opacity="0.25" fill="none">
+      <ellipse cx="600" cy="430" rx="255" ry="100" stroke-width="1"/>
+      <ellipse cx="600" cy="430" rx="255" ry="180" stroke-width="1"/>
+      <ellipse cx="600" cy="430" rx="120" ry="255" stroke-width="1"/>
+      <ellipse cx="600" cy="430" rx="200" ry="255" stroke-width="1"/>
+      <line x1="345" y1="430" x2="855" y2="430" stroke-width="1" stroke-dasharray="5 5"/>
+      <line x1="600" y1="175" x2="600" y2="685" stroke-width="1" stroke-dasharray="5 5"/>
+    </g>
+
+    <!-- Concentric Radar Targeting Sweep -->
+    <circle cx="600" cy="430" r="190" fill="none" stroke="#0ea5e9" stroke-width="1.2" stroke-opacity="0.4" stroke-dasharray="4 6"/>
+    <circle cx="600" cy="430" r="120" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.6"/>
+    <circle cx="600" cy="430" r="60" fill="none" stroke="#22d3ee" stroke-width="2" filter="url(#softLaser)"/>
+    <circle cx="600" cy="430" r="4" fill="#ffffff" filter="url(#flareGlow)"/>
+
+    <!-- Central "AI" Ring Target at Earth Core -->
+    <g filter="url(#softLaser)">
+      <circle cx="600" cy="430" r="28" fill="#04122c" stroke="#38bdf8" stroke-width="2"/>
+      <text x="600" y="437" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="20" fill="#ffffff" letter-spacing="1">AI</text>
+    </g>
+  </g>
+
+  <!-- MULTI-AXIS ORBITAL TRAJECTORY RINGS WITH NODES -->
+  <g>
+    <!-- Golden Orbit 1 -->
+    <ellipse cx="600" cy="430" rx="380" ry="140" fill="none" stroke="url(#goldBeam)" stroke-width="2.5" transform="rotate(-28 600 430)" filter="url(#softLaser)"/>
+    <circle cx="360" cy="270" r="5" fill="#fde047" filter="url(#flareGlow)"/>
+    <circle cx="840" cy="590" r="4.5" fill="#fde047" filter="url(#flareGlow)"/>
+
+    <!-- Cyan Orbit 2 -->
+    <ellipse cx="600" cy="430" rx="420" ry="160" fill="none" stroke="#38bdf8" stroke-width="2" stroke-opacity="0.8" transform="rotate(38 600 430)"/>
+    <circle cx="780" cy="240" r="5" fill="#67e8f9" filter="url(#softLaser)"/>
+    <circle cx="420" cy="620" r="4.5" fill="#67e8f9" filter="url(#softLaser)"/>
+
+    <!-- White Fine Trajectory -->
+    <ellipse cx="600" cy="430" rx="460" ry="90" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.5" transform="rotate(5 600 430)"/>
+    <circle cx="980" cy="470" r="4" fill="#ffffff"/>
+    <circle cx="220" cy="390" r="4" fill="#ffffff"/>
+  </g>
+
+  <!-- ============================================== -->
+  <!-- HUD PANELS EXACTLY AS IN USER'S REFERENCE IMAGE -->
+  <!-- ============================================== -->
+
+  <!-- TOP-LEFT HUD PANEL: "AI INTELLIGENCE" -->
+  <g id="hudAiIntelligence" transform="translate(40, 50)">
+    <!-- High-tech sci-fi bracket container with corner notches -->
+    <path d="M 0 25 L 25 0 L 290 0 L 310 20 L 310 135 L 285 155 L 20 155 L 0 135 Z" fill="#030d22" fill-opacity="0.85" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+    <!-- Outer corner accents -->
+    <line x1="-6" y1="20" x2="-6" y2="40" stroke="#38bdf8" stroke-width="3"/>
+    <line x1="316" y1="110" x2="316" y2="135" stroke="#38bdf8" stroke-width="3"/>
+    <!-- Glowing Brain Icon -->
+    <g transform="translate(25, 25)">
+      <circle cx="20" cy="20" r="22" fill="#071b40" stroke="#38bdf8" stroke-width="1.5"/>
+      <!-- Brain neural lobes -->
+      <path d="M 12 20 Q 12 14 18 14 Q 20 10 25 14 Q 28 14 28 20 Q 28 26 23 27 Q 20 28 17 26 Q 12 26 12 20 Z" fill="none" stroke="#67e8f9" stroke-width="1.8" filter="url(#softLaser)"/>
+      <line x1="20" y1="14" x2="20" y2="26" stroke="#38bdf8" stroke-width="1.2"/>
+    </g>
+    <!-- Header -->
+    <text x="78" y="42" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="16" fill="#ffffff" letter-spacing="1.5">AI INTELLIGENCE</text>
+    <line x1="78" y1="50" x2="280" y2="50" stroke="#0284c7" stroke-width="1"/>
+    <!-- Bullet points -->
+    <g font-family="'JetBrains Mono', monospace" font-size="11" fill="#bae6fd" font-weight="600">
+      <circle cx="85" cy="72" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="76">Data Analysis</text>
+
+      <circle cx="85" cy="94" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="98">Pattern Recognition</text>
+
+      <circle cx="85" cy="116" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="120">Predictive Insights</text>
+
+      <circle cx="85" cy="138" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="142">Autonomous Decisions</text>
+    </g>
+  </g>
+
+  <!-- TOP-RIGHT HUD PANEL: "RADAR CARRIER" -->
+  <g id="hudRadarCarrier" transform="translate(850, 50)">
+    <path d="M 0 20 L 20 0 L 285 0 L 310 25 L 310 135 L 290 155 L 25 155 L 0 135 Z" fill="#030d22" fill-opacity="0.85" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+    <!-- Radar crosshair sweep icon -->
+    <g transform="translate(25, 25)">
+      <circle cx="20" cy="20" r="22" fill="#071b40" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="20" cy="20" r="14" fill="none" stroke="#0284c7" stroke-width="1.2"/>
+      <circle cx="20" cy="20" r="6" fill="none" stroke="#67e8f9" stroke-width="1.5"/>
+      <line x1="20" y1="4" x2="20" y2="36" stroke="#38bdf8" stroke-width="1"/>
+      <line x1="4" y1="20" x2="36" y2="20" stroke="#38bdf8" stroke-width="1"/>
+      <!-- Sweep line -->
+      <line x1="20" y1="20" x2="33" y2="10" stroke="#22d3ee" stroke-width="2" filter="url(#softLaser)"/>
+    </g>
+    <!-- Header -->
+    <text x="78" y="42" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="16" fill="#ffffff" letter-spacing="1.5">RADAR CARRIER</text>
+    <line x1="78" y1="50" x2="280" y2="50" stroke="#0284c7" stroke-width="1"/>
+    <!-- Bullet points -->
+    <g font-family="'JetBrains Mono', monospace" font-size="11" fill="#bae6fd" font-weight="600">
+      <circle cx="85" cy="72" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="76">Global Surveillance</text>
+
+      <circle cx="85" cy="94" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="98">Object Detection</text>
+
+      <circle cx="85" cy="116" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="120">Threat Monitoring</text>
+
+      <circle cx="85" cy="138" r="2.5" fill="#38bdf8"/>
+      <text x="96" y="142">Real-time Tracking</text>
+    </g>
+  </g>
+
+  <!-- RIGHT-MIDDLE HUD PANEL: "GLOBAL NETWORK" -->
+  <g id="hudGlobalNetwork" transform="translate(950, 260)">
+    <path d="M 0 15 L 15 0 L 205 0 L 220 15 L 220 100 L 205 115 L 15 115 L 0 100 Z" fill="#030d22" fill-opacity="0.85" stroke="#0284c7" stroke-width="1.8"/>
+    <!-- Hex / Node network icon -->
+    <g transform="translate(18, 20)">
+      <circle cx="12" cy="12" r="4" fill="#38bdf8"/>
+      <circle cx="28" cy="8" r="3.5" fill="#67e8f9"/>
+      <circle cx="24" cy="24" r="3.5" fill="#38bdf8"/>
+      <circle cx="8" cy="26" r="3" fill="#67e8f9"/>
+      <line x1="12" y1="12" x2="28" y2="8" stroke="#38bdf8" stroke-width="1.2"/>
+      <line x1="12" y1="12" x2="24" y2="24" stroke="#38bdf8" stroke-width="1.2"/>
+      <line x1="8" y1="26" x2="24" y2="24" stroke="#38bdf8" stroke-width="1.2"/>
+    </g>
+    <text x="60" y="32" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="13" fill="#ffffff" letter-spacing="1">GLOBAL NETWORK</text>
+    <line x1="60" y1="40" x2="200" y2="40" stroke="#0369a1" stroke-width="1"/>
+    <text x="25" y="68" font-family="'JetBrains Mono', monospace" font-size="11" fill="#bae6fd">Connected Systems</text>
+    <text x="25" y="90" font-family="'JetBrains Mono', monospace" font-size="11" fill="#7dd3fc">Worldwide Coverage</text>
+  </g>
+
+  <!-- BOTTOM-LEFT HUD PANEL: "Live Global Map" -->
+  <g id="hudLiveGlobalMap" transform="translate(30, 560)">
+    <path d="M 0 15 L 15 0 L 215 0 L 230 15 L 230 240 L 215 255 L 15 255 L 0 240 Z" fill="#030d22" fill-opacity="0.85" stroke="#0ea5e9" stroke-width="1.8"/>
+    <text x="18" y="28" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="14" fill="#ffffff">Live Global Map</text>
+    <!-- Mini world map graphic with target ring -->
+    <g transform="translate(18, 40)">
+      <rect width="194" height="85" rx="6" fill="#071b40" stroke="#0369a1" stroke-width="1"/>
+      <!-- World continents mini paths -->
+      <path d="M 20 25 Q 35 15 48 30 Q 40 50 25 45 Z" fill="#0284c7" opacity="0.7"/>
+      <path d="M 50 48 Q 62 45 58 70 Q 48 65 50 48 Z" fill="#0284c7" opacity="0.7"/>
+      <path d="M 85 20 Q 120 18 135 35 Q 120 50 90 40 Z" fill="#0284c7" opacity="0.7"/>
+      <path d="M 95 45 Q 115 45 110 65 Q 92 65 95 45 Z" fill="#0284c7" opacity="0.7"/>
+      <path d="M 145 55 Q 165 50 160 70 Q 140 68 145 55 Z" fill="#0284c7" opacity="0.7"/>
+      <!-- Target ring on map -->
+      <circle cx="108" cy="42" r="10" fill="none" stroke="#fde047" stroke-width="1.5" filter="url(#softLaser)"/>
+      <circle cx="108" cy="42" r="2" fill="#fde047"/>
+    </g>
+    <!-- Map Telemetry list -->
+    <g transform="translate(18, 145)" font-family="'JetBrains Mono', monospace" font-size="11" fill="#bae6fd" font-weight="600">
+      <!-- Icon 1 Signal -->
+      <circle cx="10" cy="12" r="4" fill="#38bdf8"/>
+      <text x="24" y="16">Real-time Data</text>
+
+      <!-- Icon 2 Globe -->
+      <circle cx="10" cy="38" r="4" fill="#67e8f9"/>
+      <text x="24" y="42">Global Coverage</text>
+
+      <!-- Icon 3 Layers -->
+      <circle cx="10" cy="64" r="4" fill="#38bdf8"/>
+      <text x="24" y="68">Multi-layer Analysis</text>
+
+      <!-- Icon 4 Alerts -->
+      <circle cx="10" cy="90" r="4" fill="#fde047"/>
+      <text x="24" y="94">Instant Alerts</text>
+    </g>
+  </g>
+
+  <!-- BOTTOM-RIGHT HUD PANEL: "CAREER & WORKFORCE" -->
+  <g id="hudCareerWorkforce" transform="translate(930, 500)">
+    <path d="M 0 15 L 15 0 L 225 0 L 240 15 L 240 220 L 225 235 L 15 235 L 0 220 Z" fill="#030d22" fill-opacity="0.85" stroke="#0ea5e9" stroke-width="1.8"/>
+    <!-- User Avatar Icon -->
+    <g transform="translate(18, 16)">
+      <circle cx="18" cy="18" r="18" fill="#071b40" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="18" cy="14" r="5" fill="#67e8f9"/>
+      <path d="M 10 26 Q 18 20 26 26" fill="none" stroke="#67e8f9" stroke-width="2"/>
+    </g>
+    <text x="64" y="32" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="13" fill="#ffffff">CAREER &amp;</text>
+    <text x="64" y="48" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="13" fill="#ffffff">WORKFORCE</text>
+    <line x1="20" y1="62" x2="220" y2="62" stroke="#0284c7" stroke-width="1"/>
+
+    <g transform="translate(20, 80)" font-family="'JetBrains Mono', monospace" font-size="11" fill="#bae6fd" font-weight="600">
+      <circle cx="10" cy="12" r="4" fill="#38bdf8"/>
+      <text x="24" y="16">Job Matching</text>
+
+      <circle cx="10" cy="40" r="4" fill="#67e8f9"/>
+      <text x="24" y="44">Skill Analysis</text>
+
+      <circle cx="10" cy="68" r="4" fill="#38bdf8"/>
+      <text x="24" y="72">Career Guidance</text>
+
+      <circle cx="10" cy="96" r="4" fill="#22d3ee"/>
+      <text x="24" y="100">Workforce Trends</text>
+    </g>
+  </g>
+
+  <!-- ============================================== -->
+  <!-- CORPORATE PARTNER HOLOGRAPHIC BADGES           -->
+  <!-- ============================================== -->
+
+  <!-- Google -->
+  <g id="badgeGoogle" transform="translate(280, 205)">
+    <rect width="105" height="34" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <!-- G mark -->
+    <circle cx="20" cy="17" r="9" fill="#ffffff"/>
+    <path d="M 20 12 L 20 17 L 25 17" stroke="#0284c7" stroke-width="1.5" fill="none"/>
+    <text x="36" y="22" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13" fill="#ffffff">Google</text>
+  </g>
+
+  <!-- Microsoft -->
+  <g id="badgeMicrosoft" transform="translate(660, 110)">
+    <rect width="125" height="34" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <!-- 4 colors -->
+    <rect x="12" y="10" width="6" height="6" fill="#f87171"/>
+    <rect x="20" y="10" width="6" height="6" fill="#4ade80"/>
+    <rect x="12" y="18" width="6" height="6" fill="#60a5fa"/>
+    <rect x="20" y="18" width="6" height="6" fill="#facc15"/>
+    <text x="34" y="22" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13" fill="#ffffff">Microsoft</text>
+  </g>
+
+  <!-- Apple -->
+  <g id="badgeApple" transform="translate(260, 270)">
+    <rect width="40" height="40" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <!-- Apple silhouette -->
+    <circle cx="20" cy="22" r="8" fill="#e2e8f0"/>
+    <path d="M 21 11 Q 23 9 25 11" stroke="#e2e8f0" stroke-width="1.5" fill="none"/>
+  </g>
+
+  <!-- NASA -->
+  <g id="badgeNASA" transform="translate(180, 355)">
+    <circle cx="22" cy="22" r="22" fill="#0b3d91" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="22" y="26" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="10" fill="#ffffff" letter-spacing="1">NASA</text>
+    <path d="M 8 26 Q 22 14 36 26" stroke="#ef4444" stroke-width="1.8" fill="none"/>
+  </g>
+
+  <!-- SpaceX -->
+  <g id="badgeSpaceX" transform="translate(145, 490)">
+    <rect width="105" height="34" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <text x="14" y="22" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="12" fill="#ffffff" letter-spacing="2">SPACEX</text>
+  </g>
+
+  <!-- Amazon -->
+  <g id="badgeAmazon" transform="translate(860, 205)">
+    <rect width="100" height="34" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <text x="16" y="21" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="12" fill="#ffffff">amazon</text>
+    <path d="M 24 25 Q 52 32 78 24" stroke="#f59e0b" stroke-width="1.6" fill="none"/>
+  </g>
+
+  <!-- ESA -->
+  <g id="badgeESA" transform="translate(900, 410)">
+    <rect width="85" height="32" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <circle cx="16" cy="16" r="6" fill="#0284c7"/>
+    <text x="32" y="21" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="13" fill="#ffffff">esa</text>
+  </g>
+
+  <!-- JAXA -->
+  <g id="badgeJAXA" transform="translate(865, 535)">
+    <rect width="80" height="30" rx="8" fill="#020d20" stroke="#0284c7" stroke-width="1.2" opacity="0.9"/>
+    <text x="16" y="20" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="12" fill="#ffffff" letter-spacing="2">JAXA</text>
+  </g>
+
+  <!-- Intel -->
+  <g id="badgeIntel" transform="translate(775, 615)">
+    <ellipse cx="40" cy="15" rx="35" ry="14" fill="#020d20" stroke="#0ea5e9" stroke-width="1.2"/>
+    <text x="40" y="20" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="13" fill="#ffffff">(intel)</text>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- CENTRAL PROMINENT EMBLEM (CIRCULAR BEZEL, ORBITAL RING & 'A') -->
+  <!-- ============================================================== -->
+  <g id="masterTerraSynxEmblem" transform="translate(600, 720)">
+    <!-- Back Outer Glow -->
+    <circle cx="0" cy="0" r="145" fill="#0284c7" opacity="0.4" filter="url(#flareGlow)"/>
+
+    <!-- Orbital Ring (Rear Section passing behind emblem) -->
+    <path d="M -160 5 Q -100 -65 140 -20" fill="none" stroke="#0284c7" stroke-width="7" stroke-opacity="0.6"/>
+
+    <!-- Outer Beveled Metallic Shield -->
+    <circle cx="0" cy="0" r="120" fill="#030c1d" stroke="url(#chromeBezel)" stroke-width="6" filter="url(#heavyLaser)"/>
+    <circle cx="0" cy="0" r="112" fill="none" stroke="#0ea5e9" stroke-width="3" stroke-opacity="0.9"/>
+    <circle cx="0" cy="0" r="105" fill="#051535"/>
+
+    <!-- Inner Core Radar Rings -->
+    <circle cx="0" cy="0" r="90" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-opacity="0.5" stroke-dasharray="6 6"/>
+    <circle cx="0" cy="0" r="70" fill="none" stroke="#0284c7" stroke-width="1.5" stroke-opacity="0.7"/>
+
+    <!-- Central Sculpted Futuristic "A" Monogram -->
+    <g filter="url(#softLaser)">
+      <!-- Left Facet -->
+      <path d="M 0 -75 L -65 65 L -35 65 L 0 -10 Z" fill="url(#brandA_Left)"/>
+      <!-- Right Facet -->
+      <path d="M 0 -75 L 65 65 L 35 65 L 0 -10 Z" fill="url(#brandA_Right)"/>
+      <!-- Crossbeam Core -->
+      <polygon points="-38,30 38,30 32,48 -32,48" fill="#e0f2fe"/>
+      <!-- Internal Prism Cutout -->
+      <polygon points="0,-25 -24,40 24,40" fill="#04122c" stroke="#38bdf8" stroke-width="2"/>
+      <polygon points="0,-12 -12,32 12,32" fill="#38bdf8" opacity="0.9"/>
+    </g>
+
+    <!-- Orbital Ring (Front Section wrapping around and in front of emblem) -->
+    <ellipse cx="0" cy="0" rx="155" ry="46" fill="none" stroke="#67e8f9" stroke-width="7" stroke-linecap="round" filter="url(#flareGlow)" transform="rotate(-26)"/>
+    <ellipse cx="0" cy="0" rx="155" ry="46" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" transform="rotate(-26)"/>
+
+    <!-- Apex Laser Flare Starburst at top of emblem -->
+    <g transform="translate(0, -120)" filter="url(#flareGlow)">
+      <polygon points="0,-25 6,0 0,25 -6,0" fill="#ffffff"/>
+      <polygon points="-25,0 0,6 25,0 0,-6" fill="#ffffff"/>
+      <circle cx="0" cy="0" r="8" fill="#67e8f9"/>
+      <circle cx="0" cy="0" r="3" fill="#ffffff"/>
+    </g>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- TERRASYNX 3D CHROME TYPOGRAPHY & SUBTITLE                      -->
+  <!-- ============================================================== -->
+  <g id="brandTypography">
+    <!-- Ambient Blue Radiance under letters -->
+    <text x="600" y="920" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="900" font-size="78" letter-spacing="14" fill="#0284c7" filter="url(#flareGlow)">TERRASYNX</text>
+    
+    <!-- 3D Extrusion Shadow Layer -->
+    <text x="600" y="923" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="900" font-size="78" letter-spacing="14" fill="#03204a">TERRASYNX</text>
+    
+    <!-- Main Crisp Chrome Typography -->
+    <text x="600" y="920" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="900" font-size="78" letter-spacing="14" fill="url(#brandText)" stroke="#ffffff" stroke-width="1.2">TERRASYNX</text>
+
+    <!-- Subtitle with side cyber wings -->
+    <g transform="translate(600, 955)">
+      <line x1="-380" y1="0" x2="-220" y2="0" stroke="#0ea5e9" stroke-width="2"/>
+      <circle cx="-220" cy="0" r="3" fill="#38bdf8"/>
+      
+      <text x="0" y="5" text-anchor="middle" font-family="'Plus Jakarta Sans', -apple-system, sans-serif" font-weight="800" font-size="18" letter-spacing="8" fill="#38bdf8">GLOBAL INTELLIGENCE SYSTEM</text>
+      
+      <circle cx="220" cy="0" r="3" fill="#38bdf8"/>
+      <line x1="220" y1="0" x2="380" y2="0" stroke="#0ea5e9" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- ============================================================== -->
+  <!-- 5 BOTTOM CYBERNETIC CIRCULAR STATUS BADGES                     -->
+  <!-- ============================================================== -->
+  <g id="bottomBadges" transform="translate(0, 1020)">
+    <!-- BADGE 1: GLOBAL OBSERVATION -->
+    <g transform="translate(200, 30)">
+      <circle cx="0" cy="0" r="36" fill="#030e24" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+      <circle cx="0" cy="0" r="28" fill="none" stroke="#0284c7" stroke-width="1.2"/>
+      <circle cx="0" cy="0" r="14" fill="none" stroke="#38bdf8" stroke-width="1.5"/>
+      <line x1="0" y1="-26" x2="0" y2="26" stroke="#38bdf8" stroke-width="1.2"/>
+      <line x1="-26" y1="0" x2="26" y2="0" stroke="#38bdf8" stroke-width="1.2"/>
+      <text x="0" y="56" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">GLOBAL</text>
+      <text x="0" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">OBSERVATION</text>
+    </g>
+
+    <!-- BADGE 2: RADAR CARRIER -->
+    <g transform="translate(400, 30)">
+      <circle cx="0" cy="0" r="36" fill="#030e24" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+      <!-- Satellite icon -->
+      <rect x="-8" y="-8" width="16" height="16" rx="2" fill="#0284c7" stroke="#67e8f9" stroke-width="1.2"/>
+      <line x1="-20" y1="-14" x2="-8" y2="-4" stroke="#38bdf8" stroke-width="2"/>
+      <line x1="8" y1="4" x2="20" y2="14" stroke="#38bdf8" stroke-width="2"/>
+      <text x="0" y="56" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">RADAR</text>
+      <text x="0" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">CARRIER</text>
+    </g>
+
+    <!-- BADGE 3: AI POWERED ANALYTICS -->
+    <g transform="translate(600, 30)">
+      <circle cx="0" cy="0" r="36" fill="#030e24" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+      <!-- Brain / Neural nodes -->
+      <path d="M -14 0 Q -14 -12 0 -12 Q 14 -12 14 0 Q 14 12 0 12 Q -14 12 -14 0 Z" fill="none" stroke="#67e8f9" stroke-width="1.8"/>
+      <circle cx="-5" cy="-2" r="2" fill="#ffffff"/>
+      <circle cx="5" cy="-2" r="2" fill="#ffffff"/>
+      <text x="0" y="56" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">AI POWERED</text>
+      <text x="0" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">ANALYTICS</text>
+    </g>
+
+    <!-- BADGE 4: CAREER & JOB INTELLIGENCE -->
+    <g transform="translate(800, 30)">
+      <circle cx="0" cy="0" r="36" fill="#030e24" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+      <!-- Briefcase icon -->
+      <rect x="-14" y="-7" width="28" height="20" rx="3" fill="none" stroke="#67e8f9" stroke-width="1.8"/>
+      <path d="M -6 -7 L -6 -13 Q 0 -15 6 -13 L 6 -7" fill="none" stroke="#67e8f9" stroke-width="1.8"/>
+      <text x="0" y="56" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">CAREER &amp;</text>
+      <text x="0" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">JOB INTELLIGENCE</text>
+    </g>
+
+    <!-- BADGE 5: SMART DECISIONS -->
+    <g transform="translate(1000, 30)">
+      <circle cx="0" cy="0" r="36" fill="#030e24" stroke="#0ea5e9" stroke-width="2" filter="url(#softLaser)"/>
+      <!-- Network Nodes icon -->
+      <circle cx="0" cy="-10" r="4" fill="#38bdf8"/>
+      <circle cx="-12" cy="8" r="4" fill="#67e8f9"/>
+      <circle cx="12" cy="8" r="4" fill="#67e8f9"/>
+      <line x1="0" y1="-10" x2="-12" y2="8" stroke="#38bdf8" stroke-width="1.5"/>
+      <line x1="0" y1="-10" x2="12" y2="8" stroke="#38bdf8" stroke-width="1.5"/>
+      <line x1="-12" y1="8" x2="12" y2="8" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="0" y="56" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">SMART</text>
+      <text x="0" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="11" fill="#e0f2fe">DECISIONS</text>
+    </g>
+  </g>
 </svg>

@@ -1,0 +1,22 @@
+{
+  "name": "TERRASYNX - Career Intelligence & Opportunity Radar",
+  "short_name": "TERRASYNX",
+  "description": "Real-Time Tech Career Intelligence & Opportunity Radar tracking verified hiring pipelines directly from Greenhouse and Lever ATS boards.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#06b6d4",
+  "icons": [
+    {
+      "src": "/assets/terrasynx-original.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "1254x1254",
+      "type": "image/png"
+    }
+  ]
+}

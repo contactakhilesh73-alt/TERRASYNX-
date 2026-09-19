@@ -195,10 +195,14 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             <Users className="w-4 h-4 text-sky-400" />
             <div>
               <span className="text-xs font-bold text-slate-200 block">
-                {opportunity.alumniPresenceCount} Campus Alumni Identified at {opportunity.companyName}
+                {typeof opportunity.alumniPresenceCount === 'number'
+                  ? `${opportunity.alumniPresenceCount} Campus Alumni Identified at ${opportunity.companyName}`
+                  : `Campus Alumni Presence: Data not available at ${opportunity.companyName}`}
               </span>
               <span className="text-[11px] text-slate-400">
-                1-click cold outreach &amp; internal referral templates configured for your graduation batch.
+                {typeof opportunity.alumniPresenceCount === 'number'
+                  ? '1-click cold outreach & internal referral templates configured for your graduation batch.'
+                  : 'Outreach studio active. Connect directly with hiring teams once verified directory links are populated.'}
               </span>
             </div>
           </div>

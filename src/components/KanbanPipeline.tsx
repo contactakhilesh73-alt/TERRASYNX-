@@ -380,7 +380,7 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
                             <button
                               onClick={() => onFastApply(opp)}
                               className="flex items-center gap-1 text-[10px] font-bold text-slate-950 px-2 py-1 rounded bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 font-mono shadow-sm"
-                              title="Anti-Ban Human-Paced Fast Apply (Req #4 & #17)"
+                              title="Smart Auto-Fill Assistant: Form fields pre-filled, review karke khud submit karein"
                             >
                               <Zap className="w-3 h-3 fill-slate-950 text-slate-950" />
                               <span>Fast Apply</span>

@@ -1,6 +1,6 @@
 {
   "name": "TERRASYNX",
-  "description": "Global Career Intelligence & Real-Time Opportunity Radar System",
+  "description": "Real-Time Tech Career Intelligence & Opportunity Radar — Live ATS job tracking from Greenhouse & Lever, automated candidate fitment scoring, AI mock interview simulations, and verified hiring pipelines.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

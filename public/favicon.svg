@@ -1,29 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%" shape-rendering="geometricPrecision">
   <defs>
-    <radialGradient id="favBg" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#071739"/>
-      <stop offset="100%" stop-color="#020612"/>
+    <radialGradient id="favBg" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#08214d"/>
+      <stop offset="60%" stop-color="#040e22"/>
+      <stop offset="100%" stop-color="#01040a"/>
     </radialGradient>
-    <linearGradient id="favA" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8"/>
+    <linearGradient id="favChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="35%" stop-color="#38bdf8"/>
+      <stop offset="70%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#075985"/>
+    </linearGradient>
+    <linearGradient id="favALeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a5f3fc"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
       <stop offset="100%" stop-color="#0284c7"/>
     </linearGradient>
-    <filter id="favGlow">
-      <feGaussianBlur stdDeviation="2" result="blur"/>
+    <linearGradient id="favARight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="60%" stop-color="#0369a1"/>
+      <stop offset="100%" stop-color="#0c4a6e"/>
+    </linearGradient>
+    <filter id="favGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
       <feMerge>
         <feMergeNode in="blur"/>
         <feMergeNode in="SourceGraphic"/>
       </feMerge>
     </filter>
   </defs>
-  <rect width="100" height="100" rx="22" fill="url(#favBg)"/>
-  <circle cx="50" cy="50" r="42" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-opacity="0.4"/>
-  <!-- Orbital ring -->
-  <ellipse cx="50" cy="50" rx="38" ry="12" fill="none" stroke="#38bdf8" stroke-width="2" transform="rotate(-28 50 50)" filter="url(#favGlow)"/>
-  <!-- Central Emblem A -->
+
+  <!-- Deep Canvas Rounded Squircle -->
+  <rect width="128" height="128" rx="28" fill="url(#favBg)"/>
+
+  <!-- Radar Outer Subtle Arc -->
+  <circle cx="64" cy="64" r="54" fill="none" stroke="#0ea5e9" stroke-width="1" stroke-opacity="0.35" stroke-dasharray="3 4"/>
+
+  <!-- Central Shield & Metallic Outer Ring -->
+  <circle cx="64" cy="64" r="42" fill="#020817" stroke="url(#favChrome)" stroke-width="3" filter="url(#favGlow)"/>
+  <circle cx="64" cy="64" r="39" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+
+  <!-- Rear Orbital Ring -->
+  <path d="M 12 76 Q 30 40 100 50" fill="none" stroke="#0284c7" stroke-width="3" stroke-opacity="0.5"/>
+
+  <!-- Stylized Cybernetic "A" Monogram -->
   <g filter="url(#favGlow)">
-    <path d="M 50 20 L 26 78 L 36 78 L 50 42 Z" fill="#67e8f9"/>
-    <path d="M 50 20 L 74 78 L 64 78 L 50 42 Z" fill="url(#favA)"/>
-    <polygon points="36,66 64,66 62,72 38,72" fill="#ffffff"/>
+    <!-- Left Leg -->
+    <path d="M 64 36 L 40 86 L 51 86 L 64 60 Z" fill="url(#favALeft)"/>
+    <!-- Right Leg -->
+    <path d="M 64 36 L 88 86 L 77 86 L 64 60 Z" fill="url(#favARight)"/>
+    <!-- Crossbeam -->
+    <polygon points="49,74 79,74 77,80 51,80" fill="#e0f2fe"/>
+    <!-- Central Prism -->
+    <polygon points="64,48 54,71 74,71" fill="#030d22" stroke="#38bdf8" stroke-width="1"/>
+    <polygon points="64,54 58,68 70,68" fill="#38bdf8" opacity="0.9"/>
+  </g>
+
+  <!-- Front Glowing Orbital Ring with Intense Cyan Radiance -->
+  <ellipse cx="64" cy="64" rx="55" ry="18" fill="none" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round" filter="url(#favGlow)" transform="rotate(-28 64 64)"/>
+  <ellipse cx="64" cy="64" rx="55" ry="18" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" transform="rotate(-28 64 64)"/>
+
+  <!-- Apex Starburst Lens Flare -->
+  <g transform="translate(64, 23)" filter="url(#favGlow)">
+    <polygon points="0,-8 2,0 0,8 -2,0" fill="#ffffff"/>
+    <polygon points="-8,0 0,2 8,0 0,-2" fill="#ffffff"/>
+    <circle cx="0" cy="0" r="2.5" fill="#67e8f9"/>
   </g>
 </svg>

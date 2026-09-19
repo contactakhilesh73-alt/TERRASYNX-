@@ -128,15 +128,15 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
         {/* Metric 4 */}
         <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400">
-            <span className="text-xs font-mono">Anti-Bot Trust Index</span>
+            <span className="text-xs font-mono">Smart Auto-Fill Readiness</span>
             <ShieldCheck className="w-4 h-4 text-purple-400" />
           </div>
           <div className="flex items-baseline gap-2 pt-1">
-            <span className="text-2xl font-black text-purple-300 font-mono">0.99</span>
-            <span className="text-[10px] font-mono text-purple-400">Human Rating</span>
+            <span className="text-2xl font-black text-purple-300 font-mono">100%</span>
+            <span className="text-[10px] font-mono text-purple-400">Profile Pre-filled</span>
           </div>
           <p className="text-[10px] text-slate-500 font-mono">
-            140-220ms simulated jitter passes Cloudflare Turnstile &amp; Workday.
+            Form fields pre-filled, review karke khud submit karein.
           </p>
         </div>
       </div>

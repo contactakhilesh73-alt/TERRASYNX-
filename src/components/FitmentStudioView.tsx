@@ -4,8 +4,8 @@
  * Conforming strictly to SYSTEM_SPEC (Req #17 & Rules #1-#5)
  */
 
-import React, { useState, useMemo } from 'react';
-import { Opportunity, StudentProfile } from '../types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Opportunity, StudentProfile, FitmentEvaluation } from '../types';
 import { 
   FitmentEvaluator, 
   DimensionWeightConfig, 
@@ -27,7 +27,8 @@ import {
   TrendingUp,
   DollarSign,
   Building2,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 
 interface FitmentStudioViewProps {
@@ -47,6 +48,8 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
   const [showWeightSliders, setShowWeightSliders] = useState<boolean>(false);
   const [activeSkillModal, setActiveSkillModal] = useState<{ skill: string; oppTitle: string; company: string } | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<'balanced' | 'prestige' | 'skills' | 'compensation'>('balanced');
+  const [aiEvaluations, setAiEvaluations] = useState<Record<string, FitmentEvaluation>>({});
+  const [isLoadingAi, setIsLoadingAi] = useState<boolean>(false);
 
   // Preset Configurations for student preference
   const applyPreset = (preset: 'balanced' | 'prestige' | 'skills' | 'compensation') => {
@@ -67,16 +70,56 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
     }
   };
 
-  // Dynamically recompute 10-D scores for all opportunities based on active weights
+  // Run AI evaluation using FitmentEvaluator.evaluateWithAi() for all active opportunities
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAiEvaluations = async () => {
+      if (opportunities.length === 0) return;
+      setIsLoadingAi(true);
+      try {
+        const results = await Promise.all(
+          opportunities.map(async (opp) => {
+            const evalResult = await FitmentEvaluator.evaluateWithAi(opp, studentProfile);
+            return { id: opp.id, evalResult };
+          })
+        );
+        if (isMounted) {
+          const evalMap: Record<string, FitmentEvaluation> = {};
+          results.forEach(({ id, evalResult }) => {
+            evalMap[id] = evalResult;
+          });
+          setAiEvaluations(evalMap);
+        }
+      } catch (err) {
+        console.error('Fitment AI evaluation failed:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingAi(false);
+        }
+      }
+    };
+
+    fetchAiEvaluations();
+    return () => {
+      isMounted = false;
+    };
+  }, [opportunities, studentProfile]);
+
+  // Dynamically blend AI evaluations with interactive user weights
   const evaluatedOpportunities = useMemo(() => {
     return opportunities.map(opp => {
-      const dynamicFitment = FitmentEvaluator.calculateFitment(opp, studentProfile, weights);
+      const baseFitment = aiEvaluations[opp.id] || opp.fitment;
+      const dynamicFitment = FitmentEvaluator.calculateFitment(
+        { ...opp, fitment: baseFitment },
+        studentProfile,
+        weights
+      );
       return {
         ...opp,
         dynamicFitment,
       };
     }).sort((a, b) => b.dynamicFitment.overallScore - a.dynamicFitment.overallScore);
-  }, [opportunities, studentProfile, weights]);
+  }, [opportunities, studentProfile, weights, aiEvaluations]);
 
   return (
     <div id="fitment-studio-view" className="space-y-6">
@@ -96,6 +139,17 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
                   Santiago oferta-grade
                 </span>
+                {isLoadingAi ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800 animate-pulse">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Gemini AI Evaluating...</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
+                    <Sparkles className="w-3 h-3 text-emerald-400" />
+                    <span>AI Enhanced</span>
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-400 mt-1">
                 Dynamic multi-factor calibration matching {studentProfile.fullName} ({studentProfile.degree}, Batch {studentProfile.graduationYear}).

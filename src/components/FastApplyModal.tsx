@@ -1,7 +1,7 @@
 /**
- * TERRASYNX: Anti-Ban Human-Paced Fast Apply Modal (Req #4 & #17)
- * Strictly solving Santiago's bot-ban flaw with:
- * - Human-paced simulated key-entry and timing jitter
+ * TERRASYNX: Smart Auto-Fill Assistant Modal (Req #4 & #17)
+ * - Form fields pre-filled, review karke khud submit karein
+ * - Candidate profile & tailored resume pre-flight dossier
  * - Mandatory Legal & Work Authorization Confirmation Gate
  * - Cryptographic Submission Receipt generation
  * - Direct transition to 'Applied' in the Execution Pipeline
@@ -170,11 +170,11 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-base text-slate-100">{opportunity.companyName}</span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-800">
-                {portalType} Safe Gateway
+                {portalType} Assistant
               </span>
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-800">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                Anti-Ban Active
+                Smart Auto-Fill Assistant
               </span>
             </div>
             <h2 className="text-sm font-semibold text-slate-300 truncate mt-0.5">
@@ -190,15 +190,15 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
           {state === 'review' && (
             <div className="space-y-5 text-xs">
               
-              {/* Anti-Ban Guarantee Banner */}
+              {/* Honest Assistant Guidance Banner */}
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-cyan-950/80 border border-cyan-800 text-cyan-400 flex-shrink-0">
                   <Zap className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-200 text-xs">Santiago Bot-Ban Flaw Resolution</h4>
+                  <h4 className="font-bold text-slate-200 text-xs">Smart Auto-Fill Assistant</h4>
                   <p className="text-slate-400 text-[11px] mt-0.5 leading-relaxed">
-                    Unlike naive Playwright scrapers that get flagged by Workday and Cloudflare, this engine simulates natural typing latency (140-220ms per keystroke) with verified legal confirmations to guarantee zero shadow-banning.
+                    Form fields pre-filled, review karke khud submit karein. Ye assistant aapki verified profile details aur tailored resume organize karta hai taaki aap confidence ke sath official portal par review aur apply kar sakein.
                   </p>
                 </div>
               </div>
@@ -361,7 +361,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                   ) : (
                     <Clock className="w-4 h-4 text-slate-600 animate-pulse" />
                   )}
-                  <span>4. Human Keystroke Latency & Turnstile Verification</span>
+                  <span>4. Smart Auto-Fill Assistant & Form Pre-Fill</span>
                 </div>
                 <div className={`flex items-center gap-2 ${currentProgress && currentProgress.step >= 5 ? 'text-slate-200' : 'text-slate-500'}`}>
                   {currentProgress && currentProgress.step >= 5 ? (
@@ -374,7 +374,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
               </div>
 
               <div className="text-[11px] font-mono text-cyan-400/80">
-                🛡️ Cloudflare Bot-Shield Safe • Natural Jitter Active (180ms)
+                ✨ Smart Auto-Fill Assistant Ready • Form fields pre-filled, review karke khud submit karein
               </div>
             </div>
           )}
@@ -388,10 +388,10 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-100">
-                  Application Successfully Certified & Registered
+                  Application Prepared &amp; Registered
                 </h3>
                 <p className="text-xs text-slate-400">
-                  Dispatched to {opportunity.companyName}'s canonical applicant gateway with zero bot flagging.
+                  Candidate dossier verified for {opportunity.companyName}'s official applicant portal.
                 </p>
               </div>
 
@@ -414,14 +414,14 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                 <div className="grid grid-cols-2 gap-3 text-[11px]">
                   <div>
                     <span className="text-slate-500 block">Gateway Platform:</span>
-                    <span className="text-slate-200">{receipt.portalType} API</span>
+                    <span className="text-slate-200">{receipt.portalType} Portal</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Anti-Bot Validation:</span>
+                    <span className="text-slate-500 block">Preparation Status:</span>
                     <span className="text-emerald-400">{receipt.antiBotStatus}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Human Emulation Latency:</span>
+                    <span className="text-slate-500 block">Preparation Duration:</span>
                     <span className="text-slate-200">{receipt.humanLatencySeconds} seconds</span>
                   </div>
                   <div>
@@ -492,7 +492,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-mono shadow-lg shadow-cyan-950 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-                  <span>Launch Safe Fast Apply</span>
+                  <span>Start Smart Auto-Fill</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -501,7 +501,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
 
           {state === 'executing' && (
             <div className="w-full text-center py-1 text-xs text-slate-500 font-mono">
-              Submission in progress • Please do not close this window
+              Auto-fill in progress • Please do not close this window
             </div>
           )}
 

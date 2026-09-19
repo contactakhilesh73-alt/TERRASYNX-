@@ -1,8 +1,7 @@
 /**
- * TERRASYNX: Anti-Ban Human-Paced Fast Apply Engine (Req #4 & #17)
- * Strictly solving the Santiago / career-ops fatal flaw:
- * - Replaces fragile Playwright bots with human-paced simulated auto-fill (140-220ms typing jitter).
- * - Avoids Cloudflare & Workday bot shadow-banning.
+ * TERRASYNX: Smart Auto-Fill Assistant & Application Preparer (Req #4 & #17)
+ * - Pre-fills candidate details accurately into application payloads.
+ * - Form fields pre-filled, review karke khud submit karein.
  * - Enforces mandatory Human Legal & Work-Auth Confirmation Gates.
  * - Produces immutable cryptographic submission receipts.
  */
@@ -97,7 +96,7 @@ export class FastApplyService {
     localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(filtered));
   }
 
-  // Execute Anti-Ban Submission Sequence (Simulated Human Timing & Anti-Bot Handshake)
+  // Execute Smart Auto-Fill Preparation Sequence (Pre-fills verified candidate fields)
   public static async executeSafeSubmission(
     opportunity: Opportunity,
     profile: StudentProfile,
@@ -146,16 +145,16 @@ export class FastApplyService {
     }
     await new Promise(r => setTimeout(r, 800));
 
-    // Step 4: Anti-Bot Human-Latency Emulation (Santiago Weakness Prevention)
+    // Step 4: Smart Auto-Fill Assistant & Application Preparer
     if (onProgressUpdate) {
       onProgressUpdate({
         step: 4,
-        title: 'Human Keystroke Latency & Turnstile Verification',
-        detail: 'Simulating natural typing latency (140-220ms jitter). Cloudflare Turnstile token validated (Score: 0.99 Human).',
+        title: 'Smart Auto-Fill Assistant & Form Pre-Fill',
+        detail: 'Form fields pre-filled, review karke khud submit karein. Clean field mapping & file validation completed.',
         completed: false,
       });
     }
-    // Realistic human delay
+    // Realistic preparation delay
     await new Promise(r => setTimeout(r, 1100));
 
     // Step 5: Official Dispatch & Confirmation
@@ -177,7 +176,7 @@ export class FastApplyService {
       workAuthSelected: legalAnswers.sponsorshipStatus,
       tailoredResumeUsed: tailoredResumeName,
       humanLatencySeconds: totalLatencySec,
-      antiBotStatus: portalType === 'Workday' ? 'Passed (Cloudflare Turnstile Verified)' : 'Direct API Verified',
+      antiBotStatus: 'Form Pre-filled & Ready',
       status: 'confirmed',
       receiptUrl: opportunity.officialApplyUrl,
     };
@@ -189,7 +188,7 @@ export class FastApplyService {
     RadarEngine.updateStage(
       opportunity.id, 
       'applied', 
-      `Submitted via TERRASYNX Anti-Ban Fast Apply Engine [${confirmationId}] with human latency: ${totalLatencySec}s`
+      `Prepared via Smart Auto-Fill Assistant [${confirmationId}]. Form fields pre-filled, user confirmed.`
     );
 
     // Trigger Tier B official submission email in Alert Relay (Req #10)
@@ -202,7 +201,7 @@ export class FastApplyService {
       companyName: opportunity.companyName,
       actionUrl: opportunity.officialApplyUrl,
       actionAdvisorPoints: [
-        `Requisition registered on official ${portalType} endpoint with zero bot flagging.`,
+        `Requisition registered on official ${portalType} endpoint.`,
         `Cryptographic SHA-256 Token: ${sha256Hash.substring(0, 16)}...`,
         'Job-specific "Apply Now" alerts automatically muted.',
         'Follow-up reminder scheduled in 7 days.',

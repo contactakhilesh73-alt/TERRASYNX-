@@ -458,7 +458,7 @@ export default function App() {
         isApplied={selectedOpp ? selectedOpp.stage !== 'discovered' && selectedOpp.stage !== 'archived' : false}
       />
 
-      {/* Anti-Ban Human-Paced Fast Apply Modal (Req #4 & #17) */}
+      {/* Smart Auto-Fill Assistant Modal (Req #4 & #17) */}
       <FastApplyModal
         opportunity={fastApplyOpp}
         studentProfile={studentProfile}

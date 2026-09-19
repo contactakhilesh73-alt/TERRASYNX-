@@ -3,7 +3,7 @@
  * Conforming strictly to SYSTEM_SPEC (Strict Rule #2 & Requirements #1-#4)
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Opportunity } from '../types';
 import { VerificationEngine, AuditInspectionReport } from '../services/verificationEngine';
 import { 
@@ -15,7 +15,8 @@ import {
   CheckCircle2, 
   AlertTriangle, 
   Fingerprint, 
-  ExternalLink 
+  ExternalLink,
+  Loader2
 } from 'lucide-react';
 
 interface VerificationAuditModalProps {
@@ -27,9 +28,37 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
   opportunity,
   onClose,
 }) => {
-  if (!opportunity) return null;
+  const [audit, setAudit] = useState<AuditInspectionReport | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const audit: AuditInspectionReport = VerificationEngine.auditOpportunity(opportunity);
+  useEffect(() => {
+    let isMounted = true;
+    if (!opportunity) {
+      setAudit(null);
+      return;
+    }
+
+    setIsLoading(true);
+    VerificationEngine.auditOpportunity(opportunity)
+      .then((report) => {
+        if (isMounted) {
+          setAudit(report);
+          setIsLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Audit verification error:', err);
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [opportunity]);
+
+  if (!opportunity) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-150">
@@ -74,70 +103,79 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
           </span>
         </div>
 
-        {/* 3 Inspection Audit Layers */}
-        <div className="mt-5 space-y-3">
-          {/* Layer 1 */}
-          <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                <Globe className="w-4 h-4 text-cyan-400" />
-                <span>Layer 1: DNS & Root Domain Lock</span>
+        {isLoading || !audit ? (
+          <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
+            <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+            <span className="text-xs font-mono">Running Live DNS & Cryptographic Handshake Audit...</span>
+          </div>
+        ) : (
+          <>
+            {/* 3 Inspection Audit Layers */}
+            <div className="mt-5 space-y-3">
+              {/* Layer 1 */}
+              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <Globe className="w-4 h-4 text-cyan-400" />
+                    <span>Layer 1: DNS & Root Domain Lock</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    {audit.layers.layer1DnsStatus}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Certified root domain: <strong className="text-slate-300">{audit.dnsRootDomain}</strong> (Resolved Subnet: {audit.dnsResolvedIp})
+                </p>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                {audit.layers.layer1DnsStatus}
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-mono">
-              Certified root domain: <strong className="text-slate-300">{audit.dnsRootDomain}</strong> (Resolved Subnet: {audit.dnsResolvedIp})
-            </p>
-          </div>
 
-          {/* Layer 2 */}
-          <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                <Server className="w-4 h-4 text-indigo-400" />
-                <span>Layer 2: Direct ATS API Handshake</span>
+              {/* Layer 2 */}
+              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <Server className="w-4 h-4 text-indigo-400" />
+                    <span>Layer 2: Direct ATS API Handshake</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    {audit.layers.layer2AtsStatus}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Origin feeder: <strong className="text-slate-300">{audit.atsProvider} Enterprise Endpoint</strong> (No middleman aggregator).
+                </p>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                {audit.layers.layer2AtsStatus}
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-mono">
-              Origin feeder: <strong className="text-slate-300">{audit.atsProvider} Enterprise Endpoint</strong> (No middleman aggregator).
-            </p>
-          </div>
 
-          {/* Layer 3 */}
-          <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                <Lock className="w-4 h-4 text-emerald-400" />
-                <span>Layer 3: Student Safety & Zero-Fee Shield</span>
+              {/* Layer 3 */}
+              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <Lock className="w-4 h-4 text-emerald-400" />
+                    <span>Layer 3: Student Safety & Zero-Fee Shield</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    {audit.layers.layer3SafetyStatus}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Confirmed standard paid position (<strong className="text-emerald-400">{opportunity.compensation.range}</strong>). Zero application fees.
+                </p>
               </div>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                {audit.layers.layer3SafetyStatus}
-              </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono">
-              Confirmed standard paid position (<strong className="text-emerald-400">{opportunity.compensation.range}</strong>). Zero application fees.
-            </p>
-          </div>
-        </div>
 
-        {/* Cryptographic SHA-256 Signature Stamp */}
-        <div className="mt-4 p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-400 space-y-1">
-          <div className="flex items-center gap-1.5 text-slate-300 font-bold">
-            <Fingerprint className="w-4 h-4 text-emerald-400" />
-            <span>Cryptographic Proof Signature:</span>
-          </div>
-          <div className="text-emerald-400/90 break-all select-all">
-            {audit.sslFingerprint}
-          </div>
-          <div className="text-[10px] text-slate-500 pt-1">
-            Last Audit Pulse: {new Date(audit.auditTimestamp).toLocaleString()}
-          </div>
-        </div>
+            {/* Cryptographic SHA-256 Signature Stamp */}
+            <div className="mt-4 p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-400 space-y-1">
+              <div className="flex items-center gap-1.5 text-slate-300 font-bold">
+                <Fingerprint className="w-4 h-4 text-emerald-400" />
+                <span>Cryptographic Proof Signature:</span>
+              </div>
+              <div className="text-emerald-400/90 break-all select-all">
+                {audit.sslFingerprint}
+              </div>
+              <div className="text-[10px] text-slate-500 pt-1">
+                Last Audit Pulse: {new Date(audit.auditTimestamp).toLocaleString()}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Action Footer */}
         <div className="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between gap-3">

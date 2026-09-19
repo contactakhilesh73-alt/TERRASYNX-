@@ -241,12 +241,12 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             <span>{isApplied ? 'Applied' : 'Marked'}</span>
           </button>
 
-          {/* Anti-Ban Human-Paced Fast Apply or Applied State */}
+          {/* Smart Auto-Fill Assistant or Applied State */}
           {!isApplied ? (
             <button
               onClick={() => onFastApply ? onFastApply(opportunity) : onOpenDetails(opportunity)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-md shadow-cyan-950/50 hover:shadow-cyan-500/20 transition-all font-mono cursor-pointer"
-              title="Anti-Ban Human-Paced Fast Apply (Req #4 & #17)"
+              title="Smart Auto-Fill Assistant: Form fields pre-filled, review karke khud submit karein"
             >
               <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
               <span>Fast Apply</span>

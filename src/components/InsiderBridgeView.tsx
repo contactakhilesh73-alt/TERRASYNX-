@@ -66,7 +66,8 @@ export const InsiderBridgeView: React.FC<InsiderBridgeViewProps> = ({
     }, 2500);
   };
 
-  const totalAlumniAcrossNetwork = opportunities.reduce((acc, curr) => acc + curr.alumniPresenceCount, 0);
+  const totalAlumniAcrossNetwork = opportunities.reduce((acc, curr) => acc + (curr.alumniPresenceCount || 0), 0);
+  const hasAnyAlumniData = opportunities.some(opp => typeof opp.alumniPresenceCount === 'number');
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-200">
@@ -90,7 +91,9 @@ export const InsiderBridgeView: React.FC<InsiderBridgeViewProps> = ({
         <div className="flex items-center gap-3">
           <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
             <span className="block text-[10px] font-mono text-slate-400">Total Campus Alumni</span>
-            <span className="text-base font-bold text-cyan-300 font-mono">{totalAlumniAcrossNetwork} Active</span>
+            <span className="text-base font-bold text-cyan-300 font-mono">
+              {hasAnyAlumniData ? `${totalAlumniAcrossNetwork} Active` : 'Data not available'}
+            </span>
           </div>
           <div className="px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-center">
             <span className="block text-[10px] font-mono text-slate-400">Alumni Alma Mater</span>
@@ -137,9 +140,15 @@ export const InsiderBridgeView: React.FC<InsiderBridgeViewProps> = ({
                         <span className="text-[10px] text-slate-400 font-mono">{opp.location}</span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800/40">
-                      {opp.alumniPresenceCount} Alumni
-                    </span>
+                    {typeof opp.alumniPresenceCount === 'number' ? (
+                      <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-800/40">
+                        {opp.alumniPresenceCount} Alumni
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                        Data not available
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-[11px] text-slate-300 font-medium mt-2 line-clamp-1">{opp.title}</p>

@@ -3,8 +3,9 @@
  * Conforming strictly to SYSTEM_SPEC (Rules #1-#5, Req #1-#22)
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { OperationalMode } from '../types';
+import { InsigniaModal } from './InsigniaModal';
 import { 
   Radar, 
   KanbanSquare, 
@@ -58,6 +59,25 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAudit,
   onOpenDossierVault,
 }) => {
+  const [showInsigniaModal, setShowInsigniaModal] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string>(() => {
+    return localStorage.getItem('terrasynx_custom_logo_url') || '/assets/terrasynx-original.png';
+  });
+
+  useEffect(() => {
+    const handleLogoUpdate = () => {
+      const updated = localStorage.getItem('terrasynx_custom_logo_url') || '/assets/terrasynx-original.png';
+      setLogoUrl(updated);
+    };
+
+    window.addEventListener('terrasynx_logo_updated', handleLogoUpdate);
+    window.addEventListener('storage', handleLogoUpdate);
+    return () => {
+      window.removeEventListener('terrasynx_logo_updated', handleLogoUpdate);
+      window.removeEventListener('storage', handleLogoUpdate);
+    };
+  }, []);
+
   return (
     <header id="terrasynx-header" className="sticky top-0 z-50 border-b border-cyan-900/40 bg-slate-950/90 backdrop-blur-md">
       {/* Topmost Tactical Pulse Banner */}
@@ -151,13 +171,23 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Logo & Brand Identity */}
           <div className="flex items-center gap-3.5">
-            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/10 border border-cyan-500/40 flex items-center justify-center shadow-lg shadow-cyan-950/50 overflow-hidden">
+            <button
+              onClick={() => setShowInsigniaModal(true)}
+              className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-600/15 border border-cyan-500/50 flex items-center justify-center shadow-lg shadow-cyan-950/60 overflow-hidden hover:border-cyan-400 hover:scale-105 transition-all cursor-pointer group"
+              title="Inspect Full-Resolution System Insignia & Radar Vector"
+            >
               <img 
-                src="/assets/terrasynx-brand.svg" 
+                src={logoUrl} 
                 alt="TerraSynx Emblem" 
-                className="w-8 h-8 object-contain drop-shadow-[0_0_8px_rgba(56,189,248,0.7)]" 
+                className="w-full h-full object-contain p-0.5 drop-shadow-[0_0_10px_rgba(56,189,248,0.85)] group-hover:drop-shadow-[0_0_14px_rgba(103,232,249,1)] transition-all" 
+                referrerPolicy="no-referrer"
+                onError={() => {
+                  if (logoUrl !== '/assets/terrasynx-crest.svg') {
+                    setLogoUrl('/assets/terrasynx-crest.svg');
+                  }
+                }}
               />
-            </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-lg font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-cyan-400">
@@ -166,9 +196,17 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800/60">
                   GLOBAL OS
                 </span>
+                <button
+                  onClick={() => setShowInsigniaModal(true)}
+                  className="px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-300 hover:text-cyan-100 border border-cyan-600/60 flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-cyan-950"
+                  title="View full-size Ultra-HD Master Radar graphic (Zero Pixelation Vector)"
+                >
+                  <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+                  <span>HD RADAR</span>
+                </button>
               </div>
               <p className="text-[11px] text-slate-400 font-medium tracking-wide">
-                Autonomous Early-Career Intelligence & Urgency Radar
+                Autonomous Early-Career Intelligence &amp; Urgency Radar
               </p>
             </div>
           </div>
@@ -416,6 +454,11 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         </nav>
       </div>
+
+      <InsigniaModal 
+        isOpen={showInsigniaModal} 
+        onClose={() => setShowInsigniaModal(false)} 
+      />
     </header>
   );
 };
