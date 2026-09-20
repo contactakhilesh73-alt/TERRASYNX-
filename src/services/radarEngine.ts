@@ -59,403 +59,12 @@ export const DEFAULT_STUDENT_PROFILE: StudentProfile = {
   urgentAlertThresholdHours: 72,
 };
 
-// Current Epoch Time Reference for dynamic mock calculation
-const NOW = Date.now();
-const HOUR = 60 * 60 * 1000;
-const DAY = 24 * HOUR;
-
-// Verified Canonical Opportunities Seed Database (Strict Rule #2 & #4)
-export const SEED_OPPORTUNITIES: Opportunity[] = [
-  {
-    id: 'opp_openai_swe_2026',
-    companyName: 'OpenAI',
-    companyLogo: 'https://logo.clearbit.com/openai.com',
-    companyDomain: 'openai.com',
-    title: 'Software Engineering Intern, Core Systems (Summer 2026)',
-    type: 'internship',
-    workMode: 'hybrid',
-    location: 'San Francisco, CA (Relocation Provided)',
-    department: 'Applied Systems & Inference Infrastructure',
-    officialApplyUrl: 'https://openai.com/careers/search/?query=Software+Engineer',
-    officialStatusTrackerUrl: 'https://openai.com/careers/',
-    releasedAt: NOW - (14 * HOUR), // Released 14 hours ago (Fresh drop)
-    deadlineAt: NOW + (42 * HOUR), // Closes in 42 hours! (Critical Window < 72h)
-    verification: {
-      verified: true,
-      sourceType: 'greenhouse',
-      rootDomain: 'openai.com',
-      endpointUrl: 'https://boards-api.greenhouse.io/v1/boards/openai/jobs/5910294',
-      lastCheckedTimestamp: NOW - 60000,
-      sslStatus: 'A+',
-      noFeeGuarantee: true,
-      requisitionId: 'OAI-REQ-2026-SYS-041',
-    },
-    eligibility: {
-      allowedGraduationYears: [2026, 2027],
-      degrees: ['B.Tech', 'B.E.', 'BS', 'Dual Degree'],
-      undergradOnly: true,
-      sponsorshipAvailable: true,
-      locationsAllowed: ['Global / US Visa Support'],
-    },
-    compensation: {
-      currency: 'USD',
-      range: '$68 - $75 / hour + Housing Stipend',
-      period: 'hourly',
-      isPaid: true,
-      transparentBenchmark: 'Community Estimate (Levels.fyi benchmark - not officially confirmed by employer)',
-    },
-    fitment: {
-      overallScore: 94,
-      overallGrade: 'A+',
-      dimensions: {
-        roleFit: 96,
-        skillsAlignment: 92,
-        batchEligibility: 100,
-        companyPrestige: 98,
-        learningTrajectory: 95,
-        compensationFairness: 99,
-      },
-      matchedSkills: ['Distributed Systems', 'Python', 'TypeScript', 'Node.js'],
-      missingSkills: ['C++ Systems Programming', 'Triton / CUDA Kernels'],
-      strategicVerdict: 'Top-tier fit for systems track. High urgency: only 42 hours remaining before application cap.',
-    },
-    assessmentIntel: {
-      hasHistoricalData: true,
-      platform: 'CodeSignal',
-      durationMinutes: 90,
-      frequentTopics: ['Memory Optimization', 'Sliding Window', 'Graph Traversal'],
-      difficulty: 'Hard',
-      warmupPracticeUrl: 'https://leetcode.com/problemset/all/?topicSlugs=graph',
-    },
-    alumniPresenceCount: 14,
-    recruiterPresenceCount: 6,
-    stage: 'discovered',
-  },
-  {
-    id: 'opp_google_step_2026',
-    companyName: 'Google',
-    companyLogo: 'https://logo.clearbit.com/google.com',
-    companyDomain: 'google.com',
-    title: 'Software Engineering Intern (Summer 2026)',
-    type: 'internship',
-    workMode: 'hybrid',
-    location: 'Bangalore / Hyderabad, India & Mountain View, CA',
-    department: 'Core Engineering & Cloud Platform',
-    officialApplyUrl: 'https://www.google.com/about/careers/applications/jobs/results/?q=Software%20Engineering%20Intern',
-    officialStatusTrackerUrl: 'https://www.google.com/about/careers/applications/',
-    releasedAt: NOW - (1.5 * DAY),
-    deadlineAt: NOW + (68 * HOUR), // Closes in ~68 hours (< 72h)
-    verification: {
-      verified: true,
-      sourceType: 'direct_careers_domain',
-      rootDomain: 'google.com',
-      endpointUrl: 'https://careers.google.com/api/v3/search',
-      lastCheckedTimestamp: NOW - 120000,
-      sslStatus: 'A+',
-      noFeeGuarantee: true,
-      requisitionId: 'GOOG-SWE-INTERN-26',
-    },
-    eligibility: {
-      allowedGraduationYears: [2026, 2027],
-      degrees: ['B.Tech', 'B.E.', 'BS', 'MCA', 'Dual Degree'],
-      undergradOnly: false,
-      sponsorshipAvailable: true,
-      locationsAllowed: ['India', 'United States'],
-    },
-    compensation: {
-      currency: 'INR',
-      range: '₹1,15,000 - ₹1,35,000 / month + Perks',
-      period: 'monthly',
-      isPaid: true,
-      transparentBenchmark: 'Market Estimate (Standard Campus/Off-Campus band - not officially confirmed by employer)',
-    },
-    fitment: {
-      overallScore: 91,
-      overallGrade: 'A',
-      dimensions: {
-        roleFit: 92,
-        skillsAlignment: 90,
-        batchEligibility: 100,
-        companyPrestige: 96,
-        learningTrajectory: 94,
-        compensationFairness: 92,
-      },
-      matchedSkills: ['Python', 'Data Structures', 'Distributed Systems'],
-      missingSkills: ['Java / Go Concurrency'],
-      strategicVerdict: 'Exceptional early career foundation. Priority candidate window actively processing rounds.',
-    },
-    assessmentIntel: {
-      hasHistoricalData: true,
-      platform: 'Screening Call',
-      durationMinutes: 45,
-      frequentTopics: ['Binary Trees', 'Dynamic Programming', 'API Design'],
-      difficulty: 'Medium',
-      warmupPracticeUrl: 'https://leetcode.com/explore/interview/card/google/',
-    },
-    alumniPresenceCount: 42,
-    recruiterPresenceCount: 18,
-    stage: 'discovered',
-  },
-  {
-    id: 'opp_anthropic_swe_ai_2026',
-    companyName: 'Anthropic',
-    companyLogo: 'https://logo.clearbit.com/anthropic.com',
-    companyDomain: 'anthropic.com',
-    title: 'Research Engineering Intern - AI Safety & Tool Use (2026)',
-    type: 'internship',
-    workMode: 'hybrid',
-    location: 'San Francisco, CA / London, UK',
-    department: 'Claude Intelligence & Agent Alignment',
-    officialApplyUrl: 'https://www.anthropic.com/careers#open-roles',
-    officialStatusTrackerUrl: 'https://www.anthropic.com/careers',
-    releasedAt: NOW - (8 * HOUR),
-    deadlineAt: NOW + (120 * HOUR), // 5 days
-    verification: {
-      verified: true,
-      sourceType: 'ashby',
-      rootDomain: 'anthropic.com',
-      endpointUrl: 'https://api.ashbyhq.com/posting-api/job-board/anthropic',
-      lastCheckedTimestamp: NOW - 30000,
-      sslStatus: 'A+',
-      noFeeGuarantee: true,
-      requisitionId: 'ANTH-RES-ENG-2026',
-    },
-    eligibility: {
-      allowedGraduationYears: [2025, 2026, 2027],
-      degrees: ['B.Tech', 'BS', 'MS', 'PhD in CS / Math'],
-      undergradOnly: false,
-      sponsorshipAvailable: true,
-      locationsAllowed: ['US', 'UK', 'Remote Eligible'],
-    },
-    compensation: {
-      currency: 'USD',
-      range: '$72 - $82 / hour',
-      period: 'hourly',
-      isPaid: true,
-      transparentBenchmark: 'Community Estimate (Levels.fyi AI tier benchmark - not officially confirmed by employer)',
-    },
-    fitment: {
-      overallScore: 88,
-      overallGrade: 'B',
-      dimensions: {
-        roleFit: 86,
-        skillsAlignment: 88,
-        batchEligibility: 100,
-        companyPrestige: 97,
-        learningTrajectory: 98,
-        compensationFairness: 98,
-      },
-      matchedSkills: ['Python', 'LLM Prompt Engineering', 'TypeScript'],
-      missingSkills: ['PyTorch Distributed Training', 'RLHF / DPO'],
-      strategicVerdict: 'Very prestigious. Focus application on agentic workflows and LLM reasoning experiments.',
-    },
-    assessmentIntel: {
-      hasHistoricalData: true,
-      platform: 'Custom Take-Home',
-      durationMinutes: 180,
-      frequentTopics: ['Python Concurrency', 'Agent Tool Execution', 'Testing LLM Outputs'],
-      difficulty: 'Hard',
-    },
-    alumniPresenceCount: 8,
-    recruiterPresenceCount: 4,
-    stage: 'discovered',
-  },
-  {
-    id: 'opp_stripe_infrastructure_2026',
-    companyName: 'Stripe',
-    companyLogo: 'https://logo.clearbit.com/stripe.com',
-    companyDomain: 'stripe.com',
-    title: 'Software Engineer - New Grad 2026 (Global Core Platform)',
-    type: 'new-grad',
-    workMode: 'remote',
-    location: 'Remote (US, Canada, Europe, India)',
-    department: 'Financial Infrastructure & Developer SDKs',
-    officialApplyUrl: 'https://stripe.com/jobs/search?query=software+engineer',
-    officialStatusTrackerUrl: 'https://stripe.com/jobs',
-    releasedAt: NOW - (3 * DAY),
-    deadlineAt: NOW + (18 * HOUR), // Closes in 18 hours! Extremely Urgent
-    verification: {
-      verified: true,
-      sourceType: 'lever',
-      rootDomain: 'stripe.com',
-      endpointUrl: 'https://api.lever.co/v0/postings/stripe',
-      lastCheckedTimestamp: NOW - 45000,
-      sslStatus: 'A+',
-      noFeeGuarantee: true,
-      requisitionId: 'STRP-NG-PLATFORM-26',
-    },
-    eligibility: {
-      allowedGraduationYears: [2025, 2026],
-      degrees: ['B.Tech', 'B.E.', 'BS', 'MCA'],
-      undergradOnly: false,
-      sponsorshipAvailable: true,
-      locationsAllowed: ['Worldwide Remote'],
-    },
-    compensation: {
-      currency: 'USD',
-      range: '$145,000 - $175,000 / year Base + Equity',
-      period: 'annual',
-      isPaid: true,
-      transparentBenchmark: 'Market Estimate (Levels.fyi benchmark - not officially confirmed by employer)',
-    },
-    fitment: {
-      overallScore: 92,
-      overallGrade: 'A',
-      dimensions: {
-        roleFit: 94,
-        skillsAlignment: 92,
-        batchEligibility: 100,
-        companyPrestige: 95,
-        learningTrajectory: 94,
-        compensationFairness: 96,
-      },
-      matchedSkills: ['TypeScript', 'Node.js', 'Distributed Systems', 'PostgreSQL', 'Redis'],
-      missingSkills: ['Ruby on Rails Internal Core'],
-      strategicVerdict: 'Super urgent: Closes in under 18 hours. Top remote engineering culture.',
-    },
-    assessmentIntel: {
-      hasHistoricalData: true,
-      platform: 'HackerRank',
-      durationMinutes: 75,
-      frequentTopics: ['System Design Basics', 'Rate Limiting Algorithms', 'Transactions'],
-      difficulty: 'Medium',
-      warmupPracticeUrl: 'https://leetcode.com/problemset/all/?topicSlugs=design',
-    },
-    alumniPresenceCount: 19,
-    recruiterPresenceCount: 7,
-    stage: 'discovered',
-  },
-  {
-    id: 'opp_perplexity_ai_eng_2026',
-    companyName: 'Perplexity AI',
-    companyLogo: 'https://logo.clearbit.com/perplexity.ai',
-    companyDomain: 'perplexity.ai',
-    title: 'Full Stack Engineering Intern (Fall 2025 / Summer 2026)',
-    type: 'internship',
-    workMode: 'hybrid',
-    location: 'San Francisco, CA',
-    department: 'Search Experience & Knowledge Engine',
-    officialApplyUrl: 'https://jobs.ashbyhq.com/perplexity',
-    officialStatusTrackerUrl: 'https://jobs.ashbyhq.com/perplexity',
-    releasedAt: NOW - (2 * HOUR), // Brand new drop!
-    deadlineAt: NOW + (84 * HOUR),
-    verification: {
-      verified: true,
-      sourceType: 'ashby',
-      rootDomain: 'perplexity.ai',
-      endpointUrl: 'https://api.ashbyhq.com/posting-api/job-board/perplexity',
-      lastCheckedTimestamp: NOW - 15000,
-      sslStatus: 'A+',
-      noFeeGuarantee: true,
-      requisitionId: 'PX-FS-INT-026',
-    },
-    eligibility: {
-      allowedGraduationYears: [2026, 2027],
-      degrees: ['B.Tech', 'BS', 'MS in Computer Science'],
-      undergradOnly: false,
-      sponsorshipAvailable: true,
-      locationsAllowed: ['US & International Students'],
-    },
-    compensation: {
-      currency: 'USD',
-      range: '$60 - $70 / hour',
-      period: 'hourly',
-      isPaid: true,
-      transparentBenchmark: 'Community Estimate (YC & Levels.fyi benchmark - not officially confirmed by employer)',
-    },
-    fitment: {
-      overallScore: 96,
-      overallGrade: 'A+',
-      dimensions: {
-        roleFit: 98,
-        skillsAlignment: 96,
-        batchEligibility: 100,
-        companyPrestige: 93,
-        learningTrajectory: 99,
-        compensationFairness: 94,
-      },
-      matchedSkills: ['TypeScript', 'React', 'Node.js', 'Tailwind CSS', 'FastAPI'],
-      missingSkills: ['WebSockets Streaming Optimization'],
-      strategicVerdict: 'Near perfect match with fullstack and modern JS stack. High velocity growth company.',
-    },
-    assessmentIntel: {
-      hasHistoricalData: true,
-      platform: 'Screening Call',
-      durationMinutes: 60,
-      frequentTopics: ['React Rendering Lifecycle', 'Streaming LLM Tokens', 'State Hydration'],
-      difficulty: 'Medium',
-    },
-    alumniPresenceCount: 5,
-    recruiterPresenceCount: 3,
-    stage: 'discovered',
-  },
-  {
-    id: 'opp_microsoft_swe_2026',
-    companyName: 'Microsoft',
-    companyLogo: 'https://logo.clearbit.com/microsoft.com',
-    companyDomain: 'microsoft.com',
-    title: 'Software Engineer - University Graduate (2026 Batch)',
-    type: 'new-grad',
-    workMode: 'hybrid',
-    location: 'Hyderabad / Bangalore / Redmond',
-    department: 'Azure Distributed Cloud & Developer Division',
-    officialApplyUrl: 'https://jobs.careers.microsoft.com/global/en/search?q=Software%20Engineer%20University',
-    officialStatusTrackerUrl: 'https://jobs.careers.microsoft.com/global/en/actioncenter',
-    releasedAt: NOW - (2 * DAY),
-    deadlineAt: NOW + (140 * HOUR),
-    verification: {
-      verified: true,
-      sourceType: 'direct_careers_domain',
-      rootDomain: 'microsoft.com',
-      endpointUrl: 'https://careers.microsoft.com/api/search',
-      lastCheckedTimestamp: NOW - 60000,
-      sslStatus: 'A+',
-      noFeeGuarantee: true,
-      requisitionId: 'MSFT-UNI-SWE-2026',
-    },
-    eligibility: {
-      allowedGraduationYears: [2026],
-      degrees: ['B.Tech', 'B.E.', 'BS', 'MCA'],
-      undergradOnly: false,
-      sponsorshipAvailable: true,
-      locationsAllowed: ['India', 'US'],
-    },
-    compensation: {
-      currency: 'INR',
-      range: '₹18,00,000 - ₹24,00,000 / year + Joining Bonus',
-      period: 'annual',
-      isPaid: true,
-      transparentBenchmark: 'Market Estimate (Standard Campus band - not officially confirmed by employer)',
-    },
-    fitment: {
-      overallScore: 90,
-      overallGrade: 'A',
-      dimensions: {
-        roleFit: 92,
-        skillsAlignment: 88,
-        batchEligibility: 100,
-        companyPrestige: 95,
-        learningTrajectory: 92,
-        compensationFairness: 90,
-      },
-      matchedSkills: ['Python', 'Data Structures', 'Docker', 'PostgreSQL'],
-      missingSkills: ['C# / .NET Cloud Services', 'Azure Cosmos DB'],
-      strategicVerdict: 'Massive engineering scale. Excellent WLB and global mobility.',
-    },
-    assessmentIntel: {
-      hasHistoricalData: true,
-      platform: 'CodeSignal',
-      durationMinutes: 90,
-      frequentTopics: ['Binary Search', 'Dynamic Programming', 'String Manipulation'],
-      difficulty: 'Medium',
-      warmupPracticeUrl: 'https://leetcode.com/explore/interview/card/microsoft/',
-    },
-    alumniPresenceCount: 56,
-    recruiterPresenceCount: 22,
-    stage: 'discovered',
-  }
-];
-
+// Verified Canonical Opportunities Seed Database (Strict Zero-Fake Policy)
+// All 6 hardcoded demo listings (OpenAI, Google, Anthropic, Stripe, Perplexity, Microsoft)
+// have been permanently purged.
+// All opportunities in TERRASYNX originate strictly from live-scraped enterprise ATS feeds
+// (Greenhouse & Lever endpoints across 19 verified companies) or explicit candidate URL ingestion.
+export const SEED_OPPORTUNITIES: Opportunity[] = [];
 export class RadarEngine {
   private static opportunities: Opportunity[] = [];
   private static studentProfile: StudentProfile = DEFAULT_STUDENT_PROFILE;
@@ -511,29 +120,31 @@ export class RadarEngine {
     return `https://${opp.companyDomain}/careers`;
   }
 
+  // Canonical set of purged demo job IDs (Strict Zero-Fake Policy)
+  public static readonly PURGED_DEMO_IDS = new Set([
+    'opp_openai_swe_2026',
+    'opp_google_step_2026',
+    'opp_anthropic_swe_ai_2026',
+    'opp_stripe_infrastructure_2026',
+    'opp_perplexity_ai_eng_2026',
+    'opp_microsoft_swe_2026',
+  ]);
+
   // Initialize Engine
   public static init(): void {
     if (typeof window === 'undefined') return;
 
-    // Load persisted opportunities or fall back to seed
+    // Load persisted opportunities or fall back to empty
     const cachedOpps = localStorage.getItem(STORAGE_KEYS.OPPORTUNITIES);
     if (cachedOpps) {
       try {
         const parsed = JSON.parse(cachedOpps);
-        let opps: Opportunity[] = Array.isArray(parsed) && parsed.length > 0 ? parsed : SEED_OPPORTUNITIES;
-        // Migrate / sync seed updates (e.g. valid working career URLs & status tracker URLs)
+        let opps: Opportunity[] = Array.isArray(parsed) ? parsed : [];
+        // Permanently filter out the 6 purged demo listings from user cache
+        opps = opps.filter(o => !this.PURGED_DEMO_IDS.has(o.id));
+
+        // Migrate / sync valid working career URLs & status tracker URLs
         opps = opps.map(loadedOpp => {
-          const matchingSeed = SEED_OPPORTUNITIES.find(s => s.id === loadedOpp.id);
-          if (matchingSeed) {
-            return {
-              ...loadedOpp,
-              officialApplyUrl: matchingSeed.officialApplyUrl,
-              officialStatusTrackerUrl: matchingSeed.officialStatusTrackerUrl,
-              companyLogo: matchingSeed.companyLogo,
-              verification: matchingSeed.verification,
-              compensation: matchingSeed.compensation,
-            };
-          }
           if (!loadedOpp.officialStatusTrackerUrl) {
             loadedOpp.officialStatusTrackerUrl = this.getOfficialStatusTrackerUrl(loadedOpp);
           }
@@ -541,12 +152,19 @@ export class RadarEngine {
         });
         this.opportunities = this.deduplicateOpportunities(opps);
       } catch {
-        this.opportunities = this.deduplicateOpportunities([...SEED_OPPORTUNITIES]);
+        this.opportunities = [];
       }
     } else {
-      this.opportunities = this.deduplicateOpportunities([...SEED_OPPORTUNITIES]);
+      this.opportunities = [];
     }
     this.persistOpportunities();
+
+    // Auto-bootstrap live ATS scan if no verified opportunities exist in cache yet
+    if (this.opportunities.length === 0) {
+      setTimeout(() => {
+        this.scanLiveAtsBoards().catch(() => {});
+      }, 50);
+    }
 
     // Load persisted profile
     const cachedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -747,15 +365,16 @@ export class RadarEngine {
     this.notify();
   }
 
-  // Reset to initial canonical state
+  // Reset to clean initial state (Strict Zero-Fake Policy: Ingest live verified roles)
   public static resetToFactoryDefaults(): void {
     AtsLiveService.clearCache();
-    this.opportunities = [...SEED_OPPORTUNITIES];
+    this.opportunities = [];
     this.studentProfile = DEFAULT_STUDENT_PROFILE;
     localStorage.removeItem(STORAGE_KEYS.MUTED_ALERTS);
     localStorage.removeItem(STORAGE_KEYS.SIMULATED_EMAILS);
     this.persistOpportunities();
     this.updateStudentProfile(DEFAULT_STUDENT_PROFILE);
+    this.scanLiveAtsBoards().catch(() => {});
     this.notify();
   }
 

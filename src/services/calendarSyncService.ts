@@ -8,127 +8,33 @@ import { CalendarEvent, Opportunity } from '../types';
 
 export class CalendarSyncService {
   private static STORAGE_KEY = 'terrasynx_calendar_events_v1';
+  private static PURGED_DEMO_OPP_IDS = new Set([
+    'opp_stripe_infrastructure_2026',
+    'opp_openai_swe_2026',
+    'opp_google_step_2026',
+    'opp_anthropic_swe_ai_2026',
+    'opp_perplexity_ai_eng_2026',
+    'opp_microsoft_swe_2026'
+  ]);
 
-  // Seed default events derived directly from active opportunities (e.g. Stripe, OpenAI, Google)
+  // Retrieve calendar events, purging any legacy demo entries from user storage (Strict Zero-Fake Policy)
   public static getInitialEvents(opportunities: Opportunity[]): CalendarEvent[] {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(e => !this.PURGED_DEMO_OPP_IDS.has(e.opportunityId));
+          this.saveEvents(cleaned);
+          return cleaned;
         }
       } catch (e) {
         console.warn('Failed to parse saved calendar events', e);
       }
     }
 
-    const now = Date.now();
-    const oneDay = 24 * 60 * 60 * 1000;
-
-    const defaultEvents: CalendarEvent[] = [
-      {
-        id: 'cal_stripe_oa_1',
-        opportunityId: 'opp_stripe_infrastructure_2026',
-        companyName: 'Stripe',
-        companyDomain: 'stripe.com',
-        jobTitle: 'Software Engineering Intern — Infrastructure',
-        eventType: 'oa_test',
-        title: 'Stripe Online Technical Assessment (HackerRank Proctored)',
-        description: '90-minute timed coding assessment covering Concurrency Primitives, Idempotency, and API Design.',
-        startTime: now + 1.5 * oneDay,
-        endTime: now + 1.5 * oneDay + 90 * 60 * 1000,
-        durationMinutes: 90,
-        platform: 'HackerRank (Proctored)',
-        meetingLink: 'https://hackerrank.com/tests/stripe-infra-2026-eval',
-        status: 'urgent',
-        preparationChecklist: [
-          'Review Stripe API Idempotency pattern and retry headers',
-          'Practice Mutex & Thread-safe Map implementations in Go/Java/Python',
-          'Test webcam and secondary monitor restrictions in HackerRank sandbox'
-        ],
-        syncStatus: {
-          googleCalendar: false,
-          icsExported: false,
-        }
-      },
-      {
-        id: 'cal_openai_tech_1',
-        opportunityId: 'opp_openai_swe_2026',
-        companyName: 'OpenAI',
-        companyDomain: 'openai.com',
-        jobTitle: 'Member of Technical Staff Intern — Systems & Inference',
-        eventType: 'technical_interview',
-        title: 'OpenAI Technical Screen: High-Throughput Inference Primitives',
-        description: '60-minute paired programming and live architecture session with an OpenAI Infrastructure Engineer.',
-        startTime: now + 3 * oneDay,
-        endTime: now + 3 * oneDay + 60 * 60 * 1000,
-        durationMinutes: 60,
-        platform: 'Google Meet',
-        meetingLink: 'https://meet.google.com/oai-syst-inf',
-        status: 'scheduled',
-        preparationChecklist: [
-          'Brush up on KV Cache memory quantization and GPU attention mechanics',
-          'Review Python AsyncIO event loop internals vs. C++ worker pools',
-          'Review project dossier on high-throughput micro-batching'
-        ],
-        syncStatus: {
-          googleCalendar: false,
-          icsExported: false,
-        }
-      },
-      {
-        id: 'cal_google_recruiter_1',
-        opportunityId: 'opp_google_step_2026',
-        companyName: 'Google',
-        companyDomain: 'google.com',
-        jobTitle: 'Software Engineer Intern — Summer 2026',
-        eventType: 'recruiter_screen',
-        title: 'Google University Talent Recruiter Connect (Batch 2026 Verification)',
-        description: '30-minute informal check on graduation verification, team alignment, and coding assessment timeline.',
-        startTime: now + 4.5 * oneDay,
-        endTime: now + 4.5 * oneDay + 30 * 60 * 1000,
-        durationMinutes: 30,
-        platform: 'Google Meet',
-        meetingLink: 'https://meet.google.com/goog-swe-int',
-        status: 'scheduled',
-        preparationChecklist: [
-          'Have official graduation batch certificate and transcript on hand',
-          'Prepare 2-minute elevator pitch highlighting distributed systems interests',
-          'Inquire about team placement preferences (Cloud Spanner vs. Search Engine)'
-        ],
-        syncStatus: {
-          googleCalendar: false,
-          icsExported: false,
-        }
-      },
-      {
-        id: 'cal_anthropic_followup_1',
-        opportunityId: 'opp_anthropic_swe_ai_2026',
-        companyName: 'Anthropic',
-        companyDomain: 'anthropic.com',
-        jobTitle: 'AI Safety & Alignment Engineering Intern',
-        eventType: 'follow_up_deadline',
-        title: '7-Day Follow-Up Alert: Anthropic University Recruiting',
-        description: 'Standard institutional follow-up window after initial portal application submission.',
-        startTime: now + 6 * oneDay,
-        endTime: now + 6 * oneDay + 15 * 60 * 1000,
-        durationMinutes: 15,
-        platform: 'Direct Email Dispatch',
-        status: 'scheduled',
-        preparationChecklist: [
-          'Check application status on Anthropic Greenhouse careers portal',
-          'Send brief polite check-in referencing CONF-2026 confirmation ID'
-        ],
-        syncStatus: {
-          googleCalendar: false,
-          icsExported: false,
-        }
-      }
-    ];
-
-    this.saveEvents(defaultEvents);
-    return defaultEvents;
+    this.saveEvents([]);
+    return [];
   }
 
   public static saveEvents(events: CalendarEvent[]): void {
@@ -144,14 +50,15 @@ export class CalendarSyncService {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(e => !this.PURGED_DEMO_OPP_IDS.has(e.opportunityId));
+          return cleaned;
         }
       } catch (e) {
         console.warn('Failed to parse saved calendar events', e);
       }
     }
-    return this.getInitialEvents([]);
+    return [];
   }
 
   // Adds or updates a calendar event (e.g., upcoming internship announcement alert)

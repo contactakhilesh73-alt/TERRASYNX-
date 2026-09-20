@@ -278,7 +278,7 @@ export const CalendarSyncView: React.FC<CalendarSyncViewProps> = ({
         </div>
 
         {/* Right Column: Event Detail & 1-Click Sync Console (7 cols) */}
-        {activeEvent && (
+        {activeEvent ? (
           <div className="lg:col-span-7 space-y-5">
             {/* Active Card */}
             <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
@@ -363,6 +363,22 @@ export const CalendarSyncView: React.FC<CalendarSyncViewProps> = ({
                 </div>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="lg:col-span-7 flex flex-col items-center justify-center p-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-center min-h-[380px]">
+            <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-3">
+              <CalendarIcon className="w-6 h-6 text-teal-400" />
+            </div>
+            <h4 className="text-sm font-bold text-slate-200">No Assessment / Interview Selected</h4>
+            <p className="text-xs text-slate-400 mt-1 max-w-sm leading-relaxed">
+              Track official OA deadlines, live interview rounds, or recruiter calls. Click &quot;Schedule Event&quot; to link an event directly to any live job opening.
+            </p>
+            <button
+              onClick={() => setIsScheduleModalOpen(true)}
+              className="mt-4 px-4 py-2 rounded-xl bg-teal-500 text-slate-950 font-bold text-xs hover:bg-teal-400 transition-all cursor-pointer"
+            >
+              + Schedule Custom Event
+            </button>
           </div>
         )}
       </div>
