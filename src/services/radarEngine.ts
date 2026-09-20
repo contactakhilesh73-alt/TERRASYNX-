@@ -102,7 +102,7 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
       range: '$68 - $75 / hour + Housing Stipend',
       period: 'hourly',
       isPaid: true,
-      transparentBenchmark: 'Levels.fyi Verified: $12,500/month',
+      transparentBenchmark: 'Community Estimate (Levels.fyi benchmark - not officially confirmed by employer)',
     },
     fitment: {
       overallScore: 94,
@@ -167,7 +167,7 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
       range: '₹1,15,000 - ₹1,35,000 / month + Perks',
       period: 'monthly',
       isPaid: true,
-      transparentBenchmark: 'Official Standard Campus & Off-Campus Band',
+      transparentBenchmark: 'Market Estimate (Standard Campus/Off-Campus band - not officially confirmed by employer)',
     },
     fitment: {
       overallScore: 91,
@@ -232,7 +232,7 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
       range: '$72 - $82 / hour',
       period: 'hourly',
       isPaid: true,
-      transparentBenchmark: 'Tier-1 AI Compensation Model',
+      transparentBenchmark: 'Community Estimate (Levels.fyi AI tier benchmark - not officially confirmed by employer)',
     },
     fitment: {
       overallScore: 88,
@@ -296,7 +296,7 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
       range: '$145,000 - $175,000 / year Base + Equity',
       period: 'annual',
       isPaid: true,
-      transparentBenchmark: 'Stripe Global Standard Verified Pay Scale',
+      transparentBenchmark: 'Market Estimate (Levels.fyi benchmark - not officially confirmed by employer)',
     },
     fitment: {
       overallScore: 92,
@@ -361,7 +361,7 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
       range: '$60 - $70 / hour',
       period: 'hourly',
       isPaid: true,
-      transparentBenchmark: 'YC Top-Scale AI Unicorn Standard',
+      transparentBenchmark: 'Community Estimate (YC & Levels.fyi benchmark - not officially confirmed by employer)',
     },
     fitment: {
       overallScore: 96,
@@ -425,7 +425,7 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
       range: '₹18,00,000 - ₹24,00,000 / year + Joining Bonus',
       period: 'annual',
       isPaid: true,
-      transparentBenchmark: 'Verified Campus/Off-Campus Band',
+      transparentBenchmark: 'Market Estimate (Standard Campus band - not officially confirmed by employer)',
     },
     fitment: {
       overallScore: 90,
@@ -531,6 +531,7 @@ export class RadarEngine {
               officialStatusTrackerUrl: matchingSeed.officialStatusTrackerUrl,
               companyLogo: matchingSeed.companyLogo,
               verification: matchingSeed.verification,
+              compensation: matchingSeed.compensation,
             };
           }
           if (!loadedOpp.officialStatusTrackerUrl) {

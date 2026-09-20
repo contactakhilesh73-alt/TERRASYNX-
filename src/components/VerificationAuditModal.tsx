@@ -205,7 +205,7 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono">
-                  Confirmed standard paid position (<strong className="text-emerald-400">{opportunity.compensation.range}</strong>). Zero application fees.
+                  Zero application fees confirmed. Compensation benchmark: <strong className="text-emerald-400">{opportunity.compensation.range}</strong> ({opportunity.compensation.transparentBenchmark || 'Community/Market benchmark'}).
                 </p>
               </div>
 

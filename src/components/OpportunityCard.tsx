@@ -147,7 +147,10 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         {/* Tactical Badges & Compensation Matrix */}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           {/* Compensation */}
-          <div className="flex items-center gap-1 px-2 py-0.8 rounded bg-slate-950/80 text-emerald-300 border border-emerald-900/40 font-mono">
+          <div 
+            className="flex items-center gap-1 px-2 py-0.8 rounded bg-slate-950/80 text-emerald-300 border border-emerald-900/40 font-mono"
+            title={`Market/Community Estimate: ${opportunity.compensation.range} — ${opportunity.compensation.transparentBenchmark || 'Not officially confirmed by employer'}`}
+          >
             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
             <span>{opportunity.compensation.range}</span>
           </div>

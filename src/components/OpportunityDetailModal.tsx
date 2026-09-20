@@ -103,9 +103,17 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
         {/* Grid Stats */}
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-slate-500 block">Compensation</span>
-            <span className="font-bold text-emerald-400 text-sm">{opportunity.compensation.range}</span>
+          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 block">Compensation</span>
+                <span className="text-[10px] text-amber-400/90 font-mono">Market Estimate</span>
+              </div>
+              <span className="font-bold text-emerald-400 text-sm block mt-0.5">{opportunity.compensation.range}</span>
+            </div>
+            <span className="text-[10px] text-slate-500 block truncate mt-1" title={opportunity.compensation.transparentBenchmark}>
+              {opportunity.compensation.transparentBenchmark || 'Community/Market estimate'}
+            </span>
           </div>
 
           <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
