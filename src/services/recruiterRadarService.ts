@@ -17,228 +17,38 @@ const STORAGE_KEY_RECRUITERS = 'terrasynx_recruiter_radar_nodes_v1';
 export class RecruiterRadarService {
   /**
    * Safe, zero-fake data store for user-verified recruiter & headhunter contacts.
-   * STRICT POLICY: Canonical verified recruiters matching Tier-1 active engineering pipelines.
-   * Users can also add, edit, or delete genuine contacts or connect their verified outreach targets.
+   * STRICT ZERO-FAKE POLICY: No hardcoded sample or fake recruiters.
+   * CANONICAL_RECRUITERS is permanently empty ([]).
+   * This directory only contains genuine recruiter / sourcer contacts manually added by the candidate.
+   * Under NO circumstances should this array be re-populated with placeholder/mock personnel.
    */
-  public static readonly CANONICAL_RECRUITERS: RecruiterNode[] = [
-    {
-      id: 'rec_stripe_01',
-      fullName: 'Marcus Vance',
-      avatarInitials: 'MV',
-      role: 'University Talent Lead',
-      companyName: 'Stripe',
-      companyDomain: 'stripe.com',
-      departmentFocus: 'Core Infrastructure & Global Payouts',
-      location: 'San Francisco, CA (Hybrid)',
-      verifiedEmail: 'marcus.vance@stripe.com',
-      linkedinUrl: 'https://linkedin.com/in/marcus-vance-stripe-talent',
-      responseProbabilityIndex: 92,
-      recruiterDna: {
-        preferredTimeSlot: 'Tuesday & Thursday, 09:30 AM - 11:30 AM PST',
-        averageResponseTimeHours: 14,
-        activeRequisitionsCount: 3,
-        technicalDepthLevel: 'Medium (Specialized Tech Recruiter)',
-        keyPhrasesToAnchor: ['distributed transaction ledgers', 'idempotency guarantees', 'low-latency Raft consensus', 'production metrics'],
-        phrasesToAvoid: ['quick coffee chat to pick your brain', 'generalist enthusiast', 'seeking any open role']
-      },
-      activeHiringReqs: [
-        {
-          requisitionId: 'STRP-2026-CONF-8812',
-          title: 'Software Engineering Intern (Distributed Systems & Payouts)',
-          level: 'Undergraduate / Early Career',
-          urgency: 'critical'
-        },
-        {
-          requisitionId: 'STRP-2026-ENG-4410',
-          title: 'Backend Infrastructure Engineer (Foundations & Storage)',
-          level: 'New Grad (L3)',
-          urgency: 'high'
-        }
-      ],
-      strategicHook: 'Values direct links to clean production repositories demonstrating sub-5ms latency and Raft consensus over generic introductions.'
-    },
-    {
-      id: 'rec_openai_01',
-      fullName: 'Sarah Lin',
-      avatarInitials: 'SL',
-      role: 'Senior Technical Sourcer',
-      companyName: 'OpenAI',
-      companyDomain: 'openai.com',
-      departmentFocus: 'Applied AI & Inference Systems Infrastructure',
-      location: 'San Francisco, CA (On-site)',
-      verifiedEmail: 'sarah.lin@openai.com',
-      linkedinUrl: 'https://linkedin.com/in/sarah-lin-openai-recruiting',
-      responseProbabilityIndex: 88,
-      recruiterDna: {
-        preferredTimeSlot: 'Monday & Wednesday, 08:30 AM - 10:30 AM PST',
-        averageResponseTimeHours: 20,
-        activeRequisitionsCount: 4,
-        technicalDepthLevel: 'High (Former SWE/Eng Lead)',
-        keyPhrasesToAnchor: ['KV cache quantization', 'vLLM kernel optimizations', 'GPU cluster telemetry', 'CUDA memory management'],
-        phrasesToAvoid: ['passionate prompt engineer', 'looking for mentorship', 'curious learner']
-      },
-      activeHiringReqs: [
-        {
-          requisitionId: 'OAI-2026-CONF-9921',
-          title: 'AI Systems Engineering Intern (Inference & Kernel Performance)',
-          level: 'Undergraduate & MS Intern',
-          urgency: 'critical'
-        },
-        {
-          requisitionId: 'OAI-2026-ENG-1104',
-          title: 'Distributed Infrastructure Member of Technical Staff',
-          level: 'Early Career / New Grad',
-          urgency: 'high'
-        }
-      ],
-      strategicHook: 'Prioritizes applicants who attach measurable benchmarks (e.g. 50k req/sec throughput or KV cache footprint reduction).'
-    },
-    {
-      id: 'rec_google_01',
-      fullName: 'Priya Sundaram',
-      avatarInitials: 'PS',
-      role: 'Principal Technical Recruiter',
-      companyName: 'Google',
-      companyDomain: 'google.com',
-      departmentFocus: 'Core Systems, Cloud Platforms & Spanner Infrastructure',
-      location: 'Sunnyvale, CA (Hybrid)',
-      verifiedEmail: 'psundaram@google.com',
-      linkedinUrl: 'https://linkedin.com/in/priya-sundaram-google-recruiting',
-      responseProbabilityIndex: 84,
-      recruiterDna: {
-        preferredTimeSlot: 'Wednesday & Friday, 10:00 AM - 12:00 PM PST',
-        averageResponseTimeHours: 28,
-        activeRequisitionsCount: 6,
-        technicalDepthLevel: 'High (Former SWE/Eng Lead)',
-        keyPhrasesToAnchor: ['Paxos / Raft consensus algorithms', 'C++ systems profiling', 'microservices telemetry', 'concurrency models'],
-        phrasesToAvoid: ['hard worker willing to learn anything', 'seeking referral from anyone']
-      },
-      activeHiringReqs: [
-        {
-          requisitionId: 'GOOG-2026-CONF-3310',
-          title: 'Software Engineering Intern, Systems Infrastructure',
-          level: 'B.Tech / BS Undergraduate',
-          urgency: 'high'
-        },
-        {
-          requisitionId: 'GOOG-2026-ENG-8890',
-          title: 'Site Reliability Engineering Resident (SRE-R)',
-          level: 'New Grad 2026',
-          urgency: 'normal'
-        }
-      ],
-      strategicHook: 'Strong affinity for candidates with solid algorithmic foundations who explicitly reference the exact ATS requisition code.'
-    },
-    {
-      id: 'rec_amazon_01',
-      fullName: 'David Chen',
-      avatarInitials: 'DC',
-      role: 'Engineering Hiring Manager',
-      companyName: 'Amazon',
-      companyDomain: 'amazon.com',
-      departmentFocus: 'AWS Cloud Networking & Virtual Private Cloud (VPC)',
-      location: 'Seattle, WA (Hybrid)',
-      verifiedEmail: 'davidchen-aws@amazon.com',
-      linkedinUrl: 'https://linkedin.com/in/david-chen-aws-hiring',
-      responseProbabilityIndex: 79,
-      recruiterDna: {
-        preferredTimeSlot: 'Tuesday & Thursday, 01:00 PM - 03:00 PM PST',
-        averageResponseTimeHours: 18,
-        activeRequisitionsCount: 2,
-        technicalDepthLevel: 'High (Former SWE/Eng Lead)',
-        keyPhrasesToAnchor: ['Customer Obsession', 'Ownership', 'distributed load balancing', 'packet inspection pipeline'],
-        phrasesToAvoid: ['ready to do any work assigned', 'open to any location']
-      },
-      activeHiringReqs: [
-        {
-          requisitionId: 'AMZN-2026-REQ-7744',
-          title: 'SDE Intern - AWS Networking Foundations',
-          level: 'Undergraduate Summer 2026',
-          urgency: 'high'
-        }
-      ],
-      strategicHook: 'Prefers STAR-formatted impact statements anchored around Amazon Leadership Principles and production uptime.'
-    },
-    {
-      id: 'rec_microsoft_01',
-      fullName: 'Angela Zhou',
-      avatarInitials: 'AZ',
-      role: 'University Talent Lead',
-      companyName: 'Microsoft',
-      companyDomain: 'microsoft.com',
-      departmentFocus: 'Azure Core Infrastructure & Distributed Computing',
-      location: 'Redmond, WA (Hybrid)',
-      verifiedEmail: 'angela.zhou@microsoft.com',
-      linkedinUrl: 'https://linkedin.com/in/angela-zhou-msft-talent',
-      responseProbabilityIndex: 86,
-      recruiterDna: {
-        preferredTimeSlot: 'Monday & Thursday, 09:00 AM - 11:00 AM PST',
-        averageResponseTimeHours: 22,
-        activeRequisitionsCount: 5,
-        technicalDepthLevel: 'Medium (Specialized Tech Recruiter)',
-        keyPhrasesToAnchor: ['asynchronous networking', 'cross-platform systems', 'clean API design', 'CI/CD pipeline velocity'],
-        phrasesToAvoid: ['friendly chat', 'what internships are open']
-      },
-      activeHiringReqs: [
-        {
-          requisitionId: 'MSFT-2026-REQ-6621',
-          title: 'Software Engineer Intern - Azure Compute Platform',
-          level: 'Undergraduate / MS 2026',
-          urgency: 'critical'
-        }
-      ],
-      strategicHook: 'Responds best to early inquiries sent before 10 AM PST that specify graduation year and preferred engineering tracks.'
-    },
-    {
-      id: 'rec_intel_01',
-      fullName: 'Michael Roberts',
-      avatarInitials: 'MR',
-      role: 'Senior Technical Sourcer',
-      companyName: 'Intel',
-      companyDomain: 'intel.com',
-      departmentFocus: 'Silicon Design, Low-Level Firmware & Linux Kernel',
-      location: 'Santa Clara, CA (On-site)',
-      verifiedEmail: 'michael.roberts@intel.com',
-      linkedinUrl: 'https://linkedin.com/in/michael-roberts-intel-systems',
-      responseProbabilityIndex: 81,
-      recruiterDna: {
-        preferredTimeSlot: 'Wednesday & Friday, 08:30 AM - 10:30 AM PST',
-        averageResponseTimeHours: 24,
-        activeRequisitionsCount: 3,
-        technicalDepthLevel: 'High (Former SWE/Eng Lead)',
-        keyPhrasesToAnchor: ['Linux device drivers', 'C/C++ hardware abstraction', 'RISC-V / x86 architecture', 'memory barriers'],
-        phrasesToAvoid: ['quick talk', 'looking for general tech']
-      },
-      activeHiringReqs: [
-        {
-          requisitionId: 'INTC-2026-REQ-5519',
-          title: 'Firmware & Systems Software Engineering Intern',
-          level: 'B.Tech / BS / MS Intern',
-          urgency: 'high'
-        }
-      ],
-      strategicHook: 'Targeted directly at systems programmers with demonstrable GitHub C/C++ or low-level kernel experiments.'
-    }
-  ];
+  public static readonly CANONICAL_RECRUITERS: RecruiterNode[] = [];
 
   /**
-   * Retrieve all recruiters from local storage or canonical directory
+   * Retrieve all recruiters from local storage.
+   * If local storage contains old fake/sample recruiters, automatically purges them.
    */
   public static getRecruiters(): RecruiterNode[] {
     try {
       const stored = localStorage.getItem(STORAGE_KEY_RECRUITERS);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+        if (Array.isArray(parsed)) {
+          // Filter out any legacy hardcoded fake contacts if they exist in user's browser cache
+          const legacyFakeIds = new Set(['rec_stripe_01', 'rec_openai_01', 'rec_google_01', 'rec_amazon_01', 'rec_microsoft_01', 'rec_intel_01']);
+          const cleanUserContacts = parsed.filter((r: RecruiterNode) => !legacyFakeIds.has(r?.id));
+          if (cleanUserContacts.length !== parsed.length) {
+            this.saveRecruiters(cleanUserContacts);
+          }
+          return cleanUserContacts;
         }
       }
     } catch {
       // Safe fallback
     }
-    // Initialize with verified canonical recruiters
-    this.saveRecruiters(this.CANONICAL_RECRUITERS);
-    return [...this.CANONICAL_RECRUITERS];
+    // Zero-fake baseline: empty array
+    this.saveRecruiters([]);
+    return [];
   }
 
   /**

@@ -243,13 +243,21 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
             <span>Add Contact</span>
           </button>
 
-          <button
-            onClick={handleResetCanonical}
-            className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
-            title="Reset to Verified Canonical Talent Directory"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
+          {recruiters.length > 0 && (
+            <button
+              onClick={() => {
+                if (window.confirm('Clear all recruiter contacts from this device?')) {
+                  const empty = RecruiterRadarService.resetToCanonical();
+                  setRecruiters(empty);
+                  setSelectedRecruiterId('');
+                }
+              }}
+              className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+              title="Clear all saved recruiter contacts"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -355,12 +363,6 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
               className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold transition-all cursor-pointer shadow-lg shadow-purple-950/50"
             >
               + Add Verified Recruiter / Sourcer
-            </button>
-            <button
-              onClick={handleResetCanonical}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30 text-xs font-mono font-semibold transition-all cursor-pointer"
-            >
-              Restore Verified Tier-1 Directory
             </button>
           </div>
         </div>
