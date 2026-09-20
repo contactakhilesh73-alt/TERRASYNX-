@@ -123,6 +123,8 @@ export interface StudentProject {
 }
 
 // Predictable Annual Recurring Internship Cycle (Truth-Anchored Seasonal Calendar)
+export type InternshipCycleCurrentStatus = 'OPEN_NOW' | 'UPCOMING' | 'PASSED_THIS_CYCLE';
+
 export interface UpcomingInternshipCycle {
   id: string;
   companyName: string;
@@ -131,6 +133,13 @@ export interface UpcomingInternshipCycle {
   programTitle: string;
   hiringCycleType: 'summer' | 'fall' | 'winter' | 'spring' | 'off_campus_drive';
   expectedAnnouncementMonth: string; // e.g. "July - August"
+  startMonth: number; // 1-12 (e.g. 7 for July)
+  startDay?: number; // 1-31 (Day of month when window typically opens)
+  endMonth: number; // 1-12 (e.g. 8 for August)
+  endDay?: number; // 1-31 (Day of month when window typically closes)
+  currentStatus?: InternshipCycleCurrentStatus; // Dynamically calculated against the student's live viewing date/time
+  daysRemaining?: number; // Days remaining if OPEN_NOW, or days until opening if UPCOMING
+  exactWindowText?: string; // Formatted date window (e.g. "15 Aug – 21 Sep")
   expectedWindowDuration: string; // e.g. "3-4 weeks before cap"
   targetBatches: number[]; // e.g. [2026, 2027]
   annualRecurrencePattern: string; // e.g. "Annual campus & off-campus cycle, typically opens mid-July"
