@@ -4,8 +4,9 @@
  * work authorization, and alert thresholds with live dynamic fitment recalculation.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StudentProfile } from '../types';
+import type { User as FirebaseUser } from 'firebase/auth';
 import { 
   User, 
   GraduationCap, 
@@ -21,7 +22,9 @@ import {
   Sliders,
   RotateCcw,
   Save,
-  Globe
+  Globe,
+  Cloud,
+  Lock
 } from 'lucide-react';
 
 interface ProfileSettingsViewProps {
@@ -29,18 +32,27 @@ interface ProfileSettingsViewProps {
   onUpdateProfile: (updated: Partial<StudentProfile>) => void;
   onResetDefaults: () => void;
   onClose?: () => void;
+  currentUser?: FirebaseUser | null;
+  onSignInWithGoogle?: () => void;
 }
 
 export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
   profile,
   onUpdateProfile,
   onResetDefaults,
+  currentUser,
+  onSignInWithGoogle,
 }) => {
   const [formData, setFormData] = useState<StudentProfile>({ ...profile });
   const [newPrimarySkill, setNewPrimarySkill] = useState('');
   const [newSecondarySkill, setNewSecondarySkill] = useState('');
   const [newRole, setNewRole] = useState('');
   const [isSavedBanner, setIsSavedBanner] = useState(false);
+
+  // Keep form synchronized when profile updates from Firestore
+  useEffect(() => {
+    setFormData({ ...profile });
+  }, [profile]);
 
   // Quick preset skills list for fast tagging
   const POPULAR_SKILLS = [
@@ -154,6 +166,55 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
         </div>
       </div>
 
+      {/* Cloud Sync & Firebase Authentication Banner */}
+      <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono transition-all ${
+        currentUser 
+          ? 'bg-emerald-950/20 border-emerald-500/40 text-emerald-300' 
+          : 'bg-cyan-950/20 border-cyan-500/30 text-cyan-300'
+      }`}>
+        <div className="flex items-start sm:items-center gap-3">
+          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+            currentUser ? 'bg-emerald-950 border border-emerald-700/60 text-emerald-400' : 'bg-cyan-950 border border-cyan-700/60 text-cyan-400'
+          }`}>
+            {currentUser ? <Cloud className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+          </div>
+          <div>
+            <div className="font-bold text-slate-100 flex items-center gap-2">
+              <span>{currentUser ? 'Cloud Profile Sync Active' : 'Firestore Multi-User Cloud Storage'}</span>
+              <span className={`text-[10px] px-2 py-0.2 rounded-full border ${
+                currentUser ? 'bg-emerald-950 text-emerald-300 border-emerald-800' : 'bg-cyan-950 text-cyan-300 border-cyan-800'
+              }`}>
+                {currentUser ? 'Protected: students/{userId}' : 'Guest Mode'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5 font-sans">
+              {currentUser ? (
+                <>
+                  Logged in as <strong className="text-emerald-300 font-mono">{currentUser.email}</strong>. Profile changes are sanitized and saved to Firestore under owner-only security rules.
+                </>
+              ) : (
+                'Sign in with Google so your degree, skills, and projects stay permanently saved across every device in your private Firestore record.'
+              )}
+            </p>
+          </div>
+        </div>
+
+        {!currentUser && onSignInWithGoogle && (
+          <button
+            onClick={onSignInWithGoogle}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-mono text-xs transition-all cursor-pointer shrink-0 shadow-md shadow-cyan-950/50"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Sign in with Google</span>
+          </button>
+        )}
+      </div>
+
       {/* Save Success Alert */}
       {isSavedBanner && (
         <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono flex items-center justify-between animate-in fade-in duration-150">
@@ -161,7 +222,9 @@ export const ProfileSettingsView: React.FC<ProfileSettingsViewProps> = ({
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>Candidate profile updated! All 10-D Fitment scores and Radar matching indexes have been recalculated in real time.</span>
           </div>
-          <span className="text-[10px] text-emerald-400/70">Synced to Local Cache</span>
+          <span className="text-[10px] text-emerald-400/80 font-bold">
+            {currentUser ? `Synced to Firestore (students/${currentUser.uid.slice(0, 8)}...)` : 'Synced to Local Cache'}
+          </span>
         </div>
       )}
 

@@ -35,6 +35,14 @@ import { ReferralTrackerView } from './components/ReferralTrackerView';
 import { UpcomingInternshipsCalendar } from './components/UpcomingInternshipsCalendar';
 import { HeartbeatScheduler } from './services/heartbeatScheduler';
 import { 
+  signInWithGoogle, 
+  signOutStudent, 
+  saveStudentProfileToFirestore, 
+  loadStudentProfileFromFirestore, 
+  onAuthUserChanged 
+} from './firebaseConfig';
+import type { User as FirebaseUser } from 'firebase/auth';
+import { 
   Radar, 
   Cpu, 
   FileText, 
@@ -55,6 +63,7 @@ export default function App() {
   const [currentMode, setCurrentMode] = useState<OperationalMode>('radar');
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(RadarEngine.getStudentProfile());
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [inspectedOpp, setInspectedOpp] = useState<Opportunity | null>(null);
   const [assessmentOpp, setAssessmentOpp] = useState<Opportunity | null>(null);
@@ -156,6 +165,36 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Firebase Authentication & Firestore Cloud Profile Synchronization
+  useEffect(() => {
+    const unsubscribe = onAuthUserChanged(async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        try {
+          const cloudProfile = await loadStudentProfileFromFirestore(user.uid);
+          if (cloudProfile) {
+            RadarEngine.updateStudentProfile(cloudProfile);
+            setStudentProfile(RadarEngine.getStudentProfile());
+          } else {
+            // First time student logs in: seed their profile with their Google credentials and persist to Firestore
+            const local = RadarEngine.getStudentProfile();
+            const initialSeed: Partial<StudentProfile> = {
+              fullName: user.displayName || local.fullName || 'Student Candidate',
+              email: user.email || local.email,
+            };
+            await saveStudentProfileToFirestore(user.uid, initialSeed);
+            RadarEngine.updateStudentProfile(initialSeed);
+            setStudentProfile(RadarEngine.getStudentProfile());
+          }
+        } catch (err) {
+          console.error('Failed to sync student record with Firestore:', err);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   // Handlers
   const handleMarkApplied = (jobId: string) => {
     RadarEngine.updateStage(jobId, 'applied');
@@ -168,6 +207,34 @@ export default function App() {
   const handleResetFactory = () => {
     if (window.confirm('Sync fresh canonical feed and reset demo states?')) {
       RadarEngine.resetToFactoryDefaults();
+    }
+  };
+
+  const handleUpdateProfile = async (updated: Partial<StudentProfile>) => {
+    RadarEngine.updateStudentProfile(updated);
+    setStudentProfile(RadarEngine.getStudentProfile());
+    if (currentUser) {
+      try {
+        await saveStudentProfileToFirestore(currentUser.uid, updated);
+      } catch (err) {
+        console.error('Error saving updated student profile to Firestore:', err);
+      }
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOutStudent();
+    } catch (err) {
+      console.error('Sign-out error:', err);
     }
   };
 
@@ -195,6 +262,9 @@ export default function App() {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenAudit={() => setIsAuditModalOpen(true)}
         onOpenDossierVault={() => setIsDossierVaultOpen(true)}
+        currentUser={currentUser}
+        onSignInWithGoogle={handleGoogleSignIn}
+        onSignOut={handleSignOut}
       />
 
       {/* Main Tactical Workstation Container */}
@@ -278,9 +348,9 @@ export default function App() {
         {currentMode === 'profile' && (
           <ProfileSettingsView
             profile={studentProfile}
-            onUpdateProfile={(updated) => {
-              RadarEngine.updateStudentProfile(updated);
-            }}
+            currentUser={currentUser}
+            onSignInWithGoogle={handleGoogleSignIn}
+            onUpdateProfile={handleUpdateProfile}
             onResetDefaults={() => {
               RadarEngine.resetToFactoryDefaults();
             }}

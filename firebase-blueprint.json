@@ -1,0 +1,20 @@
+{
+  "entities": {
+    "students": {
+      "path": "students/{userId}",
+      "description": "Student profile and career fitment data securely owned by student UID",
+      "fields": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "degree": { "type": "string" },
+        "batch": { "type": "string" },
+        "skills": { "type": "array" },
+        "projectDescription": { "type": "string" },
+        "targetRoles": { "type": "array" },
+        "updatedAt": { "type": "timestamp" }
+      }
+    }
+  }
+}
