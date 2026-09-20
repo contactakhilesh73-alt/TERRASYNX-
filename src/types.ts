@@ -87,6 +87,7 @@ export interface Opportunity {
   location: string;
   department: string;                 // e.g. "Applied AI", "Infrastructure"
   officialApplyUrl: string;          // Strictly official application destination
+  officialStatusTrackerUrl?: string; // Direct link to company candidate portal where students can log in and view live application status
   
   // Timestamps for Dynamic Urgency Radar (Req #11)
   releasedAt: number;                 // Epoch ms when role opened
@@ -153,6 +154,7 @@ export interface StudentProfile {
   id: string;
   fullName: string;
   email: string;
+  phoneNumber?: string;
   collegeName: string;
   degree: string;
   graduationYear: number;
@@ -174,10 +176,23 @@ export interface StudentProfile {
   urgentAlertThresholdHours: number;  // e.g. 72 hours
 }
 
+// Student User Authentication Session (Google / Phone OTP / Gmail OTP)
+export interface AuthUserSession {
+  uid: string;
+  channel: 'google' | 'phone' | 'email';
+  identifier: string;
+  displayName: string;
+  email?: string;
+  phoneNumber?: string;
+  photoURL?: string;
+  token?: string;
+  verifiedAt?: number;
+}
+
 // Email Digest & Alert Payload Interface (Req #5, #6, #10)
 export interface AlertEmailSimulation {
   id: string;
-  type: 'discovery_alert' | 'submission_receipt' | 'oa_action_required' | 'offer_milestone';
+  type: 'discovery_alert' | 'submission_receipt' | 'oa_action_required' | 'offer_milestone' | 'otp_verification' | 'janch_pass_audit' | 'action_roadmap';
   tier: 'gold' | 'slate' | 'neon' | 'royal';
   subject: string;
   recipientEmail: string;
@@ -237,6 +252,9 @@ export interface FastApplyReceipt {
   antiBotStatus: string;              // e.g. "Form Pre-filled & Ready"
   status: 'confirmed' | 'pending';
   receiptUrl: string;
+  selfConfirmedByStudent?: boolean;
+  officialStatusTrackerUrl?: string;
+  studentConfirmationNotes?: string;
 }
 
 // Core Operational Modes (Req #17, #18 & System Architecture)

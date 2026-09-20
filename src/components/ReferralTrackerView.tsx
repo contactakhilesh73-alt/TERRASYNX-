@@ -12,6 +12,7 @@ import {
   ReferralSubmissionStage 
 } from '../types';
 import { ReferralLifecycleService } from '../services/referralLifecycleService';
+import { CompanyLogo } from './CompanyLogo';
 import { 
   GitPullRequest, 
   CheckCircle2, 
@@ -259,18 +260,25 @@ export const ReferralTrackerView: React.FC<ReferralTrackerViewProps> = ({
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-white">{rec.companyName}</span>
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800">
-                              {rec.portalSubmissionId}
-                            </span>
+                        <div className="flex items-start gap-3">
+                          <CompanyLogo
+                            domain={rec.companyDomain}
+                            name={rec.companyName}
+                            size="md"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-white">{rec.companyName}</span>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-slate-300 border border-slate-800">
+                                {rec.portalSubmissionId}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-300 font-medium line-clamp-1 mt-0.5">{rec.roleTitle}</p>
+                            <p className="text-[11px] text-emerald-300 font-mono mt-1 flex items-center gap-1">
+                              <Users className="w-3 h-3 text-emerald-400" />
+                              <span>Referee: {rec.refereeName}</span>
+                            </p>
                           </div>
-                          <p className="text-xs text-slate-300 font-medium line-clamp-1 mt-0.5">{rec.roleTitle}</p>
-                          <p className="text-[11px] text-emerald-300 font-mono mt-1 flex items-center gap-1">
-                            <Users className="w-3 h-3 text-emerald-400" />
-                            <span>Referee: {rec.refereeName}</span>
-                          </p>
                         </div>
 
                         <div className="text-right shrink-0">
@@ -302,16 +310,23 @@ export const ReferralTrackerView: React.FC<ReferralTrackerViewProps> = ({
                   
                   {/* Top Requisition Card */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-bold text-white">{activeRecord.companyName}</h2>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          {activeRecord.portalSubmissionId}
-                        </span>
+                    <div className="flex items-center gap-3">
+                      <CompanyLogo
+                        domain={activeRecord.companyDomain}
+                        name={activeRecord.companyName}
+                        size="lg"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h2 className="text-lg font-bold text-white">{activeRecord.companyName}</h2>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            {activeRecord.portalSubmissionId}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-300 font-medium mt-0.5">
+                          {activeRecord.roleTitle}
+                        </p>
                       </div>
-                      <p className="text-xs text-slate-300 font-medium mt-0.5">
-                        {activeRecord.roleTitle}
-                      </p>
                     </div>
 
                     <div className="flex items-center gap-2">

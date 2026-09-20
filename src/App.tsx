@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Opportunity, OperationalMode, ApplicationStage, StudentProfile } from './types';
+import { Opportunity, OperationalMode, ApplicationStage, StudentProfile, AuthUserSession } from './types';
 import { RadarEngine } from './services/radarEngine';
 import { Header } from './components/Header';
 import { RadarView } from './components/RadarView';
@@ -34,14 +34,18 @@ import { RecruiterRadarView } from './components/RecruiterRadarView';
 import { ReferralTrackerView } from './components/ReferralTrackerView';
 import { UpcomingInternshipsCalendar } from './components/UpcomingInternshipsCalendar';
 import { HeartbeatScheduler } from './services/heartbeatScheduler';
+import { AuthModal } from './components/AuthModal';
+import { StudentOnboardingModal } from './components/StudentOnboardingModal';
 import { 
   signInWithGoogle, 
   signOutStudent, 
-  saveStudentProfileToFirestore, 
-  loadStudentProfileFromFirestore, 
+  saveStudentProfileCloud, 
+  loadStudentProfileCloud, 
+  loadStudentSession,
+  saveStudentSession,
+  clearStudentSession,
   onAuthUserChanged 
 } from './firebaseConfig';
-import type { User as FirebaseUser } from 'firebase/auth';
 import { 
   Radar, 
   Cpu, 
@@ -63,7 +67,9 @@ export default function App() {
   const [currentMode, setCurrentMode] = useState<OperationalMode>('radar');
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [studentProfile, setStudentProfile] = useState<StudentProfile>(RadarEngine.getStudentProfile());
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUserSession | null>(() => loadStudentSession());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const [selectedOpp, setSelectedOpp] = useState<Opportunity | null>(null);
   const [inspectedOpp, setInspectedOpp] = useState<Opportunity | null>(null);
   const [assessmentOpp, setAssessmentOpp] = useState<Opportunity | null>(null);
@@ -165,24 +171,36 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
-  // Firebase Authentication & Firestore Cloud Profile Synchronization
+  // Firebase Authentication & Unified Cloud Profile Synchronization
   useEffect(() => {
-    const unsubscribe = onAuthUserChanged(async (user) => {
-      setCurrentUser(user);
-      if (user) {
+    const unsubscribe = onAuthUserChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        const googleSession: AuthUserSession = {
+          uid: firebaseUser.uid,
+          channel: 'google',
+          identifier: firebaseUser.email || firebaseUser.uid,
+          displayName: firebaseUser.displayName || firebaseUser.email || 'Student Candidate',
+          email: firebaseUser.email || undefined,
+          phoneNumber: firebaseUser.phoneNumber || undefined,
+          photoURL: firebaseUser.photoURL || undefined,
+          verifiedAt: Date.now(),
+        };
+        setCurrentUser(googleSession);
+        saveStudentSession(googleSession);
+
         try {
-          const cloudProfile = await loadStudentProfileFromFirestore(user.uid);
+          const cloudProfile = await loadStudentProfileCloud(firebaseUser.uid, true);
           if (cloudProfile) {
             RadarEngine.updateStudentProfile(cloudProfile);
             setStudentProfile(RadarEngine.getStudentProfile());
           } else {
-            // First time student logs in: seed their profile with their Google credentials and persist to Firestore
+            // First time student logs in: seed their profile with their Google credentials and persist
             const local = RadarEngine.getStudentProfile();
             const initialSeed: Partial<StudentProfile> = {
-              fullName: user.displayName || local.fullName || 'Student Candidate',
-              email: user.email || local.email,
+              fullName: firebaseUser.displayName || local.fullName || 'Student Candidate',
+              email: firebaseUser.email || local.email,
             };
-            await saveStudentProfileToFirestore(user.uid, initialSeed);
+            await saveStudentProfileCloud(firebaseUser.uid, initialSeed, true);
             RadarEngine.updateStudentProfile(initialSeed);
             setStudentProfile(RadarEngine.getStudentProfile());
           }
@@ -210,14 +228,44 @@ export default function App() {
     }
   };
 
+  const handleAuthSuccess = async (session: AuthUserSession, isSignUp = false) => {
+    setCurrentUser(session);
+    saveStudentSession(session);
+    try {
+      const cloudProfile = await loadStudentProfileCloud(session.uid, session.channel === 'google');
+      if (cloudProfile && cloudProfile.collegeName && cloudProfile.degree) {
+        RadarEngine.updateStudentProfile(cloudProfile);
+        setStudentProfile(RadarEngine.getStudentProfile());
+        if (isSignUp) {
+          setIsOnboardingOpen(true);
+        }
+      } else {
+        const local = RadarEngine.getStudentProfile();
+        const initialSeed: Partial<StudentProfile> = {
+          fullName: session.displayName || local.fullName,
+          email: session.email || local.email,
+          phoneNumber: session.phoneNumber || local.phoneNumber,
+        };
+        await saveStudentProfileCloud(session.uid, initialSeed, session.channel === 'google');
+        RadarEngine.updateStudentProfile(initialSeed);
+        setStudentProfile(RadarEngine.getStudentProfile());
+        // Automatically open onboarding modal so candidate enters degree, college name, skills, batch
+        setIsOnboardingOpen(true);
+      }
+    } catch (err) {
+      console.error('Error synchronizing profile after login:', err);
+      setIsOnboardingOpen(true);
+    }
+  };
+
   const handleUpdateProfile = async (updated: Partial<StudentProfile>) => {
     RadarEngine.updateStudentProfile(updated);
     setStudentProfile(RadarEngine.getStudentProfile());
     if (currentUser) {
       try {
-        await saveStudentProfileToFirestore(currentUser.uid, updated);
+        await saveStudentProfileCloud(currentUser.uid, updated, currentUser.channel === 'google');
       } catch (err) {
-        console.error('Error saving updated student profile to Firestore:', err);
+        console.error('Error saving updated student profile to Cloud:', err);
       }
     }
   };
@@ -231,6 +279,8 @@ export default function App() {
   };
 
   const handleSignOut = async () => {
+    clearStudentSession();
+    setCurrentUser(null);
     try {
       await signOutStudent();
     } catch (err) {
@@ -263,6 +313,7 @@ export default function App() {
         onOpenAudit={() => setIsAuditModalOpen(true)}
         onOpenDossierVault={() => setIsDossierVaultOpen(true)}
         currentUser={currentUser}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
         onSignInWithGoogle={handleGoogleSignIn}
         onSignOut={handleSignOut}
       />
@@ -331,6 +382,7 @@ export default function App() {
             mutedAlertIds={mutedAlertIds}
             onOpenDetails={setSelectedOpp}
             onMarkApplied={handleMarkApplied}
+            onInspectVerification={setInspectedOpp}
           />
         )}
 
@@ -349,6 +401,7 @@ export default function App() {
           <ProfileSettingsView
             profile={studentProfile}
             currentUser={currentUser}
+            onOpenAuth={() => setIsAuthModalOpen(true)}
             onSignInWithGoogle={handleGoogleSignIn}
             onUpdateProfile={handleUpdateProfile}
             onResetDefaults={() => {
@@ -588,6 +641,23 @@ export default function App() {
           setIsDossierVaultOpen(false);
           setSelectedOpp(opp);
         }}
+      />
+
+      {/* Student Authentication Modal (Phone OTP / Gmail OTP / Google) */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+        currentUser={currentUser}
+        onSignOut={handleSignOut}
+      />
+
+      {/* Student Application Dossier Onboarding Modal (Degree, College, Batch, CGPA, Skills, Links) */}
+      <StudentOnboardingModal
+        isOpen={isOnboardingOpen}
+        initialProfile={studentProfile}
+        onSave={handleUpdateProfile}
+        onDismiss={() => setIsOnboardingOpen(false)}
       />
 
     </div>

@@ -19,9 +19,13 @@ import {
   X,
   Clock,
   Key,
-  Database
+  Database,
+  Printer,
+  Search,
+  Filter
 } from 'lucide-react';
 import { AppliedDossierService, AppliedJobRecord } from '../services/appliedDossierService';
+import { DossierPdfService } from '../services/dossierPdfService';
 import { StudentProfile, Opportunity } from '../types';
 
 interface AppliedDossierVaultModalProps {
@@ -44,6 +48,8 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
   const [purgeFeedback, setPurgeFeedback] = useState<string | null>(null);
   const [telemetry, setTelemetry] = useState(AppliedDossierService.getPurgeTelemetry());
   const [isExporting, setIsExporting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -55,6 +61,16 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
   }, []);
 
   if (!isOpen) return null;
+
+  const filteredRecords = records.filter(r => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = query === '' || 
+      r.companyName.toLowerCase().includes(query) ||
+      r.jobTitle.toLowerCase().includes(query) ||
+      r.confirmationId.toLowerCase().includes(query);
+    const matchesStatus = statusFilter === 'all' || r.currentStage === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleCopyId = (confId: string) => {
     navigator.clipboard.writeText(confId);
@@ -218,23 +234,64 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
 
           {/* Applied Dossier Records List */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-slate-200 flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+              <div className="flex items-center space-x-2">
                 <FileText className="w-4 h-4 text-amber-400" />
-                <span>Certified Submissions & Submission Receipts</span>
-              </h3>
-              <span className="text-xs text-slate-400">
-                Showing {records.length} permanent archive entries
-              </span>
+                <h3 className="text-sm font-bold text-slate-200">
+                  Certified Submissions & Official Records
+                </h3>
+                <span className="text-xs text-slate-400">
+                  ({filteredRecords.length} of {records.length})
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => DossierPdfService.generateAppliedHistoryPDF(studentProfile, filteredRecords)}
+                  disabled={filteredRecords.length === 0}
+                  className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-all flex items-center space-x-1.5 shadow-md shadow-emerald-950/40 disabled:opacity-50"
+                  title="Download / Print Official Certified PDF Report"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Download Applied History PDF</span>
+                </button>
+              </div>
             </div>
 
-            {records.length === 0 ? (
+            {/* Filter & Search Bar */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Filter by company, role, or confirmation ID..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-1.5 text-xs rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 focus:outline-none focus:border-cyan-500"
+              >
+                <option value="all">All Stages</option>
+                <option value="applied">Applied / In Review</option>
+                <option value="assessment">Assessment / OA</option>
+                <option value="interview">Technical Interview</option>
+                <option value="offer">Offer Received</option>
+              </select>
+            </div>
+
+            {filteredRecords.length === 0 ? (
               <div className="p-8 text-center rounded-xl bg-slate-800/30 border border-slate-700/40 text-slate-400 text-xs">
-                No permanent application records stored yet. Apply to any opportunity on the Radar to generate a certified cryptographic receipt.
+                {records.length === 0
+                  ? 'No permanent application records stored yet. Apply to any opportunity on the Radar to generate a certified cryptographic receipt.'
+                  : 'No applications match your filter criteria.'}
               </div>
             ) : (
               <div className="space-y-3">
-                {records.map((record) => (
+                {filteredRecords.map((record) => (
                   <div
                     key={record.opportunityId}
                     className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60 hover:border-slate-600 transition-all space-y-3"
@@ -249,6 +306,9 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                           <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                             {record.portalType}
                           </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                            {record.currentStage.replace('_', ' ')}
+                          </span>
                         </div>
                         <div className="text-xs text-slate-300 font-medium mt-0.5">
                           {record.jobTitle}
@@ -256,11 +316,35 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                       </div>
 
                       <div className="flex items-center space-x-2 shrink-0">
+                        {(() => {
+                          const opp = opportunities.find(o => o.id === record.opportunityId);
+                          if (!opp) return null;
+                          return (
+                            <button
+                              onClick={async () => {
+                                const { VerificationEngine } = await import('../services/verificationEngine');
+                                const audit = await VerificationEngine.auditOpportunity(opp);
+                                DossierPdfService.generateMultiLayerJanchCertificatePDF(opp, audit);
+                              }}
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 transition-colors flex items-center space-x-1 cursor-pointer"
+                              title="Print Official Multi-Layer Janch Certificate"
+                            >
+                              <ShieldCheck className="w-3 h-3 mr-1 text-cyan-400" /> Janch Cert
+                            </button>
+                          );
+                        })()}
+                        <button
+                          onClick={() => DossierPdfService.generateSingleApplicationPDF(studentProfile, record)}
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 transition-colors flex items-center space-x-1"
+                          title="Print / Save Official PDF Receipt"
+                        >
+                          <Printer className="w-3 h-3 mr-1 text-emerald-400" /> PDF Receipt
+                        </button>
                         <button
                           onClick={() => AppliedDossierService.downloadProofCertificate(record)}
                           className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition-colors flex items-center space-x-1"
                         >
-                          <Download className="w-3 h-3 mr-1 text-amber-400" /> Certificate
+                          <Download className="w-3 h-3 mr-1 text-amber-400" /> Cert
                         </button>
                         <a
                           href={record.officialApplyUrl}

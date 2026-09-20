@@ -3,13 +3,14 @@
  * - Form fields pre-filled, review karke khud submit karein
  * - Candidate profile & tailored resume pre-flight dossier
  * - Mandatory Legal & Work Authorization Confirmation Gate
- * - Cryptographic Submission Receipt generation
- * - Direct transition to 'Applied' in the Execution Pipeline
+ * - Honest Student Self-Reported Confirmation Gate
+ * - Real career portal links & candidate status tracker
  */
 
 import React, { useState, useEffect } from 'react';
 import { Opportunity, StudentProfile, FastApplyReceipt } from '../types';
-import { FastApplyService, FastApplyStepProgress } from '../services/fastApplyService';
+import { FastApplyService, FastApplyStepProgress, PreparedApplicationPayload } from '../services/fastApplyService';
+import { RadarEngine } from '../services/radarEngine';
 import { AppliedDossierService } from '../services/appliedDossierService';
 import { CompanyLogo } from './CompanyLogo';
 import { 
@@ -27,7 +28,9 @@ import {
   ChevronRight,
   Sparkles,
   ArrowRight,
-  Download
+  Download,
+  CheckCircle,
+  HelpCircle
 } from 'lucide-react';
 
 interface FastApplyModalProps {
@@ -49,10 +52,12 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
 }) => {
   if (!isOpen || !opportunity) return null;
 
-  const [state, setState] = useState<'review' | 'executing' | 'confirmed'>('review');
+  const [state, setState] = useState<'review' | 'preparing' | 'awaiting_confirmation' | 'confirmed'>('review');
   const [copiedId, setCopiedId] = useState<boolean>(false);
   const [currentProgress, setCurrentProgress] = useState<FastApplyStepProgress | null>(null);
+  const [preparedPayload, setPreparedPayload] = useState<PreparedApplicationPayload | null>(null);
   const [receipt, setReceipt] = useState<FastApplyReceipt | null>(null);
+  const [draftSavedMessage, setDraftSavedMessage] = useState<string | null>(null);
 
   // Legal & Work Auth States
   const [sponsorshipStatus, setSponsorshipStatus] = useState<string>('F-1 OPT/CPT Eligible (No immediate sponsorship required)');
@@ -61,6 +66,7 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
   const [workAuthConfirmed, setWorkAuthConfirmed] = useState<boolean>(true);
 
   const portalType = FastApplyService.detectPortalType(opportunity);
+  const statusTrackerUrl = RadarEngine.getOfficialStatusTrackerUrl(opportunity);
 
   // Check if this opportunity was already submitted
   useEffect(() => {
@@ -71,13 +77,17 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
     } else {
       setState('review');
       setReceipt(null);
+      setPreparedPayload(null);
+      setDraftSavedMessage(null);
     }
   }, [opportunity]);
 
-  const handleStartSubmission = async () => {
-    setState('executing');
+  // Step 1: Pre-fill candidate dossier & prepare application
+  const handleStartPreparation = async () => {
+    setState('preparing');
+    setDraftSavedMessage(null);
     try {
-      const newReceipt = await FastApplyService.executeSafeSubmission(
+      const payload = await FastApplyService.prepareApplicationPayload(
         opportunity,
         studentProfile,
         {
@@ -91,19 +101,47 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
         }
       );
 
+      setPreparedPayload(payload);
+      // Move to awaiting_confirmation step so user opens official portal & confirms
+      setState('awaiting_confirmation');
+    } catch (err) {
+      console.error('Preparation error', err);
+      setState('review');
+    }
+  };
+
+  // Step 2A: User confirms "Haan, Maine Submit Kar Diya"
+  const handleConfirmSubmission = async () => {
+    try {
+      const newReceipt = await FastApplyService.confirmStudentSubmission(
+        opportunity,
+        studentProfile,
+        { sponsorshipStatus },
+        preparedPayload?.tailoredResumeUsed || `${studentProfile.fullName.replace(/\s+/g, '_')}_${opportunity.companyName}_ATS.pdf`,
+        preparedPayload?.preparationDurationSec || 3.2
+      );
+
       setReceipt(newReceipt);
       setState('confirmed');
-      
-      // Store in Permanent Applied Dossier Archive (Req #8)
+
+      // Store in Permanent Applied Dossier Archive
       AppliedDossierService.recordApplicationSubmission(newReceipt, opportunity);
 
       if (onApplicationCompleted) {
         onApplicationCompleted(newReceipt);
       }
     } catch (err) {
-      console.error('Submission error', err);
-      setState('review');
+      console.error('Confirmation error', err);
     }
+  };
+
+  // Step 2B: User says "Abhi Nahi, Draft / Pending Rakhein"
+  const handleKeepAsDraft = () => {
+    FastApplyService.recordDraftPreparation(
+      opportunity,
+      'Application dossier pre-filled - Candidate has not yet submitted on official portal.'
+    );
+    setDraftSavedMessage('Draft successfully saved! Ye opportunity aapke pipeline me Pending/Discovered stage me rahegi. Jab aap company portal par apply kar lein, tab wapas aakar confirm kar sakte hain.');
   };
 
   const handleCopyConfirmation = () => {
@@ -116,30 +154,31 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
   const handleDownloadProof = () => {
     if (!receipt) return;
     const proofText = `=====================================================
-TERRASYNX OFFICIAL CRYPTOGRAPHIC APPLICATION RECEIPT
+TERRASYNX CANDIDATE SELF-REPORTED APPLICATION RECORD
 =====================================================
-Confirmation ID: ${receipt.confirmationId}
+Record ID:       ${receipt.confirmationId}
+Confirmation:    Self-Reported by Candidate (Student-Initiated)
 Opportunity:     ${receipt.jobTitle}
 Company:         ${receipt.companyName}
 Domain:          ${opportunity.companyDomain}
-Portal Type:     ${receipt.portalType} API
+Portal System:   ${receipt.portalType}
 Submitted At:    ${new Date(receipt.submittedAt).toUTCString()}
 Candidate Name:  ${receipt.candidateName}
 Candidate Email: ${receipt.candidateEmail}
 Work Auth Gate:  ${receipt.workAuthSelected}
 Resume Used:     ${receipt.tailoredResumeUsed}
-Human Latency:   ${receipt.humanLatencySeconds}s
-Anti-Bot Shield: ${receipt.antiBotStatus}
-SHA-256 Token:   ${receipt.sha256Hash}
-Verification:    ${receipt.receiptUrl}
+Integrity Token: ${receipt.sha256Hash}
+Status Tracker:  ${receipt.officialStatusTrackerUrl || statusTrackerUrl}
+Official Portal: ${opportunity.officialApplyUrl}
 =====================================================
-Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
+Notice: This document is a candidate self-reported submission
+record and does not replace employer application confirmation.`;
 
     const blob = new Blob([proofText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${receipt.confirmationId}_Submission_Proof.txt`;
+    a.download = `${receipt.confirmationId}_Submission_Record.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -196,7 +235,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                   <Zap className="w-4 h-4 text-cyan-400" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-200 text-xs">Smart Auto-Fill Assistant</h4>
+                  <h4 className="font-bold text-slate-200 text-xs">Smart Auto-Fill Assistant & Application Preparer</h4>
                   <p className="text-slate-400 text-[11px] mt-0.5 leading-relaxed">
                     Form fields pre-filled, review karke khud submit karein. Ye assistant aapki verified profile details aur tailored resume organize karta hai taaki aap confidence ke sath official portal par review aur apply kar sakein.
                   </p>
@@ -252,7 +291,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                 </div>
               </div>
 
-              {/* Strict Human Legal & Compliance Gate (Req #17) */}
+              {/* Strict Human Legal & Compliance Gate */}
               <div className="p-4 rounded-xl bg-slate-900/80 border border-amber-900/40 space-y-3">
                 <div className="flex items-center gap-2 text-amber-300 font-mono text-xs border-b border-amber-900/30 pb-2">
                   <Lock className="w-3.5 h-3.5 text-amber-400" />
@@ -321,23 +360,23 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
             </div>
           )}
 
-          {/* STATE 2: EXECUTING HUMAN-PACED APPLICATION SEQUENCE */}
-          {state === 'executing' && (
+          {/* STATE 2: PREPARING APPLICATION DOSSIER */}
+          {state === 'preparing' && (
             <div className="py-8 space-y-6 text-center">
               <div className="relative w-16 h-16 mx-auto">
                 <div className="absolute inset-0 rounded-full border-4 border-slate-800"></div>
                 <div className="absolute inset-0 rounded-full border-4 border-cyan-400 border-t-transparent animate-spin"></div>
                 <div className="absolute inset-0 flex items-center justify-center text-cyan-400 font-bold font-mono text-xs">
-                  {currentProgress ? `${currentProgress.step}/5` : '...'}
+                  {currentProgress ? `${currentProgress.step}/4` : '...'}
                 </div>
               </div>
 
               <div>
                 <h3 className="text-base font-bold text-slate-100">
-                  {currentProgress ? currentProgress.title : 'Initialising Safe Gateway...'}
+                  {currentProgress ? currentProgress.title : 'Preparing Application Dossier...'}
                 </h3>
                 <p className="text-xs text-slate-400 font-mono mt-1.5 max-w-md mx-auto">
-                  {currentProgress ? currentProgress.detail : 'Connecting to canonical applicant portal...'}
+                  {currentProgress ? currentProgress.detail : 'Pre-filling verified candidate details...'}
                 </p>
               </div>
 
@@ -345,15 +384,15 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
               <div className="max-w-md mx-auto p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5 text-left text-xs font-mono">
                 <div className="flex items-center gap-2 text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>1. Candidate Profile Data Extracted</span>
+                  <span>1. Candidate Profile Data Mapped</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>2. Legal Compliance Gate Verified</span>
+                  <span>2. Legal Compliance & Work-Auth Verified</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-300">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>3. ATS Resume Payload Embedded</span>
+                  <span>3. ATS Tailored Resume Attached</span>
                 </div>
                 <div className={`flex items-center gap-2 ${currentProgress && currentProgress.step >= 4 ? 'text-slate-200' : 'text-slate-500'}`}>
                   {currentProgress && currentProgress.step >= 4 ? (
@@ -361,25 +400,114 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                   ) : (
                     <Clock className="w-4 h-4 text-slate-600 animate-pulse" />
                   )}
-                  <span>4. Smart Auto-Fill Assistant & Form Pre-Fill</span>
-                </div>
-                <div className={`flex items-center gap-2 ${currentProgress && currentProgress.step >= 5 ? 'text-slate-200' : 'text-slate-500'}`}>
-                  {currentProgress && currentProgress.step >= 5 ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  ) : (
-                    <Clock className="w-4 h-4 text-slate-600" />
-                  )}
-                  <span>5. Official Requisition Confirmation Token</span>
+                  <span>4. Application Pre-Fill & Official Gateway Ready</span>
                 </div>
               </div>
 
               <div className="text-[11px] font-mono text-cyan-400/80">
-                ✨ Smart Auto-Fill Assistant Ready • Form fields pre-filled, review karke khud submit karein
+                ✨ Form fields pre-filled, review karke khud submit karein
               </div>
             </div>
           )}
 
-          {/* STATE 3: OFFICIALLY CONFIRMED & IMMUTABLE RECEIPT */}
+          {/* STATE 3: AWAITING SUBMISSION - MANUAL STEP & CONFIRMATION GATE */}
+          {state === 'awaiting_confirmation' && (
+            <div className="space-y-5 animate-fadeIn">
+              
+              {/* Step 1: Instructions to open official portal */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-blue-950/70 to-slate-900 border border-blue-800/60 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-xl bg-blue-900/60 border border-blue-700/60 text-blue-300 flex-shrink-0">
+                    <ExternalLink className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-100 text-sm">
+                      Ab official page par jaakar apna application submit karein
+                    </h3>
+                    <p className="text-slate-300 text-xs mt-1 leading-relaxed">
+                      Aapki verified details aur ATS-aligned resume payload prepare ho chuka hai. 
+                      Neeche diye button par click karke <strong>{opportunity.companyName}</strong> ke official portal par jayein aur form review karke submit karein.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Action Button to Official Apply Page */}
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <a
+                    href={opportunity.officialApplyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 px-4 py-2.5 rounded-xl text-xs font-bold bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-mono shadow-md shadow-cyan-950 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <span>Official Application Page Kholein (Naye Tab Me)</span>
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+
+                  <a
+                    href={statusTrackerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 border border-slate-700 hover:border-slate-600 flex items-center justify-center gap-1.5 transition-colors"
+                    title="Candidate Career Portal / Application Status Tracker"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Candidate Portal / Status Tracker</span>
+                    <ExternalLink className="w-3 h-3 text-slate-400" />
+                  </a>
+                </div>
+
+                <div className="text-[11px] font-mono text-slate-400 truncate pt-1 border-t border-slate-800/80">
+                  <span className="text-slate-500">Official Link: </span>
+                  <span className="text-cyan-400 select-all">{opportunity.officialApplyUrl}</span>
+                </div>
+              </div>
+
+              {/* Step 2: Honest Confirmation Question Gate */}
+              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3.5 font-mono">
+                <div className="flex items-center gap-2 text-slate-200 text-xs border-b border-slate-800 pb-2.5">
+                  <HelpCircle className="w-4 h-4 text-amber-400" />
+                  <span className="font-bold text-sm">Kya aapne wahan submit kar diya?</span>
+                </div>
+
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Honest Status Reporting: Jab tak aap company ke real portal par submit button nahi dabate, tab tak status 'Applied' nahi hona chahiye. Kripya apna sahi status chunein:
+                </p>
+
+                {draftSavedMessage && (
+                  <div className="p-3 rounded-lg bg-slate-900 border border-slate-700 text-emerald-400 text-xs">
+                    {draftSavedMessage}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  {/* Button: Haan, Maine Submit Kar Diya */}
+                  <button
+                    onClick={handleConfirmSubmission}
+                    className="p-3 rounded-xl border border-emerald-500/80 bg-emerald-950/40 hover:bg-emerald-950/70 text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-950/40"
+                  >
+                    <CheckCircle className="w-4 h-4 text-emerald-400" />
+                    <span>Haan, Maine Submit Kar Diya</span>
+                  </button>
+
+                  {/* Button: Abhi Nahi, Draft / Pending Rakhein */}
+                  <button
+                    onClick={handleKeepAsDraft}
+                    className="p-3 rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Clock className="w-4 h-4 text-slate-400" />
+                    <span>Abhi Nahi, Draft / Pending Rakhein</span>
+                  </button>
+                </div>
+
+                <div className="text-[10px] text-slate-500 pt-1">
+                  * "Haan" click karne par hi Kanban stage 'applied' hoga aur email receipt banegi. "Abhi Nahi" par ye draft stage me rahega.
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* STATE 4: OFFICIALLY SELF-CONFIRMED RECEIPT */}
           {state === 'confirmed' && receipt && (
             <div className="space-y-5 animate-fadeIn">
               
@@ -388,23 +516,31 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-slate-100">
-                  Application Prepared &amp; Registered
+                  Application Submitted (Candidate Self-Reported)
                 </h3>
-                <p className="text-xs text-slate-400">
-                  Candidate dossier verified for {opportunity.companyName}'s official applicant portal.
+                <p className="text-xs text-slate-300 max-w-md mx-auto">
+                  Aapne confirm kiya ki {opportunity.companyName} ke official career portal par application submit ho chuki hai.
                 </p>
               </div>
 
-              {/* Official Cryptographic Receipt Box */}
+              {/* Transparent Integrity Notice */}
+              <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-800/40 text-xs text-amber-300 flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="text-[11px] leading-relaxed">
+                  <strong>Zero-Fake Transparency Notice:</strong> Yeh confirmation candidate dwara self-reported hai (employer-certified status nahi). Real application progress dekhne ke liye hamesha {opportunity.companyName} ke candidate portal par login karein.
+                </div>
+              </div>
+
+              {/* Cryptographic Candidate Receipt Box */}
               <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 space-y-3 font-mono text-xs">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-                  <span className="text-slate-400 text-[11px]">Official Confirmation ID:</span>
+                  <span className="text-slate-400 text-[11px]">Candidate Record ID:</span>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-cyan-300 text-sm">{receipt.confirmationId}</span>
                     <button
                       onClick={handleCopyConfirmation}
                       className="p-1 rounded bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 transition-colors cursor-pointer"
-                      title="Copy Confirmation ID"
+                      title="Copy Record ID"
                     >
                       {copiedId ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
@@ -417,17 +553,34 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                     <span className="text-slate-200">{receipt.portalType} Portal</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Preparation Status:</span>
-                    <span className="text-emerald-400">{receipt.antiBotStatus}</span>
+                    <span className="text-slate-500 block">Confirmation Type:</span>
+                    <span className="text-emerald-400">Student Self-Reported</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Preparation Duration:</span>
-                    <span className="text-slate-200">{receipt.humanLatencySeconds} seconds</span>
+                    <span className="text-slate-500 block">Preparation Time:</span>
+                    <span className="text-slate-200">{receipt.humanLatencySeconds}s</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block">Timestamp:</span>
+                    <span className="text-slate-500 block">Submitted At:</span>
                     <span className="text-slate-200">{new Date(receipt.submittedAt).toLocaleTimeString()}</span>
                   </div>
+                </div>
+
+                {/* Direct Link to Company Career Status Tracker */}
+                <div className="pt-2 border-t border-slate-900 flex items-center justify-between">
+                  <div>
+                    <span className="text-slate-500 text-[10px] block">Live Status Check:</span>
+                    <span className="text-slate-300 text-[11px]">{opportunity.companyName} Candidate Portal</span>
+                  </div>
+                  <a
+                    href={receipt.officialStatusTrackerUrl || statusTrackerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-900 border border-slate-700 hover:border-slate-600 text-cyan-400 flex items-center gap-1 transition-colors"
+                  >
+                    <span>Check Live Status</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
 
                 <div className="pt-2 border-t border-slate-900">
@@ -438,12 +591,12 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                 </div>
               </div>
 
-              {/* System Automated Actions Summary */}
+              {/* Pipeline Sync Summary */}
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5 text-[11px] font-mono text-slate-300">
                 <div className="text-cyan-400 font-bold mb-1">System State Synchronisation:</div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Kanban Execution Pipeline moved to <strong>'Applied'</strong> stage.</span>
+                  <span>Kanban Pipeline moved to <strong>'Applied'</strong> stage.</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -451,7 +604,7 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Official <strong>Tier B (Navy/Slate)</strong> receipt delivered to Alert Relay inbox.</span>
+                  <span>Honest self-reported record delivered to Alert Relay inbox.</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -487,22 +640,56 @@ Conforming to TERRASYNX Strict Zero-Fake Integrity Spec.`;
                 </a>
 
                 <button
-                  onClick={handleStartSubmission}
+                  onClick={handleStartPreparation}
                   disabled={!workAuthConfirmed || !batchConfirmed || !locationConsent}
                   className="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-mono shadow-lg shadow-cyan-950 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-                  <span>Start Smart Auto-Fill</span>
+                  <span>Start Smart Auto-Fill & Prepare</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </>
           )}
 
-          {state === 'executing' && (
+          {state === 'preparing' && (
             <div className="w-full text-center py-1 text-xs text-slate-500 font-mono">
-              Auto-fill in progress • Please do not close this window
+              Auto-fill preparation in progress • Please wait...
             </div>
+          )}
+
+          {state === 'awaiting_confirmation' && (
+            <>
+              <button
+                onClick={() => {
+                  FastApplyService.recordDraftPreparation(opportunity, 'Application draft kept pending by student.');
+                  onClose();
+                }}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-900 transition-colors cursor-pointer"
+              >
+                Close & Keep as Draft
+              </button>
+
+              <div className="flex items-center gap-2">
+                <a
+                  href={opportunity.officialApplyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-2 rounded-xl text-xs font-semibold text-cyan-400 bg-cyan-950/40 border border-cyan-800/60 hover:bg-cyan-900/50 transition-colors flex items-center gap-1.5"
+                >
+                  <span>Open Apply Page</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+
+                <button
+                  onClick={handleConfirmSubmission}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono shadow-lg shadow-emerald-950 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Haan, Maine Submit Kiya</span>
+                </button>
+              </div>
+            </>
           )}
 
           {state === 'confirmed' && (

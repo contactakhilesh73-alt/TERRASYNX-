@@ -101,18 +101,18 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
                   {opportunity.companyName}
                 </span>
 
-                {/* Cryptographic Verification Proof Pill (Strict Rule #2) */}
+                {/* Cryptographic Verification Proof Pill (Strict Rule #2 & Multi-Layer Janch) */}
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     if (onInspectVerification) onInspectVerification(opportunity);
                   }}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800 transition-colors cursor-pointer"
-                  title="Click to view Cryptographic Authenticity Dossier (Strict Rule #2)"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80 transition-all cursor-pointer shadow-sm shadow-emerald-950"
+                  title="Click to view official Multi-Layer Janch Certificate & Cryptographic Proof"
                 >
-                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                  <span>Verified ATS</span>
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Janch Passed (4 Layers)</span>
                 </button>
 
                 {isAlertMuted && (

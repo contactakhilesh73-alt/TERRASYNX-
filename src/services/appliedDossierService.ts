@@ -22,6 +22,7 @@ export interface AppliedJobRecord {
   customNotes?: string;
   followUpDeadlineTimestamp?: number;
   officialApplyUrl: string;
+  officialStatusTrackerUrl?: string;
 }
 
 export interface WorkspaceSnapshot {
@@ -132,9 +133,10 @@ export class AppliedDossierService {
       workAuthClaimed: receipt.workAuthSelected,
       resumePersonaUsed: receipt.tailoredResumeUsed,
       currentStage: 'applied',
-      customNotes: `Applied via Fast-Apply Engine. Proof SHA-256: ${receipt.sha256Hash.slice(0, 16)}...`,
+      customNotes: receipt.studentConfirmationNotes || `Self-reported submission. Token: ${receipt.sha256Hash.slice(0, 16)}...`,
       followUpDeadlineTimestamp: Date.now() + (86400000 * 7),
       officialApplyUrl: opportunity.officialApplyUrl,
+      officialStatusTrackerUrl: receipt.officialStatusTrackerUrl || opportunity.officialStatusTrackerUrl,
     };
 
     if (existingIndex >= 0) {
@@ -278,5 +280,11 @@ STATUS NOTE     : Permanent dossier record anchored against official ATS.
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  // Generate and Download Official Applied History PDF (Step 1)
+  public static async downloadOfficialDossierPDF(profile: StudentProfile): Promise<void> {
+    const { DossierPdfService } = await import('./dossierPdfService');
+    DossierPdfService.generateAppliedHistoryPDF(profile, this.getAppliedRecords());
   }
 }

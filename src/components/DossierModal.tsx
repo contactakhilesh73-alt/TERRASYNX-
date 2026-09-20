@@ -6,6 +6,7 @@
 import React, { useMemo } from 'react';
 import { Opportunity, StudentProfile, RequirementSource } from '../types';
 import { DossierEngine } from '../services/dossierEngine';
+import { CompanyLogo } from './CompanyLogo';
 import { 
   X, 
   ShieldCheck, 
@@ -82,13 +83,10 @@ export const DossierModal: React.FC<DossierModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 bg-slate-950/70 shrink-0">
           <div className="flex items-center gap-3.5">
-            <img 
-              src={opportunity.companyLogo} 
-              alt={opportunity.companyName}
-              className="w-11 h-11 rounded-xl bg-slate-800 p-1 object-contain border border-slate-700 shrink-0"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
+            <CompanyLogo
+              domain={opportunity.companyDomain}
+              name={opportunity.companyName}
+              size="md"
             />
             <div>
               <div className="flex items-center gap-2 flex-wrap">

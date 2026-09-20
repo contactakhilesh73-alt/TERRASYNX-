@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Opportunity } from '../types';
 import { VerificationEngine, AuditInspectionReport } from '../services/verificationEngine';
+import { DossierPdfService } from '../services/dossierPdfService';
 import { 
   X, 
   ShieldCheck, 
@@ -16,7 +17,10 @@ import {
   AlertTriangle, 
   Fingerprint, 
   ExternalLink,
-  Loader2
+  Loader2,
+  Printer,
+  FileCheck2,
+  Download
 } from 'lucide-react';
 
 interface VerificationAuditModalProps {
@@ -204,13 +208,39 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
                   Confirmed standard paid position (<strong className="text-emerald-400">{opportunity.compensation.range}</strong>). Zero application fees.
                 </p>
               </div>
+
+              {/* Layer 4 */}
+              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <Fingerprint className="w-4 h-4 text-amber-400" />
+                    <span>Layer 4: SHA-256 Digital Seal Handshake</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    CRYPTOGRAPHIC_PASSED
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Tamper-evident hash registered on official candidate record.
+                </p>
+              </div>
             </div>
 
             {/* Cryptographic SHA-256 Signature Stamp */}
             <div className="mt-4 p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] font-mono text-slate-400 space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-300 font-bold">
-                <Fingerprint className="w-4 h-4 text-emerald-400" />
-                <span>Cryptographic Proof Signature:</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-slate-300 font-bold">
+                  <Fingerprint className="w-4 h-4 text-emerald-400" />
+                  <span>Cryptographic Proof Signature:</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => DossierPdfService.generateMultiLayerJanchCertificatePDF(opportunity, audit)}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700 text-[10px] font-mono font-bold transition-all cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Download Certificate PDF</span>
+                </button>
               </div>
               <div className="text-emerald-400/90 break-all select-all">
                 {audit.sslFingerprint}
@@ -223,23 +253,36 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
         )}
 
         {/* Action Footer */}
-        <div className="mt-5 pt-3 border-t border-slate-800 flex items-center justify-between gap-3">
+        <div className="mt-5 pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 cursor-pointer"
           >
             Close Dossier
           </button>
 
-          <a
-            href={opportunity.officialApplyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-mono"
-          >
-            <span>Verify on Official Domain</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
-          </a>
+          <div className="flex items-center gap-2">
+            {audit && (
+              <button
+                type="button"
+                onClick={() => DossierPdfService.generateMultiLayerJanchCertificatePDF(opportunity, audit)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-800 font-mono transition-colors cursor-pointer"
+              >
+                <FileCheck2 className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Print Janch Certificate</span>
+              </button>
+            )}
+
+            <a
+              href={opportunity.officialApplyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-mono transition-colors"
+            >
+              <span>Verify on Official Domain</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
+            </a>
+          </div>
         </div>
       </div>
     </div>

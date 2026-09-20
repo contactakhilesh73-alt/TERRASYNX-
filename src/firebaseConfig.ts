@@ -23,7 +23,7 @@ import {
   getDoc, 
   serverTimestamp 
 } from 'firebase/firestore';
-import { StudentProfile } from './types';
+import { StudentProfile, AuthUserSession } from './types';
 
 // Public Firebase Client configuration
 export const firebaseConfig = {
@@ -173,4 +173,177 @@ export async function loadStudentProfileFromFirestore(
  */
 export function onAuthUserChanged(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
+}
+
+// ============================================================================
+// TERRASYNX SECURE OTP CLIENT DISPATCH & PERSISTENCE LAYER (PHONE & GMAIL)
+// ============================================================================
+
+const SESSION_STORAGE_KEY = 'terrasynx_auth_session_v1';
+
+/**
+ * Persists authenticated student session in localStorage
+ */
+export function saveStudentSession(session: AuthUserSession): void {
+  try {
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  } catch (err) {
+    console.error('Failed to store session:', err);
+  }
+}
+
+/**
+ * Loads current stored student session
+ */
+export function loadStudentSession(): AuthUserSession | null {
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as AuthUserSession;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Clears current stored student session
+ */
+export function clearStudentSession(): void {
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (err) {
+    console.error('Failed to clear session:', err);
+  }
+}
+
+/**
+ * Dispatches 6-digit OTP to Phone or Gmail via server endpoint
+ */
+export interface OtpSendResponse {
+  success: boolean;
+  message: string;
+  cooldownSeconds?: number;
+  dispatchedViaRealGateway?: boolean;
+}
+
+export async function sendOtpCode(
+  channel: 'phone' | 'email',
+  destination: string
+): Promise<OtpSendResponse> {
+  const res = await fetch('/api/auth/otp/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ channel, destination }),
+  });
+
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'Failed to dispatch verification code');
+  }
+
+  return data;
+}
+
+/**
+ * Verifies 6-digit OTP and retrieves student user identity
+ */
+export async function verifyOtpCode(
+  channel: 'phone' | 'email',
+  destination: string,
+  otp: string
+): Promise<AuthUserSession> {
+  const res = await fetch('/api/auth/otp/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ channel, destination, otp }),
+  });
+
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'Invalid verification code');
+  }
+
+  const session: AuthUserSession = {
+    uid: data.user.uid,
+    channel: data.user.channel,
+    identifier: data.user.identifier,
+    displayName: data.user.displayName,
+    email: data.user.email,
+    phoneNumber: data.user.phoneNumber,
+    token: data.token,
+    verifiedAt: data.user.verifiedAt || Date.now(),
+  };
+
+  saveStudentSession(session);
+  return session;
+}
+
+/**
+ * Unified Cloud Profile Save:
+ * - If user is signed in with Google -> persists to Firestore (`students/{userId}`)
+ * - Always syncs to `/api/student/profile` for server-side persistence
+ */
+export async function saveStudentProfileCloud(
+  userId: string,
+  profileData: Partial<StudentProfile>,
+  isGoogleUser: boolean
+): Promise<void> {
+  if (!userId) return;
+
+  const sanitized = sanitizeStudentProfile(profileData);
+
+  // If authenticated via Google Firebase Auth, persist to Firestore
+  if (isGoogleUser && auth.currentUser) {
+    try {
+      await saveStudentProfileToFirestore(userId, sanitized);
+    } catch (firestoreErr) {
+      console.warn('Firestore write warning:', firestoreErr);
+    }
+  }
+
+  // Also persist in Server Cloud Profile Store for cross-device resilience
+  try {
+    await fetch('/api/student/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, profileData: sanitized }),
+    });
+  } catch (apiErr) {
+    console.warn('Server profile save warning:', apiErr);
+  }
+}
+
+/**
+ * Unified Cloud Profile Load:
+ * - Tries Firestore first if Google user
+ * - Falls back to Server Cloud Store `/api/student/profile/:userId`
+ */
+export async function loadStudentProfileCloud(
+  userId: string,
+  isGoogleUser: boolean
+): Promise<Partial<StudentProfile> | null> {
+  if (!userId) return null;
+
+  if (isGoogleUser && auth.currentUser) {
+    try {
+      const firestoreDoc = await loadStudentProfileFromFirestore(userId);
+      if (firestoreDoc) return firestoreDoc;
+    } catch (err) {
+      console.warn('Firestore read error:', err);
+    }
+  }
+
+  try {
+    const res = await fetch(`/api/student/profile/${encodeURIComponent(userId)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.profile) {
+        return data.profile as Partial<StudentProfile>;
+      }
+    }
+  } catch (err) {
+    console.warn('Server profile read error:', err);
+  }
+
+  return null;
 }

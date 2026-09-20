@@ -76,7 +76,8 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
     workMode: 'hybrid',
     location: 'San Francisco, CA (Relocation Provided)',
     department: 'Applied Systems & Inference Infrastructure',
-    officialApplyUrl: 'https://openai.com/careers/software-engineer-intern-systems-summer-2026',
+    officialApplyUrl: 'https://openai.com/careers/search/?query=Software+Engineer',
+    officialStatusTrackerUrl: 'https://openai.com/careers/',
     releasedAt: NOW - (14 * HOUR), // Released 14 hours ago (Fresh drop)
     deadlineAt: NOW + (42 * HOUR), // Closes in 42 hours! (Critical Window < 72h)
     verification: {
@@ -140,7 +141,8 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
     workMode: 'hybrid',
     location: 'Bangalore / Hyderabad, India & Mountain View, CA',
     department: 'Core Engineering & Cloud Platform',
-    officialApplyUrl: 'https://careers.google.com/jobs/results/148920194829104',
+    officialApplyUrl: 'https://www.google.com/about/careers/applications/jobs/results/?q=Software%20Engineering%20Intern',
+    officialStatusTrackerUrl: 'https://www.google.com/about/careers/applications/',
     releasedAt: NOW - (1.5 * DAY),
     deadlineAt: NOW + (68 * HOUR), // Closes in ~68 hours (< 72h)
     verification: {
@@ -204,7 +206,8 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
     workMode: 'hybrid',
     location: 'San Francisco, CA / London, UK',
     department: 'Claude Intelligence & Agent Alignment',
-    officialApplyUrl: 'https://anthropic.com/careers/research-engineering-intern',
+    officialApplyUrl: 'https://www.anthropic.com/careers#open-roles',
+    officialStatusTrackerUrl: 'https://www.anthropic.com/careers',
     releasedAt: NOW - (8 * HOUR),
     deadlineAt: NOW + (120 * HOUR), // 5 days
     verification: {
@@ -267,7 +270,8 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
     workMode: 'remote',
     location: 'Remote (US, Canada, Europe, India)',
     department: 'Financial Infrastructure & Developer SDKs',
-    officialApplyUrl: 'https://stripe.com/jobs/listings/new-grad-engineer-2026',
+    officialApplyUrl: 'https://stripe.com/jobs/search?query=software+engineer',
+    officialStatusTrackerUrl: 'https://stripe.com/jobs',
     releasedAt: NOW - (3 * DAY),
     deadlineAt: NOW + (18 * HOUR), // Closes in 18 hours! Extremely Urgent
     verification: {
@@ -331,7 +335,8 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
     workMode: 'hybrid',
     location: 'San Francisco, CA',
     department: 'Search Experience & Knowledge Engine',
-    officialApplyUrl: 'https://jobs.ashbyhq.com/perplexity/intern-fullstack-2026',
+    officialApplyUrl: 'https://jobs.ashbyhq.com/perplexity',
+    officialStatusTrackerUrl: 'https://jobs.ashbyhq.com/perplexity',
     releasedAt: NOW - (2 * HOUR), // Brand new drop!
     deadlineAt: NOW + (84 * HOUR),
     verification: {
@@ -394,7 +399,8 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [
     workMode: 'hybrid',
     location: 'Hyderabad / Bangalore / Redmond',
     department: 'Azure Distributed Cloud & Developer Division',
-    officialApplyUrl: 'https://careers.microsoft.com/us/en/job/1749102/Software-Engineer',
+    officialApplyUrl: 'https://jobs.careers.microsoft.com/global/en/search?q=Software%20Engineer%20University',
+    officialStatusTrackerUrl: 'https://jobs.careers.microsoft.com/global/en/actioncenter',
     releasedAt: NOW - (2 * DAY),
     deadlineAt: NOW + (140 * HOUR),
     verification: {
@@ -487,6 +493,24 @@ export class RadarEngine {
     return result;
   }
 
+  // Get authentic career portal status tracker URL for candidate login
+  public static getOfficialStatusTrackerUrl(opp: Opportunity): string {
+    if (opp.officialStatusTrackerUrl) return opp.officialStatusTrackerUrl;
+    const domain = (opp.companyDomain || '').toLowerCase();
+    if (domain.includes('google')) return 'https://www.google.com/about/careers/applications/';
+    if (domain.includes('microsoft')) return 'https://jobs.careers.microsoft.com/global/en/actioncenter';
+    if (domain.includes('amazon')) return 'https://amazon.jobs/en/applicant';
+    if (domain.includes('apple')) return 'https://jobs.apple.com/en-us/profile/applications';
+    if (domain.includes('meta')) return 'https://www.metacareers.com/profile/applications';
+    if (domain.includes('netflix')) return 'https://jobs.netflix.com/my-profile';
+    if (domain.includes('uber')) return 'https://www.uber.com/us/en/careers/candidate/';
+    if (domain.includes('openai')) return 'https://openai.com/careers/';
+    if (domain.includes('anthropic')) return 'https://www.anthropic.com/careers';
+    if (domain.includes('stripe')) return 'https://stripe.com/jobs';
+    if (domain.includes('perplexity')) return 'https://jobs.ashbyhq.com/perplexity';
+    return `https://${opp.companyDomain}/careers`;
+  }
+
   // Initialize Engine
   public static init(): void {
     if (typeof window === 'undefined') return;
@@ -496,7 +520,25 @@ export class RadarEngine {
     if (cachedOpps) {
       try {
         const parsed = JSON.parse(cachedOpps);
-        this.opportunities = this.deduplicateOpportunities(Array.isArray(parsed) && parsed.length > 0 ? parsed : SEED_OPPORTUNITIES);
+        let opps: Opportunity[] = Array.isArray(parsed) && parsed.length > 0 ? parsed : SEED_OPPORTUNITIES;
+        // Migrate / sync seed updates (e.g. valid working career URLs & status tracker URLs)
+        opps = opps.map(loadedOpp => {
+          const matchingSeed = SEED_OPPORTUNITIES.find(s => s.id === loadedOpp.id);
+          if (matchingSeed) {
+            return {
+              ...loadedOpp,
+              officialApplyUrl: matchingSeed.officialApplyUrl,
+              officialStatusTrackerUrl: matchingSeed.officialStatusTrackerUrl,
+              companyLogo: matchingSeed.companyLogo,
+              verification: matchingSeed.verification,
+            };
+          }
+          if (!loadedOpp.officialStatusTrackerUrl) {
+            loadedOpp.officialStatusTrackerUrl = this.getOfficialStatusTrackerUrl(loadedOpp);
+          }
+          return loadedOpp;
+        });
+        this.opportunities = this.deduplicateOpportunities(opps);
       } catch {
         this.opportunities = this.deduplicateOpportunities([...SEED_OPPORTUNITIES]);
       }
@@ -590,18 +632,19 @@ export class RadarEngine {
       // Strict Rule Req #7: Mute future "Apply" alerts for this job ONLY
       this.muteJobSpecificApplyAlert(jobId);
 
-      // Trigger Tier B Simulation Submission Receipt (Req #10)
+      // Trigger Tier B Submission Record (Student Self-Reported)
       this.generateSimulatedEmail({
         type: 'submission_receipt',
         tier: 'slate',
-        subject: `[SUBMITTED] Official Application Logged: ${opp.title} @ ${opp.companyName}`,
+        subject: `[Student Confirmed] Application Submitted: ${opp.title} @ ${opp.companyName}`,
         jobId: opp.id,
         jobTitle: opp.title,
         companyName: opp.companyName,
         actionUrl: opp.officialApplyUrl,
         actionAdvisorPoints: [
-          'Application registered on canonical applicant system.',
-          'Job-specific "Apply Now" alerts have been muted.',
+          'Aapne khud confirm kiya ki application company portal par submit ho gayi hai.',
+          'Important: Yeh candidate self-reported application milestone hai (employer-certified receipt nahi).',
+          'Official application status track karne ke liye company ke career portal par check karein.',
           `Follow-up reminder queued for ${new Date(opp.followUpDeadlineAt).toLocaleDateString()}.`,
         ],
       });
@@ -655,7 +698,7 @@ export class RadarEngine {
       tier: params.tier,
       subject: params.subject,
       recipientEmail: this.studentProfile.email,
-      fromHeader: 'TERRASYNX Radar Alerts <no-reply@carrier-radar.app>',
+      fromHeader: 'TERRASYNX No-Reply <no-reply@terrasynx.com>',
       payloadSizeKb: Math.floor(Math.random() * 8) + 12, // Guaranteed < 25 KB
       timestamp: Date.now(),
       jobId: params.jobId,

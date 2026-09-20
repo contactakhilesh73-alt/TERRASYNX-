@@ -336,8 +336,19 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               rel="noopener noreferrer"
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800"
             >
-              <span>Manual Portal</span>
+              <span>Official Apply Page</span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </a>
+
+            <a
+              href={opportunity.officialStatusTrackerUrl || `https://${opportunity.companyDomain}/careers`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:text-cyan-200 bg-cyan-950/40 border border-cyan-800/60 hover:bg-cyan-900/40"
+              title="View Candidate Status on Official Career Portal"
+            >
+              <span>Career Portal Tracker</span>
+              <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
             </a>
 
             {!isApplied && onFastApply && (
@@ -349,7 +360,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                 className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-mono shadow-lg shadow-cyan-950 cursor-pointer"
               >
                 <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-                <span>Launch Safe Fast Apply</span>
+                <span>Smart Auto-Fill & Prepare</span>
               </button>
             )}
           </div>

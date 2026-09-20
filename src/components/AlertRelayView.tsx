@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Opportunity, StudentProfile, AlertEmailSimulation } from '../types';
 import { RadarEngine } from '../services/radarEngine';
+import { NoReplyAlertService, JanchAlertCategory } from '../services/noReplyAlertService';
 import { CompanyLogo } from './CompanyLogo';
 import { AtsInboundStudio } from './AtsInboundStudio';
 import { DailyDigestStudio } from './DailyDigestStudio';
@@ -27,7 +28,10 @@ import {
   Inbox,
   Award,
   Terminal,
-  FileText
+  FileText,
+  KeyRound,
+  Compass,
+  Briefcase
 } from 'lucide-react';
 
 interface AlertRelayViewProps {
@@ -37,6 +41,7 @@ interface AlertRelayViewProps {
   mutedAlertIds: string[];
   onOpenDetails: (opportunity: Opportunity) => void;
   onMarkApplied: (jobId: string) => void;
+  onInspectVerification?: (opportunity: Opportunity) => void;
 }
 
 export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
@@ -46,6 +51,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
   mutedAlertIds,
   onOpenDetails,
   onMarkApplied,
+  onInspectVerification,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'inbox' | 'inbound_webhooks' | 'daily_digest'>('inbox');
   const [selectedEmailId, setSelectedEmailId] = useState<string>(simulatedEmails[0]?.id || '');
@@ -124,9 +130,147 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
     setTimeout(() => setSendSuccessToast(null), 3000);
   };
 
+  // Step 2: One-Way No-Reply Dispatcher (no-reply@terrasynx.com) with 5 Janch Categories
+  const handleDispatchJanchAlert = async (category: JanchAlertCategory) => {
+    const opp = opportunities[0];
+    const emailPayload = {
+      category,
+      recipientEmail: studentProfile.email || 'student@example.com',
+      studentName: studentProfile.fullName || 'Candidate',
+      opportunity: opp,
+      stageName: 'Online Assessment / Technical Round',
+      otpCode: Math.floor(100000 + Math.random() * 900000).toString(),
+    };
+
+    const res = await NoReplyAlertService.dispatchServerEmail(emailPayload);
+
+    // Save into local simulated emails so user sees the immediate change
+    RadarEngine.generateSimulatedEmail({
+      type: res.alertSimulation.type,
+      tier: res.alertSimulation.tier,
+      subject: res.alertSimulation.subject,
+      jobId: res.alertSimulation.jobId,
+      jobTitle: res.alertSimulation.jobTitle,
+      companyName: res.alertSimulation.companyName,
+      actionUrl: res.alertSimulation.actionUrl,
+      actionAdvisorPoints: res.alertSimulation.actionAdvisorPoints,
+    });
+
+    const refreshed = RadarEngine.getSimulatedEmails();
+    if (refreshed.length > 0) {
+      setSelectedEmailId(refreshed[0].id);
+    }
+
+    const categoryNames: Record<JanchAlertCategory, string> = {
+      otp_verification: 'OTP Security Code',
+      opportunity_alert: 'Verified Opportunity (Job/Internship)',
+      janch_pass_audit: 'Multi-Layer Janch Pass Audit',
+      selection_milestone: 'Selection / Milestone Update',
+      action_roadmap: 'Aage Kya Karna Hai Roadmap',
+    };
+
+    setSendSuccessToast(`[no-reply@terrasynx.com] One-Way Alert Dispatched: ${categoryNames[category]}!`);
+    setTimeout(() => setSendSuccessToast(null), 4000);
+  };
+
   return (
     <div id="alert-relay-view" className="space-y-6 text-xs">
       
+      {/* Official One-Way No-Reply Dispatcher Panel (Step 2: 5 Janch Categories) */}
+      <div className="rounded-2xl border border-cyan-800/60 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-5 shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-700 uppercase">
+                Enterprise Broadcast Engine
+              </span>
+              <span className="text-slate-400 font-mono text-[11px]">
+                Sender: <strong className="text-cyan-300">no-reply@terrasynx.com</strong> (Non-Reply Protected)
+              </span>
+            </div>
+            <h3 className="text-base font-bold text-slate-100 mt-1">
+              Multi-Layer Janch Verified Notification Dispatcher
+            </h3>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Strict one-way broadcast. All alerts pass 4-layer validation (DNS origin, ATS endpoint, anti-scam scan, and cryptographic checksum).
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-3 py-1.5 rounded-xl">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Multi-Layer Janch Active</span>
+          </div>
+        </div>
+
+        {/* 5 Distinct Category Trigger Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 mt-4">
+          <button
+            onClick={() => handleDispatchJanchAlert('otp_verification')}
+            className="p-2.5 rounded-xl bg-slate-900/90 border border-cyan-900/60 hover:border-cyan-500 hover:bg-slate-800 transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5 text-cyan-400 font-bold text-[11px] mb-1">
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>1. Secure OTP</span>
+            </div>
+            <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
+              Instant 6-digit one-way login code with 10-min TTL.
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleDispatchJanchAlert('opportunity_alert')}
+            className="p-2.5 rounded-xl bg-slate-900/90 border border-amber-900/60 hover:border-amber-500 hover:bg-slate-800 transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5 text-amber-400 font-bold text-[11px] mb-1">
+              <Briefcase className="w-3.5 h-3.5" />
+              <span>2. Verified Role</span>
+            </div>
+            <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
+              Incoming/outgoing jobs & internships matching target batch.
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleDispatchJanchAlert('janch_pass_audit')}
+            className="p-2.5 rounded-xl bg-slate-900/90 border border-emerald-900/60 hover:border-emerald-500 hover:bg-slate-800 transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px] mb-1">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>3. Janch Audit</span>
+            </div>
+            <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
+              Cryptographic verification certificate & zero-scam proof.
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleDispatchJanchAlert('selection_milestone')}
+            className="p-2.5 rounded-xl bg-slate-900/90 border border-purple-900/60 hover:border-purple-500 hover:bg-slate-800 transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5 text-purple-400 font-bold text-[11px] mb-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>4. Selection Alert</span>
+            </div>
+            <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
+              Assessment (OA), technical round, or offer advancement.
+            </div>
+          </button>
+
+          <button
+            onClick={() => handleDispatchJanchAlert('action_roadmap')}
+            className="p-2.5 rounded-xl bg-slate-900/90 border border-indigo-900/60 hover:border-indigo-500 hover:bg-slate-800 transition-all text-left group cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5 text-indigo-400 font-bold text-[11px] mb-1">
+              <Compass className="w-3.5 h-3.5" />
+              <span>5. Aage Kya Karein</span>
+            </div>
+            <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
+              Complete round-wise preparation roadmap & topics guide.
+            </div>
+          </button>
+        </div>
+      </div>
+
       {/* Header Deck */}
       <div className="rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 p-6 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -181,7 +325,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
         {sendSuccessToast && (
           <div className="mt-4 p-2.5 rounded-xl bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs font-mono flex items-center gap-2 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-            <span>{sendSuccessToast} Check the simulation inbox below.</span>
+            <span>{sendSuccessToast}</span>
           </div>
         )}
       </div>
@@ -439,18 +583,31 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
               </div>
 
               {/* Interactive Actions Footer */}
-              <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-3">
+              <div className="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   {(() => {
-                    const opp = opportunities.find(o => o.id === selectedEmail.jobId);
+                    const opp = opportunities.find(o => o.id === selectedEmail.jobId) || opportunities[0];
                     if (!opp) return null;
                     return (
-                      <button
-                        onClick={() => onOpenDetails(opp)}
-                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono font-semibold"
-                      >
-                        Inspect Full Dossier
-                      </button>
+                      <>
+                        <button
+                          onClick={() => onOpenDetails(opp)}
+                          className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 font-mono font-semibold text-xs cursor-pointer"
+                        >
+                          Inspect Full Dossier
+                        </button>
+
+                        {onInspectVerification && (
+                          <button
+                            type="button"
+                            onClick={() => onInspectVerification(opp)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-mono font-bold text-xs cursor-pointer"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>Inspect Janch Certificate (4 Layers)</span>
+                          </button>
+                        )}
+                      </>
                     );
                   })()}
                 </div>

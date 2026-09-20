@@ -8,6 +8,7 @@ import React, { useState, useMemo } from 'react';
 import { UpcomingInternshipCycle } from '../types';
 import { UpcomingInternshipsService, RECURRING_ANNUAL_INTERNSHIPS } from '../services/upcomingInternshipsService';
 import { CalendarSyncService } from '../services/calendarSyncService';
+import { CompanyLogo } from './CompanyLogo';
 import { 
   Calendar, 
   Clock, 
@@ -207,17 +208,11 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                   {/* Top Meta Header */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700/80 p-1 flex items-center justify-center overflow-hidden shrink-0">
-                        <img
-                          src={cycle.companyLogo}
-                          alt={cycle.companyName}
-                          className="w-full h-full object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLElement).style.display = 'none';
-                          }}
-                        />
-                        <Building2 className="w-5 h-5 text-slate-400 group-hover:text-indigo-400 transition-colors" />
-                      </div>
+                      <CompanyLogo
+                        domain={cycle.companyDomain}
+                        name={cycle.companyName}
+                        size="md"
+                      />
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="text-base font-bold text-slate-100 group-hover:text-indigo-300 transition-colors">
