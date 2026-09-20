@@ -48,8 +48,8 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
   const [showWeightSliders, setShowWeightSliders] = useState<boolean>(false);
   const [activeSkillModal, setActiveSkillModal] = useState<{ skill: string; oppTitle: string; company: string } | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<'balanced' | 'prestige' | 'skills' | 'compensation'>('balanced');
-  const [aiEvaluations, setAiEvaluations] = useState<Record<string, FitmentEvaluation>>({});
-  const [isLoadingAi, setIsLoadingAi] = useState<boolean>(false);
+  const [evaluatedOpportunities, setEvaluatedOpportunities] = useState<(Opportunity & { dynamicFitment: FitmentEvaluation })[]>([]);
+  const [isLoadingAi, setIsLoadingAi] = useState<boolean>(true);
 
   // Preset Configurations for student preference
   const applyPreset = (preset: 'balanced' | 'prestige' | 'skills' | 'compensation') => {
@@ -70,25 +70,28 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
     }
   };
 
-  // Run AI evaluation using FitmentEvaluator.evaluateWithAi() for all active opportunities
+  // Run AI evaluation using FitmentEvaluator.evaluateWithAi() for all active opportunities via Gemini endpoint
   useEffect(() => {
     let isMounted = true;
     const fetchAiEvaluations = async () => {
-      if (opportunities.length === 0) return;
+      if (opportunities.length === 0) {
+        setEvaluatedOpportunities([]);
+        setIsLoadingAi(false);
+        return;
+      }
       setIsLoadingAi(true);
       try {
         const results = await Promise.all(
           opportunities.map(async (opp) => {
-            const evalResult = await FitmentEvaluator.evaluateWithAi(opp, studentProfile);
-            return { id: opp.id, evalResult };
+            const dynamicFitment = await FitmentEvaluator.evaluateWithAi(opp, studentProfile);
+            return {
+              ...opp,
+              dynamicFitment,
+            };
           })
         );
         if (isMounted) {
-          const evalMap: Record<string, FitmentEvaluation> = {};
-          results.forEach(({ id, evalResult }) => {
-            evalMap[id] = evalResult;
-          });
-          setAiEvaluations(evalMap);
+          setEvaluatedOpportunities(results);
         }
       } catch (err) {
         console.error('Fitment AI evaluation failed:', err);
@@ -106,20 +109,39 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
   }, [opportunities, studentProfile]);
 
   // Dynamically blend AI evaluations with interactive user weights
-  const evaluatedOpportunities = useMemo(() => {
-    return opportunities.map(opp => {
-      const baseFitment = aiEvaluations[opp.id] || opp.fitment;
-      const dynamicFitment = FitmentEvaluator.calculateFitment(
-        { ...opp, fitment: baseFitment },
-        studentProfile,
-        weights
-      );
+  const displayedOpportunities = useMemo(() => {
+    if (evaluatedOpportunities.length === 0) return [];
+    const totalWeights = (Object.values(weights) as number[]).reduce((a, b) => a + b, 0) || 100;
+
+    return evaluatedOpportunities.map(opp => {
+      const d = opp.dynamicFitment.dimensions;
+      const weightedTotal = 
+        (d.roleFit * weights.roleFit) +
+        (d.skillsAlignment * weights.skillsAlignment) +
+        (d.batchEligibility * weights.batchEligibility) +
+        (d.companyPrestige * weights.companyPrestige) +
+        (d.learningTrajectory * weights.learningTrajectory) +
+        (d.compensationFairness * weights.compensationFairness);
+      const reweightedScore = Math.round(weightedTotal / totalWeights);
+
+      let grade: FitmentEvaluation['overallGrade'] = opp.dynamicFitment.overallGrade;
+      if (reweightedScore >= 93) grade = 'A+';
+      else if (reweightedScore >= 87) grade = 'A';
+      else if (reweightedScore >= 80) grade = 'B';
+      else if (reweightedScore >= 70) grade = 'C';
+      else if (reweightedScore >= 60) grade = 'D';
+      else grade = 'F';
+
       return {
         ...opp,
-        dynamicFitment,
+        dynamicFitment: {
+          ...opp.dynamicFitment,
+          overallScore: reweightedScore,
+          overallGrade: grade,
+        },
       };
     }).sort((a, b) => b.dynamicFitment.overallScore - a.dynamicFitment.overallScore);
-  }, [opportunities, studentProfile, weights, aiEvaluations]);
+  }, [evaluatedOpportunities, weights]);
 
   return (
     <div id="fitment-studio-view" className="space-y-6">
@@ -300,15 +322,31 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
         )}
       </div>
 
-      {/* Dynamic Fitment Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {evaluatedOpportunities.map(opp => {
-          const fit = opp.dynamicFitment;
-          const gradeColor = 
-            fit.overallGrade === 'A+' ? 'text-emerald-300 bg-emerald-950 border-emerald-700' :
-            fit.overallGrade === 'A' ? 'text-cyan-300 bg-cyan-950 border-cyan-800' :
-            fit.overallGrade === 'B' ? 'text-indigo-300 bg-indigo-950 border-indigo-800' :
-            'text-amber-300 bg-amber-950 border-amber-800';
+      {/* Dynamic Fitment Grid & AI Loading State */}
+      {isLoadingAi ? (
+        <div className="rounded-2xl border border-cyan-900/50 bg-slate-900/90 p-12 text-center flex flex-col items-center justify-center space-y-4 shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-cyan-950/80 border border-cyan-700/60 flex items-center justify-center text-cyan-400">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </div>
+          <div className="space-y-1.5 max-w-md">
+            <h3 className="text-base font-bold text-slate-100 font-mono flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4 text-cyan-400" />
+              <span>Evaluating Fitment with Gemini AI...</span>
+            </h3>
+            <p className="text-xs text-slate-400 leading-relaxed font-mono">
+              Calling real server endpoint <span className="text-cyan-300 font-semibold">/api/ai/evaluate-fitment</span> to analyze 10-dimensional fitment, ATS skill gaps, and strategic verdict.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {displayedOpportunities.map(opp => {
+            const fit = opp.dynamicFitment;
+            const gradeColor = 
+              fit.overallGrade === 'A+' ? 'text-emerald-300 bg-emerald-950 border-emerald-700' :
+              fit.overallGrade === 'A' ? 'text-cyan-300 bg-cyan-950 border-cyan-800' :
+              fit.overallGrade === 'B' ? 'text-indigo-300 bg-indigo-950 border-indigo-800' :
+              'text-amber-300 bg-amber-950 border-amber-800';
 
           return (
             <div
@@ -438,6 +476,7 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
           );
         })}
       </div>
+      )}
 
       {/* Actionable Skill Preparation Guide Modal */}
       {activeSkillModal && (

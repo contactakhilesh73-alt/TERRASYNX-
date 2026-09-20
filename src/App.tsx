@@ -455,6 +455,10 @@ export default function App() {
           setSelectedOpp(opp);
           setCurrentMode('network_graph');
         }}
+        onOpenRecruiterRadar={(opp) => {
+          setSelectedOpp(opp);
+          setCurrentMode('recruiter_radar');
+        }}
         isApplied={selectedOpp ? selectedOpp.stage !== 'discovered' && selectedOpp.stage !== 'archived' : false}
       />
 

@@ -7,6 +7,7 @@ import { Opportunity, VerificationProof } from '../types';
 
 export interface AuditInspectionReport {
   passedAllLayers: boolean;
+  checkFailed?: boolean;
   securityScore: number; // 0 - 100%
   dnsRootDomain: string;
   dnsResolvedIp: string;
@@ -14,7 +15,7 @@ export interface AuditInspectionReport {
   sslFingerprint: string;
   auditTimestamp: number;
   layers: {
-    layer1DnsStatus: 'VERIFIED_CANONICAL' | 'FAILED_DOMAIN_MISMATCH';
+    layer1DnsStatus: 'VERIFIED_CANONICAL' | 'FAILED_DOMAIN_MISMATCH' | 'CHECK_UNAVAILABLE';
     layer2AtsStatus: 'AUTHENTIC_ENDPOINT' | 'SUSPICIOUS_REDIRECT';
     layer3SafetyStatus: 'ZERO_FEE_CONFIRMED' | 'QUARANTINE_EXPLOITATIVE';
   };
@@ -38,6 +39,13 @@ const OFFICIAL_ENTERPRISE_ROOT_DOMAINS: Record<string, { expectedAts: string[]; 
   'linear.app': { expectedAts: ['ashby', 'lever', 'direct_careers_domain'], ipSubnet: '76.76.21.21' },
 };
 
+async function generateRealSha256(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export class VerificationEngine {
   /**
    * Run 3-layer deep cryptographic audit on an opportunity using live DNS verification
@@ -50,7 +58,7 @@ export class VerificationEngine {
     // Layer 1: DNS & Root Domain Lock via Live DNS Resolution
     const rootDomainMatches = opp.verification.rootDomain.toLowerCase().trim() === domain;
     const dnsResult = await this.verifyLiveDns(domain);
-    const layer1Passed = dnsResult.verified && rootDomainMatches;
+    const layer1Passed = !dnsResult.checkFailed && dnsResult.verified && rootDomainMatches;
 
     // Layer 2: Direct ATS API Handshake Proof
     const expectedAtsList = whitelistEntry ? whitelistEntry.expectedAts : ['greenhouse', 'lever', 'ashby', 'workday', 'direct_careers_domain'];
@@ -60,24 +68,32 @@ export class VerificationEngine {
     // Strict requirement: No application fees, no unpaid traps
     const layer3Passed = opp.verification.noFeeGuarantee && opp.compensation.isPaid;
 
-    const allPassed = layer1Passed && layer2Passed && layer3Passed;
-    const score = allPassed ? 100 : (layer1Passed ? 60 : 0) + (layer2Passed ? 20 : 0) + (layer3Passed ? 20 : 0);
+    const allPassed = !dnsResult.checkFailed && layer1Passed && layer2Passed && layer3Passed;
+    const score = dnsResult.checkFailed ? 0 : (allPassed ? 100 : (layer1Passed ? 60 : 0) + (layer2Passed ? 20 : 0) + (layer3Passed ? 20 : 0));
 
     // Cryptographic audit signature token
     const proofPayload = `${domain}:${opp.id}:${opp.verification.requisitionId}:${opp.verification.lastCheckedTimestamp}`;
     let signatureHash = `AUDIT:${opp.id}:${domain}`;
     try {
-      if (typeof window !== 'undefined' && window.btoa) {
-        signatureHash = `SHA256:${btoa(proofPayload).replace(/=/g, '').slice(0, 32).toLowerCase()}`;
-      }
+      const realHash = await generateRealSha256(proofPayload);
+      signatureHash = `SHA256:${realHash}`;
     } catch {
       // fallback
     }
 
-    const resolvedIp = dnsResult.ips[0] || (whitelistEntry ? whitelistEntry.ipSubnet : '104.26.11.44');
+    const resolvedIp = dnsResult.ips[0] || (dnsResult.checkFailed ? 'UNRESOLVED' : (whitelistEntry ? whitelistEntry.ipSubnet : '104.26.11.44'));
+
+    let auditSummary = allPassed
+      ? `Passed all 3 verification tiers. Certified direct origin from ${domain} via official ${opp.verification.sourceType.toUpperCase()} endpoint.`
+      : `Verification warning: One or more audit layers failed security compliance check.`;
+
+    if (dnsResult.checkFailed) {
+      auditSummary = 'Verification temporarily unavailable: Live DNS resolution failed. Position cannot be authenticated at this time.';
+    }
 
     return {
       passedAllLayers: allPassed,
+      checkFailed: Boolean(dnsResult.checkFailed),
       securityScore: score,
       dnsRootDomain: domain,
       dnsResolvedIp: resolvedIp,
@@ -85,20 +101,20 @@ export class VerificationEngine {
       sslFingerprint: signatureHash,
       auditTimestamp: opp.verification.lastCheckedTimestamp || Date.now(),
       layers: {
-        layer1DnsStatus: layer1Passed ? 'VERIFIED_CANONICAL' : 'FAILED_DOMAIN_MISMATCH',
+        layer1DnsStatus: dnsResult.checkFailed
+          ? 'CHECK_UNAVAILABLE'
+          : (layer1Passed ? 'VERIFIED_CANONICAL' : 'FAILED_DOMAIN_MISMATCH'),
         layer2AtsStatus: layer2Passed ? 'AUTHENTIC_ENDPOINT' : 'SUSPICIOUS_REDIRECT',
         layer3SafetyStatus: layer3Passed ? 'ZERO_FEE_CONFIRMED' : 'QUARANTINE_EXPLOITATIVE',
       },
-      auditSummary: allPassed
-        ? `Passed all 3 verification tiers. Certified direct origin from ${domain} via official ${opp.verification.sourceType.toUpperCase()} endpoint.`
-        : `Verification warning: One or more audit layers failed security compliance check.`,
+      auditSummary,
     };
   }
 
   /**
    * Real Live DNS verification against backend /api/dns/verify endpoint (Fix 3)
    */
-  public static async verifyLiveDns(domain: string): Promise<{ verified: boolean; ips: string[] }> {
+  public static async verifyLiveDns(domain: string): Promise<{ verified: boolean; ips: string[]; checkFailed: boolean }> {
     try {
       const res = await fetch('/api/dns/verify', {
         method: 'POST',
@@ -109,13 +125,14 @@ export class VerificationEngine {
         const data = await res.json();
         return {
           verified: Boolean(data.verified),
-          ips: Array.isArray(data.resolvedIps) ? data.resolvedIps : []
+          ips: Array.isArray(data.resolvedIps) ? data.resolvedIps : [],
+          checkFailed: false,
         };
       }
     } catch {
-      // safe fallback
+      // fail closed on network/service failure
     }
-    return { verified: true, ips: ['104.26.11.44'] };
+    return { verified: false, ips: [], checkFailed: true };
   }
 
   /**

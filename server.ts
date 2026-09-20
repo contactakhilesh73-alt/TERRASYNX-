@@ -87,14 +87,16 @@ app.post('/api/ai/evaluate-fitment', async (req, res) => {
     const ai = new GoogleGenAI({ apiKey });
 
     const prompt = `You are the chief engineering talent evaluator for early-career tech candidates.
-Analyze the fitment between this student candidate and the target job opportunity.
+Analyze the fitment between this student candidate and the target job opportunity. Carefully read the full job description text below to genuinely extract required technical skills, competencies, and qualifications. Compare them with the candidate's skills and projects to determine genuine matchedSkills and missingSkills directly from the job description text, without relying on or comparing to any hardcoded skill list.
 
 TARGET ROLE:
 Title: ${opportunity.title}
 Company: ${opportunity.companyName}
 Department: ${opportunity.department || 'Engineering'}
-Required/Key Skills: ${[...(opportunity.fitment?.matchedSkills || []), ...(opportunity.fitment?.missingSkills || [])].join(', ')}
 Allowed Batch Years: ${opportunity.eligibility?.allowedGraduationYears?.join(', ') || 'Any'}
+
+JOB DESCRIPTION:
+${opportunity.description || 'No detailed job description provided.'}
 
 CANDIDATE:
 Name: ${profile.fullName}

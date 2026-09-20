@@ -24,7 +24,8 @@ import {
   Calendar,
   Layers,
   Mic,
-  Network
+  Network,
+  Target
 } from 'lucide-react';
 
 interface OpportunityDetailModalProps {
@@ -40,6 +41,7 @@ interface OpportunityDetailModalProps {
   onOpenOfferEvaluator?: (opportunity: Opportunity) => void;
   onOpenCareerLaunchpad?: () => void;
   onOpenNetworkGraph?: (opportunity: Opportunity) => void;
+  onOpenRecruiterRadar?: (opportunity: Opportunity) => void;
   isApplied: boolean;
 }
 
@@ -56,6 +58,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
   onOpenOfferEvaluator,
   onOpenCareerLaunchpad,
   onOpenNetworkGraph,
+  onOpenRecruiterRadar,
   isApplied,
 }) => {
   if (!opportunity) return null;
@@ -311,6 +314,19 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               >
                 <Network className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Alumni Network</span>
+              </button>
+            )}
+
+            {onOpenRecruiterRadar && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenRecruiterRadar(opportunity);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-purple-300 hover:text-purple-200 bg-purple-950/60 border border-purple-800/60 transition-colors cursor-pointer font-mono"
+              >
+                <Target className="w-3.5 h-3.5 text-purple-400" />
+                <span>Recruiter Radar</span>
               </button>
             )}
 

@@ -76,18 +76,36 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
 
         {/* Header */}
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-emerald-950 border border-emerald-700/80 flex items-center justify-center text-emerald-400">
-            <ShieldCheck className="w-6 h-6" />
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center border ${
+            audit?.checkFailed 
+              ? 'bg-amber-950 border-amber-700/80 text-amber-400' 
+              : audit?.passedAllLayers 
+                ? 'bg-emerald-950 border-emerald-700/80 text-emerald-400' 
+                : 'bg-rose-950 border-rose-700/80 text-rose-400'
+          }`}>
+            {audit?.checkFailed ? <AlertTriangle className="w-6 h-6" /> : <ShieldCheck className="w-6 h-6" />}
           </div>
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
               <span>Cryptographic Authenticity Dossier</span>
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
-                100% Genuine
-              </span>
+              {audit?.checkFailed ? (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-800">
+                  Verification temporarily unavailable
+                </span>
+              ) : audit?.passedAllLayers ? (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+                  100% Genuine
+                </span>
+              ) : (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-800">
+                  Verification Failed
+                </span>
+              )}
             </h2>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Strict Rule #2 Multi-Layer Verification Proof
+              {audit?.checkFailed 
+                ? 'Fail-closed safeguard: check failed, posting cannot be certified' 
+                : 'Strict Rule #2 Multi-Layer Verification Proof'}
             </p>
           </div>
         </div>
@@ -110,6 +128,19 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
           </div>
         ) : (
           <>
+            {/* Warning banner when check failed */}
+            {audit.checkFailed && (
+              <div className="mt-4 p-3.5 rounded-xl bg-amber-950/40 border border-amber-700/60 flex items-start gap-3 text-xs text-amber-200">
+                <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <div className="font-bold text-amber-300">Verification temporarily unavailable</div>
+                  <p className="text-[11px] text-amber-200/80 font-mono leading-relaxed">
+                    Live DNS resolution service could not complete the verification handshake. In accordance with TERRASYNX fail-closed policy, this posting is NOT certified as authentic until network checks succeed.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* 3 Inspection Audit Layers */}
             <div className="mt-5 space-y-3">
               {/* Layer 1 */}
@@ -119,12 +150,26 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
                     <Globe className="w-4 h-4 text-cyan-400" />
                     <span>Layer 1: DNS & Root Domain Lock</span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+                    audit.layers.layer1DnsStatus === 'VERIFIED_CANONICAL'
+                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                      : audit.layers.layer1DnsStatus === 'CHECK_UNAVAILABLE'
+                      ? 'bg-amber-950 text-amber-300 border border-amber-800'
+                      : 'bg-rose-950 text-rose-300 border border-rose-800'
+                  }`}>
                     {audit.layers.layer1DnsStatus}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono">
-                  Certified root domain: <strong className="text-slate-300">{audit.dnsRootDomain}</strong> (Resolved Subnet: {audit.dnsResolvedIp})
+                  {audit.layers.layer1DnsStatus === 'CHECK_UNAVAILABLE' ? (
+                    <span className="text-amber-300/90">
+                      Live DNS resolver unreachable. Fail-closed safeguard engaged.
+                    </span>
+                  ) : (
+                    <>
+                      Certified root domain: <strong className="text-slate-300">{audit.dnsRootDomain}</strong> (Resolved Subnet: {audit.dnsResolvedIp})
+                    </>
+                  )}
                 </p>
               </div>
 
