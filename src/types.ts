@@ -131,13 +131,16 @@ export interface UpcomingInternshipCycle {
   companyLogo: string;
   companyDomain: string;
   programTitle: string;
-  hiringCycleType: 'summer' | 'fall' | 'winter' | 'spring' | 'off_campus_drive' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship';
-  programCategory?: 'internship' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship';
-  tierCategory?: 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'industry_tech' | 'global_full_ride' | 'scholarship';
+  hiringCycleType: 'summer' | 'fall' | 'winter' | 'spring' | 'off_campus_drive' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'pre_university_full_ride';
+  programCategory?: 'internship' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'pre_university_full_ride';
+  tierCategory?: 'pre_university_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'industry_tech' | 'global_full_ride' | 'scholarship';
   rateType?: 'OFFICIAL_CONFIRMED' | 'MARKET_ESTIMATED'; // 'OFFICIAL_CONFIRMED' if exact stipend is verified, 'MARKET_ESTIMATED' if stipend is estimated/variable
   eligibility?: string; // e.g. "UG 2nd/3rd/4th yr", "UG 3rd/4th yr", or "No Degree Barrier"
   selectionCriteria?: string; // Formal selection parameters (e.g. GPA cutoff, PR history, research proposal, interview)
   isGlobalFullRide?: boolean; // True for prestigious ₹3 - 4 Crore+ ($350k - $450k) undergraduate full-ride scholarships
+  isPreUniversityFullRide?: boolean; // True for Class 12 / Pre-University full-ride scholarships (Need-Blind Ivy+, Named & Govt Schemes)
+  disclaimerNotice?: string; // Mandatory official confirmation disclaimer notice
+  seatQuotaInfo?: string; // Explicit seat quota (e.g. "Varies year to year, check official page")
   fundingAmountText?: string; // Formatted value badge (e.g. "₹3.2 - ₹3.6 Crore ($360,000+ Full-Ride)")
   coverageBreakdown?: string; // e.g. "100% Tuition + Housing + Food + Flights + Laptop + Research Stipend"
   eligibilityCriteria?: string; // Explicit eligibility (e.g. Class 12th Pass with Maths 60%, 1st-Year CS, etc.)

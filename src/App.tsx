@@ -415,6 +415,7 @@ export default function App() {
           <div className="space-y-6">
             <UpcomingInternshipsCalendar
               onNavigateToCalendar={() => setCurrentMode('calendar')}
+              studentProfile={studentProfile}
             />
           </div>
         )}
