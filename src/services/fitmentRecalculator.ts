@@ -5,6 +5,7 @@
  */
 
 import { Opportunity, StudentProfile, FitmentEvaluation } from '../types';
+import { RoleSkillClassifier } from './roleSkillClassifier';
 
 export class FitmentRecalculator {
   public static recalculate(opp: Opportunity, profile: StudentProfile): FitmentEvaluation {
@@ -13,15 +14,39 @@ export class FitmentRecalculator {
       ...profile.secondarySkills.map(s => s.toLowerCase()),
     ];
 
-    // Re-evaluate matching and missing skills based on job requirements
+    // Determine authentic role classification
+    const classification = RoleSkillClassifier.classifyRole(
+      opp.title,
+      opp.companyName,
+      opp.department
+    );
+
+    // Detect if existing skills contain generic/stale engineering gaps on a non-systems role
+    const existingMissing = opp.fitment?.missingSkills || [];
+    const existingMatched = opp.fitment?.matchedSkills || [];
+    const isGenericMismatched = existingMissing.some(s => {
+      const lower = s.toLowerCase();
+      return (
+        lower.includes('kubernetes') ||
+        lower.includes('cloud infrastructure') ||
+        lower.includes('go concurrency')
+      ) && classification.category !== 'backend_systems';
+    });
+
+    const baseMatched = (!isGenericMismatched && existingMatched.length > 0)
+      ? existingMatched
+      : classification.matchedSkills;
+
+    const baseMissing = (!isGenericMismatched && existingMissing.length > 0)
+      ? existingMissing
+      : classification.missingSkills;
+
+    // Combined unique skills required for this specific role domain
+    const jobKeywords = Array.from(new Set([...baseMatched, ...baseMissing]));
+
+    // Re-evaluate matching and missing skills based on student profile vs role requirements
     const matched: string[] = [];
     const missing: string[] = [];
-
-    // Derive expected keywords from role & department
-    const jobKeywords = [
-      ...opp.fitment.matchedSkills,
-      ...opp.fitment.missingSkills,
-    ];
 
     jobKeywords.forEach(kw => {
       const kwLower = kw.toLowerCase();
@@ -35,6 +60,11 @@ export class FitmentRecalculator {
         if (!missing.includes(kw)) missing.push(kw);
       }
     });
+
+    // Ensure missing skills always provide high-signal, domain-appropriate ATS gaps (never empty if student is missing core role skills)
+    const finalMissingSkills = missing.length > 0
+      ? missing.slice(0, 4)
+      : (matched.length < baseMatched.length ? classification.missingSkills : []);
 
     // 1. Batch Eligibility (0 - 100)
     const isBatchMatched = opp.eligibility.allowedGraduationYears.includes(profile.graduationYear);
@@ -102,8 +132,8 @@ export class FitmentRecalculator {
       strategicVerdict = `Strong direct fit for ${profile.fullName}. High ATS keyword match (${matched.length} key competencies aligned). Priority application recommended.`;
     } else if (batchEligibility < 100) {
       strategicVerdict = `Graduation batch mismatch (${profile.graduationYear} vs allowed [${opp.eligibility.allowedGraduationYears.join(', ')}]). High risk of automated ATS discard unless referral is secured.`;
-    } else if (missing.length > 2) {
-      strategicVerdict = `Moderate match. Bridge critical gaps in [${missing.slice(0, 2).join(', ')}] in resume before final submission.`;
+    } else if (finalMissingSkills.length > 0) {
+      strategicVerdict = `Moderate match. Bridge critical domain gaps in [${finalMissingSkills.slice(0, 2).join(', ')}] in resume before final submission.`;
     }
 
     return {
@@ -117,7 +147,7 @@ export class FitmentRecalculator {
         learningTrajectory,
         compensationFairness,
       },
-      missingSkills: missing,
+      missingSkills: finalMissingSkills,
       matchedSkills: matched,
       strategicVerdict,
     };

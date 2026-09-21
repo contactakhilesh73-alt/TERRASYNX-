@@ -361,27 +361,69 @@ export class MockInterviewEngine {
     // 1. Calculate deterministic baseline immediately
     const baseline = this.evaluateResponseAlgorithmic(question, response, durationSeconds);
 
-    // 2. If AI is available, optionally query for deep reasoning insights
+    // 2. If AI is available, query for deep reasoning insights and merge with baseline
     try {
       const prompt = `You are an executive engineering interviewer evaluating a candidate for ${question.companyName}.
 Question: "${question.questionText}"
-Candidate's response: "${response}"
+Candidate's response: "${response.trim()}"
 Elapsed time: ${durationSeconds} seconds (Target: ${question.recommendedDurationSeconds}s).
 Provide 2 targeted positive strengths and 2 concrete technical growth areas in JSON format:
-{"strengths": ["...", "..."], "growthAreas": ["...", "..."]}`;
+{"strengths": ["...", "..."], "growthAreas": ["...", "..."]}
+Return ONLY valid JSON.`;
 
       const aiResponse = await AiOrchestrationEngine.sendMessage(
         prompt,
         studentProfile
       );
 
-      // If AI produced actionable feedback, extract it safely
-      if (aiResponse && aiResponse.content && aiResponse.content.length > 30) {
-        // AI query succeeded without errors
-        return baseline;
+      // If AI produced actionable feedback, extract and parse JSON safely
+      if (aiResponse && aiResponse.content && aiResponse.content.trim().length > 10) {
+        let jsonStr = aiResponse.content.trim();
+
+        // 1. Strip markdown code fence if present
+        const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+        if (codeBlockMatch && codeBlockMatch[1]) {
+          jsonStr = codeBlockMatch[1].trim();
+        }
+
+        // 2. Extract outermost JSON object
+        const firstBrace = jsonStr.indexOf('{');
+        const lastBrace = jsonStr.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+          jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+        }
+
+        const parsed = JSON.parse(jsonStr);
+
+        const aiStrengths = Array.isArray(parsed.strengths)
+          ? parsed.strengths.filter((s: unknown): s is string => typeof s === 'string' && s.trim().length > 0).map((s: string) => s.trim())
+          : [];
+
+        const aiGrowthAreas = Array.isArray(parsed.growthAreas)
+          ? parsed.growthAreas.filter((g: unknown): g is string => typeof g === 'string' && g.trim().length > 0).map((g: string) => g.trim())
+          : [];
+
+        // If valid AI strengths or growth areas were parsed, merge with baseline
+        if (aiStrengths.length > 0 || aiGrowthAreas.length > 0) {
+          const mergedStrengths = [
+            ...aiStrengths,
+            ...baseline.strengths.filter(bs => !aiStrengths.some(as => as.toLowerCase().includes(bs.toLowerCase()) || bs.toLowerCase().includes(as.toLowerCase())))
+          ];
+
+          const mergedGrowthAreas = [
+            ...aiGrowthAreas,
+            ...baseline.growthAreas.filter(bg => !aiGrowthAreas.some(ag => ag.toLowerCase().includes(bg.toLowerCase()) || bg.toLowerCase().includes(ag.toLowerCase())))
+          ];
+
+          return {
+            ...baseline,
+            strengths: mergedStrengths.slice(0, 5),
+            growthAreas: mergedGrowthAreas.slice(0, 5),
+          };
+        }
       }
     } catch {
-      // Seamless silent fallback to deterministic baseline
+      // Seamless silent fallback to deterministic baseline if parsing or AI call fails
     }
 
     return baseline;

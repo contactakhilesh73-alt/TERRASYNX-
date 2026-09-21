@@ -8,6 +8,7 @@ import { Opportunity, OpportunityType, WorkMode } from '../types';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { RadarEngine } from './radarEngine';
 import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from '../data/atsTargets';
+import { RoleSkillClassifier } from './roleSkillClassifier';
 
 export type { ATSCompanyTarget };
 export { VERIFIED_ATS_TARGETS };
@@ -83,6 +84,10 @@ export class AtsLiveService {
       // Extract requisition
       const reqId = job.internal_job_id ? `REQ-${job.internal_job_id}` : `GH-${target.id.toUpperCase()}-${job.id}`;
 
+      const rawDept = (job.departments && job.departments[0] ? job.departments[0].name : '') ||
+                      (job.offices && job.offices[0] ? job.offices[0].name : '');
+      const classification = RoleSkillClassifier.classifyRole(title, target.name, rawDept);
+
       // Create base opportunity shell for accurate fitment calculation
       const baseOpp: Opportunity = {
         id,
@@ -93,7 +98,7 @@ export class AtsLiveService {
         type: oppType,
         workMode,
         location: locationName,
-        department: 'Engineering & Infrastructure',
+        department: classification.department,
         officialApplyUrl: job.absolute_url || `https://boards.greenhouse.io/${target.slug}/jobs/${job.id}`,
         releasedAt: now - (6 * HOUR),
         deadlineAt,
@@ -132,15 +137,15 @@ export class AtsLiveService {
             learningTrajectory: 90,
             compensationFairness: 90,
           },
-          matchedSkills: ['TypeScript', 'Python', 'React', 'Node.js'],
-          missingSkills: ['Kubernetes', 'Cloud Infrastructure'],
-          strategicVerdict: `Authentic live role at ${target.name}. Strong alignment with your core engineering foundation.`,
+          matchedSkills: classification.matchedSkills,
+          missingSkills: classification.missingSkills,
+          strategicVerdict: classification.strategicVerdictTemplate(target.name),
         },
         assessmentIntel: {
           hasHistoricalData: true,
-          platform: 'HackerRank',
-          durationMinutes: 90,
-          frequentTopics: ['Algorithms', 'Systems Architecture', 'REST APIs'],
+          platform: classification.assessmentPlatform,
+          durationMinutes: classification.assessmentDurationMinutes,
+          frequentTopics: classification.assessmentTopics,
           difficulty: 'Medium',
           warmupPracticeUrl: 'https://leetcode.com',
         },
@@ -190,6 +195,9 @@ export class AtsLiveService {
       const id = `live_lever_${target.id}_${job.id}`;
       const deadlineAt = now + (isIntern ? 96 * HOUR : 144 * HOUR);
 
+      const rawTeam = (job.categories && job.categories.team) || (job.categories && job.categories.department) || '';
+      const classification = RoleSkillClassifier.classifyRole(title, target.name, rawTeam);
+
       const baseOpp: Opportunity = {
         id,
         companyName: target.name,
@@ -199,7 +207,7 @@ export class AtsLiveService {
         type: oppType,
         workMode,
         location: locationName,
-        department: (job.categories && job.categories.team) || 'Core Engineering',
+        department: classification.department,
         officialApplyUrl: job.applyUrl || job.hostedUrl || `https://jobs.lever.co/${target.slug}/${job.id}`,
         releasedAt: job.createdAt ? job.createdAt : (now - (12 * HOUR)),
         deadlineAt,
@@ -238,17 +246,17 @@ export class AtsLiveService {
             learningTrajectory: 92,
             compensationFairness: 92,
           },
-          matchedSkills: ['Python', 'TypeScript', 'Node.js', 'Distributed Systems'],
-          missingSkills: ['Kubernetes', 'Go Concurrency'],
-          strategicVerdict: `Authentic live role at ${target.name}. Strong systems alignment with your profile.`,
+          matchedSkills: classification.matchedSkills,
+          missingSkills: classification.missingSkills,
+          strategicVerdict: classification.strategicVerdictTemplate(target.name),
         },
         assessmentIntel: {
           hasHistoricalData: true,
-          platform: 'CodeSignal',
-          durationMinutes: 70,
-          frequentTopics: ['Algorithms', 'Data Structures', 'Concurrency'],
-          difficulty: 'Hard',
-          warmupPracticeUrl: 'https://codesignal.com',
+          platform: classification.assessmentPlatform,
+          durationMinutes: classification.assessmentDurationMinutes,
+          frequentTopics: classification.assessmentTopics,
+          difficulty: 'Medium',
+          warmupPracticeUrl: 'https://leetcode.com',
         },
         alumniPresenceCount: undefined,
         recruiterPresenceCount: undefined,

@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from './src/data/atsTargets';
+import { RoleSkillClassifier } from './src/services/roleSkillClassifier';
 
 const app = express();
 const PORT = 3000;
@@ -336,6 +337,10 @@ async function fetchGreenhouseJobsServer(target: ATSCompanyTarget): Promise<any[
       const deadlineAt = now + (isIntern ? 72 * HOUR : 168 * HOUR);
       const reqId = job.internal_job_id ? `REQ-${job.internal_job_id}` : `GH-${target.id.toUpperCase()}-${job.id}`;
 
+      const rawDept = (job.departments && job.departments[0] ? job.departments[0].name : '') ||
+                      (job.offices && job.offices[0] ? job.offices[0].name : '');
+      const classification = RoleSkillClassifier.classifyRole(title, target.name, rawDept);
+
       return {
         id,
         companyName: target.name,
@@ -345,7 +350,7 @@ async function fetchGreenhouseJobsServer(target: ATSCompanyTarget): Promise<any[
         type: oppType,
         workMode,
         location: locationName,
-        department: 'Engineering & Infrastructure',
+        department: classification.department,
         officialApplyUrl: job.absolute_url || `https://boards.greenhouse.io/${target.slug}/jobs/${job.id}`,
         releasedAt: now - (6 * HOUR),
         deadlineAt,
@@ -384,15 +389,15 @@ async function fetchGreenhouseJobsServer(target: ATSCompanyTarget): Promise<any[
             learningTrajectory: 90,
             compensationFairness: 90,
           },
-          matchedSkills: ['TypeScript', 'Python', 'React', 'Node.js'],
-          missingSkills: ['Kubernetes', 'Cloud Infrastructure'],
-          strategicVerdict: `Authentic live role at ${target.name}. Strong alignment with your core engineering foundation.`,
+          matchedSkills: classification.matchedSkills,
+          missingSkills: classification.missingSkills,
+          strategicVerdict: classification.strategicVerdictTemplate(target.name),
         },
         assessmentIntel: {
           hasHistoricalData: true,
-          platform: 'HackerRank',
-          durationMinutes: 90,
-          frequentTopics: ['Algorithms', 'Systems Architecture', 'REST APIs'],
+          platform: classification.assessmentPlatform,
+          durationMinutes: classification.assessmentDurationMinutes,
+          frequentTopics: classification.assessmentTopics,
           difficulty: 'Medium',
           warmupPracticeUrl: 'https://leetcode.com',
         },
@@ -433,6 +438,9 @@ async function fetchLeverJobsServer(target: ATSCompanyTarget): Promise<any[]> {
       const id = `live_lever_${target.id}_${job.id}`;
       const deadlineAt = now + (isIntern ? 96 * HOUR : 144 * HOUR);
 
+      const rawTeam = (job.categories && job.categories.team) || (job.categories && job.categories.department) || '';
+      const classification = RoleSkillClassifier.classifyRole(title, target.name, rawTeam);
+
       return {
         id,
         companyName: target.name,
@@ -442,7 +450,7 @@ async function fetchLeverJobsServer(target: ATSCompanyTarget): Promise<any[]> {
         type: oppType,
         workMode,
         location: locationName,
-        department: (job.categories && job.categories.team) || 'Core Engineering',
+        department: classification.department,
         officialApplyUrl: job.applyUrl || job.hostedUrl || `https://jobs.lever.co/${target.slug}/${job.id}`,
         releasedAt: job.createdAt ? job.createdAt : (now - (12 * HOUR)),
         deadlineAt,
@@ -481,17 +489,17 @@ async function fetchLeverJobsServer(target: ATSCompanyTarget): Promise<any[]> {
             learningTrajectory: 92,
             compensationFairness: 92,
           },
-          matchedSkills: ['Python', 'TypeScript', 'Node.js', 'Distributed Systems'],
-          missingSkills: ['Kubernetes', 'Go Concurrency'],
-          strategicVerdict: `Authentic live role at ${target.name}. Strong systems alignment with your profile.`,
+          matchedSkills: classification.matchedSkills,
+          missingSkills: classification.missingSkills,
+          strategicVerdict: classification.strategicVerdictTemplate(target.name),
         },
         assessmentIntel: {
           hasHistoricalData: true,
-          platform: 'CodeSignal',
-          durationMinutes: 70,
-          frequentTopics: ['Algorithms', 'Data Structures', 'Concurrency'],
-          difficulty: 'Hard',
-          warmupPracticeUrl: 'https://codesignal.com',
+          platform: classification.assessmentPlatform,
+          durationMinutes: classification.assessmentDurationMinutes,
+          frequentTopics: classification.assessmentTopics,
+          difficulty: 'Medium',
+          warmupPracticeUrl: 'https://leetcode.com',
         },
         stage: 'discovered',
       };

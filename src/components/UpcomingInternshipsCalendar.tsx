@@ -36,7 +36,14 @@ import {
   History,
   Info,
   RotateCcw,
-  Flame
+  Flame,
+  GraduationCap,
+  Award,
+  Briefcase,
+  Crown,
+  Globe,
+  FlaskConical,
+  GitBranch
 } from 'lucide-react';
 
 interface UpcomingInternshipsCalendarProps {
@@ -64,8 +71,9 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
 
   // 3 Primary Status Tabs
   const [activeStatusTab, setActiveStatusTab] = useState<StatusTab>('OPEN_NOW');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'internship' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'scholarship_12th' | 'global_full_ride_3cr'>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
-  const [selectedBatch, setSelectedBatch] = useState<number | 'all'>('all');
+  const [selectedBatch, setSelectedBatch] = useState<number | 'class_12' | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [reminderAddedMap, setReminderAddedMap] = useState<Record<string, boolean>>({});
 
@@ -84,12 +92,39 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     return UpcomingInternshipsService.getAllUpcomingCycles(referenceDate);
   }, [referenceDate]);
 
-  // Dynamic counts for each tab
+  // Dynamic counts for each status tab
   const tabCounts = useMemo(() => {
+    const list = selectedCategory === 'all' 
+      ? allCycles 
+      : selectedCategory === 'scientific_lab'
+        ? allCycles.filter(c => c.tierCategory === 'scientific_lab' || c.programCategory === 'scientific_lab')
+        : selectedCategory === 'open_source_grant'
+          ? allCycles.filter(c => c.tierCategory === 'open_source_grant' || c.programCategory === 'open_source_grant')
+          : selectedCategory === 'academic_fellowship'
+            ? allCycles.filter(c => c.tierCategory === 'academic_fellowship' || c.programCategory === 'academic_fellowship')
+            : selectedCategory === 'global_full_ride_3cr'
+              ? allCycles.filter(c => c.isGlobalFullRide || c.programCategory === 'global_full_ride')
+              : selectedCategory === 'scholarship_12th'
+                ? allCycles.filter(c => (c.isClass12Eligible || c.programCategory === 'scholarship' || c.programCategory === 'early_career_12th') && !c.isGlobalFullRide)
+                : allCycles.filter(c => !c.isClass12Eligible && c.programCategory !== 'scholarship' && c.programCategory !== 'early_career_12th' && c.programCategory !== 'global_full_ride' && c.tierCategory !== 'scientific_lab' && c.tierCategory !== 'open_source_grant' && c.tierCategory !== 'academic_fellowship');
+
     return {
-      OPEN_NOW: allCycles.filter(c => c.currentStatus === 'OPEN_NOW').length,
-      UPCOMING: allCycles.filter(c => c.currentStatus === 'UPCOMING').length,
-      PASSED_THIS_CYCLE: allCycles.filter(c => c.currentStatus === 'PASSED_THIS_CYCLE').length,
+      OPEN_NOW: list.filter(c => c.currentStatus === 'OPEN_NOW').length,
+      UPCOMING: list.filter(c => c.currentStatus === 'UPCOMING').length,
+      PASSED_THIS_CYCLE: list.filter(c => c.currentStatus === 'PASSED_THIS_CYCLE').length,
+    };
+  }, [allCycles, selectedCategory]);
+
+  // Dynamic counts for each category
+  const categoryCounts = useMemo(() => {
+    return {
+      all: allCycles.length,
+      scientific_lab: allCycles.filter(c => c.tierCategory === 'scientific_lab' || c.programCategory === 'scientific_lab').length,
+      open_source_grant: allCycles.filter(c => c.tierCategory === 'open_source_grant' || c.programCategory === 'open_source_grant').length,
+      academic_fellowship: allCycles.filter(c => c.tierCategory === 'academic_fellowship' || c.programCategory === 'academic_fellowship').length,
+      internship: allCycles.filter(c => !c.isClass12Eligible && c.programCategory !== 'scholarship' && c.programCategory !== 'early_career_12th' && c.programCategory !== 'global_full_ride' && c.tierCategory !== 'scientific_lab' && c.tierCategory !== 'open_source_grant' && c.tierCategory !== 'academic_fellowship').length,
+      scholarship_12th: allCycles.filter(c => (c.isClass12Eligible || c.programCategory === 'scholarship' || c.programCategory === 'early_career_12th') && !c.isGlobalFullRide).length,
+      global_full_ride_3cr: allCycles.filter(c => c.isGlobalFullRide || c.programCategory === 'global_full_ride').length,
     };
   }, [allCycles]);
 
@@ -98,11 +133,12 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     return UpcomingInternshipsService.filterUpcomingCycles({
       status: activeStatusTab,
       month: selectedMonth,
-      targetBatch: selectedBatch === 'all' ? undefined : selectedBatch,
+      targetBatch: selectedBatch,
+      category: selectedCategory,
       query: searchQuery,
       currentDate: referenceDate,
     });
-  }, [activeStatusTab, selectedMonth, selectedBatch, searchQuery, referenceDate]);
+  }, [activeStatusTab, selectedMonth, selectedBatch, selectedCategory, searchQuery, referenceDate]);
 
   // Date simulation handlers for testing the dynamic live transition
   const handleSetSimulatedDate = (year: number, month: number, day: number) => {
@@ -430,8 +466,100 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
           </div>
         </div>
 
+        {/* Opportunity Category Filter (All vs Tech Internships vs Class 12 & Scholarships) */}
+        <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'all'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              <span>All Programs ({categoryCounts.all})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('scientific_lab')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'scientific_lab'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black shadow-md shadow-blue-500/25'
+                  : 'bg-blue-950/30 text-blue-300 hover:bg-blue-950/60 border border-blue-800/50'
+              }`}
+            >
+              <FlaskConical className="w-3.5 h-3.5 text-blue-400" />
+              <span>Scientific Labs ({categoryCounts.scientific_lab})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('open_source_grant')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'open_source_grant'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black shadow-md shadow-emerald-500/25'
+                  : 'bg-emerald-950/30 text-emerald-300 hover:bg-emerald-950/60 border border-emerald-800/50'
+              }`}
+            >
+              <GitBranch className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Open-Source Grants ({categoryCounts.open_source_grant})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('academic_fellowship')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'academic_fellowship'
+                  ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-black shadow-md shadow-purple-500/25'
+                  : 'bg-purple-950/30 text-purple-300 hover:bg-purple-950/60 border border-purple-800/50'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
+              <span>Academic Fellowships ({categoryCounts.academic_fellowship})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('global_full_ride_3cr')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'global_full_ride_3cr'
+                  ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-slate-950 font-black shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-300'
+                  : 'bg-emerald-950/40 text-emerald-300 hover:bg-emerald-950/70 border border-emerald-800/60'
+              }`}
+            >
+              <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span>₹3-4 Cr Full-Rides ({categoryCounts.global_full_ride_3cr})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('scholarship_12th')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'scholarship_12th'
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/25'
+                  : 'bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 border border-amber-800/50'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Class 12 & Scholarships ({categoryCounts.scholarship_12th})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedCategory('internship')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'internship'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Tech Internships ({categoryCounts.internship})</span>
+            </button>
+          </div>
+
+          <div className="text-[11px] font-mono text-slate-400">
+            Showing <span className="font-bold text-slate-200">{filteredCycles.length}</span> verified tracks
+          </div>
+        </div>
+
         {/* Secondary Filter Controls (Month & Batch & Search) */}
-        <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="mt-3 pt-3 border-t border-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Month Sub-Filter */}
           <div className="flex flex-wrap items-center gap-1.5">
             {monthsList.map(m => (
@@ -453,23 +581,26 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
           <div className="flex items-center gap-2">
             <select
               value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-              aria-label="Filter by Graduation Batch"
+              onChange={(e) => setSelectedBatch(e.target.value === 'all' ? 'all' : e.target.value === 'class_12' ? 'class_12' : Number(e.target.value))}
+              aria-label="Filter by Graduation Batch or Eligibility"
               className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
-              <option value="all">All Batches</option>
-              <option value={2026}>Batch 2026</option>
-              <option value={2027}>Batch 2027</option>
+              <option value="all">All Batches / Profiles</option>
+              <option value="class_12">Class 12th Pass / Early Talent</option>
+              <option value={2026}>Batch 2026 (Graduating)</option>
+              <option value={2027}>Batch 2027 (Pre-Final)</option>
+              <option value={2028}>Batch 2028 (2nd Year)</option>
+              <option value={2029}>Batch 2029 (1st Year)</option>
             </select>
 
             <div className="relative">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
                 type="text"
-                placeholder="Search company or skill..."
+                placeholder="Search company, skill, scholarship..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-36 sm:w-48"
+                className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-36 sm:w-56"
               />
             </div>
           </div>
@@ -532,6 +663,62 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                         <span className="text-xs text-indigo-400 font-mono font-semibold block mt-0.5">
                           {cycle.programTitle}
                         </span>
+
+                        {/* Domain Category Tags */}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          {cycle.tierCategory === 'scientific_lab' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1 shadow-sm shadow-blue-500/10">
+                              <FlaskConical className="w-3 h-3 text-blue-400" />
+                              Tier 1: Global Scientific Lab
+                            </span>
+                          )}
+                          {cycle.tierCategory === 'open_source_grant' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 shadow-sm shadow-emerald-500/10">
+                              <GitBranch className="w-3 h-3 text-emerald-400" />
+                              Tier 2: Open-Source Grant
+                            </span>
+                          )}
+                          {cycle.tierCategory === 'academic_fellowship' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1 shadow-sm shadow-purple-500/10">
+                              <GraduationCap className="w-3 h-3 text-purple-400" />
+                              Tier 3: Academic Fellowship
+                            </span>
+                          )}
+                          {cycle.rateType && (
+                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 ${
+                              cycle.rateType === 'OFFICIAL_CONFIRMED'
+                                ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-600/60'
+                                : 'bg-amber-950/60 text-amber-300 border border-amber-600/50'
+                            }`}>
+                              <DollarSign className="w-3 h-3" />
+                              {cycle.rateType === 'OFFICIAL_CONFIRMED' ? 'Official Confirmed Stipend' : 'Market Estimated Range'}
+                            </span>
+                          )}
+                          {cycle.isGlobalFullRide && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold bg-gradient-to-r from-emerald-500/25 via-teal-500/25 to-cyan-500/25 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-sm shadow-emerald-500/10">
+                              <Crown className="w-3 h-3 text-amber-400" />
+                              ₹3-4 Cr Global Full-Ride
+                            </span>
+                          )}
+                          {cycle.isClass12Eligible && !cycle.isGlobalFullRide && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                              <GraduationCap className="w-3 h-3 text-amber-400" />
+                              Class 12th / Early Talent
+                            </span>
+                          )}
+                          {cycle.programCategory === 'scholarship' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                              <Award className="w-3 h-3 text-emerald-400" />
+                              Scholarship & Grant
+                            </span>
+                          )}
+                          {cycle.programCategory === 'early_career_12th' && (
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
+                              <Briefcase className="w-3 h-3 text-cyan-400" />
+                              Early IT Career + Degree
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -607,25 +794,89 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                       )}
                     </div>
 
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-mono flex items-center gap-1.5">
+                    {/* Explicit Eligibility Level & Detailed Criteria */}
+                    {cycle.eligibility && (
+                      <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-slate-900">
+                        <span className="text-slate-400 font-mono flex items-center gap-1.5 shrink-0">
+                          <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                          Eligibility Level:
+                        </span>
+                        <span className={`font-mono text-[11px] font-bold px-2 py-0.5 rounded border ${
+                          cycle.eligibility.toLowerCase().includes('no degree')
+                            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/80'
+                            : 'bg-slate-900 text-amber-300 border-slate-700'
+                        }`}>
+                          {cycle.eligibility}
+                        </span>
+                      </div>
+                    )}
+
+                    {cycle.eligibilityCriteria && (
+                      <div className="flex items-start justify-between gap-2 text-xs pt-1 border-t border-slate-900">
+                        <span className="text-slate-400 font-mono flex items-center gap-1.5 shrink-0 mt-0.5">
+                          <Info className="w-3.5 h-3.5 text-amber-400" />
+                          Eligibility Details:
+                        </span>
+                        <span className="font-mono text-amber-300/90 text-[11px] text-right font-medium">
+                          {cycle.eligibilityCriteria}
+                        </span>
+                      </div>
+                    )}
+
+                    {cycle.selectionCriteria && (
+                      <div className="flex items-start justify-between gap-2 text-xs pt-1 border-t border-slate-900">
+                        <span className="text-slate-400 font-mono flex items-center gap-1.5 shrink-0 mt-0.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                          Selection Criteria:
+                        </span>
+                        <span className="font-mono text-slate-300 text-[11px] text-right font-normal max-w-[70%] leading-relaxed">
+                          {cycle.selectionCriteria}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <span className="text-slate-400 font-mono flex items-center gap-1.5 shrink-0 mt-0.5">
                         <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                        Target Batches:
+                        Target Audience:
                       </span>
-                      <span className="font-mono font-bold text-cyan-300">
-                        {cycle.targetBatches.map(b => `Batch ${b}`).join(', ')}
+                      <span className="font-mono font-bold text-cyan-300 text-[11px] text-right">
+                        {cycle.targetAudienceText || cycle.targetBatches.map(b => b === 12 ? 'Class 12th' : `Batch ${b}`).join(', ')}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-mono flex items-center gap-1.5">
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <span className="text-slate-400 font-mono flex items-center gap-1.5 shrink-0 mt-0.5">
                         <DollarSign className="w-3.5 h-3.5 text-amber-400" />
-                        Historical Compensation:
+                        {cycle.programCategory === 'scholarship' || cycle.isGlobalFullRide ? 'Scholarship Grant / Value:' : 'Historical Compensation:'}
                       </span>
-                      <span className="font-mono text-slate-300 text-[11px]">
+                      <span className="font-mono text-slate-300 text-[11px] text-right">
                         {cycle.historicalCompensation}
                       </span>
                     </div>
+
+                    {/* ₹3 - 4 Crore Global Full-Ride Spotlight Box */}
+                    {cycle.fundingAmountText && (
+                      <div className="mt-2 p-2.5 rounded-xl bg-gradient-to-r from-emerald-950/70 via-teal-950/40 to-slate-950 border border-emerald-500/40 space-y-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <Crown className="w-4 h-4 text-amber-400 shrink-0" />
+                            <span className="text-[11px] font-mono font-black text-emerald-300">
+                              {cycle.fundingAmountText}
+                            </span>
+                          </div>
+                          <span className="text-[9px] font-mono font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                            Zero-Debt 4-Yr Degree
+                          </span>
+                        </div>
+                        {cycle.coverageBreakdown && (
+                          <div className="flex items-start gap-1 text-[10px] font-mono text-emerald-400/90 pt-1 border-t border-emerald-900/40">
+                            <span className="font-bold text-emerald-300 shrink-0">Coverage:</span>
+                            <span className="text-slate-300">{cycle.coverageBreakdown}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* 4-Phase Hiring Cycle Roadmap */}

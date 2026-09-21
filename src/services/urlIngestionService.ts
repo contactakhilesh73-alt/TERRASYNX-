@@ -7,6 +7,7 @@
 import { Opportunity, OpportunityType, WorkMode } from '../types';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { RadarEngine } from './radarEngine';
+import { RoleSkillClassifier } from './roleSkillClassifier';
 
 export interface IngestionResult {
   success: boolean;
@@ -156,6 +157,8 @@ export class UrlIngestionService {
     const oppId = `ingested_${meta.sourceType}_${Date.now()}`;
     const reqId = `ING-${meta.companyName.toUpperCase()}-${meta.jobId?.slice(0, 6) || 'REQ'}`;
 
+    const classification = RoleSkillClassifier.classifyRole(parsedTitle, meta.companyName, parsedDept);
+
     const newOpp: Opportunity = {
       id: oppId,
       companyName: meta.companyName,
@@ -165,7 +168,7 @@ export class UrlIngestionService {
       type: oppType,
       workMode,
       location: parsedLocation,
-      department: parsedDept,
+      department: classification.department,
       officialApplyUrl: rawUrl.trim(),
       releasedAt: now - (2 * HOUR),
       deadlineAt: now + (isIntern ? 72 * HOUR : 144 * HOUR),
@@ -204,15 +207,15 @@ export class UrlIngestionService {
           learningTrajectory: 88,
           compensationFairness: 90,
         },
-        matchedSkills: ['TypeScript', 'Node.js', 'Python', 'React'],
-        missingSkills: ['Kubernetes', 'Cloud Infrastructure'],
-        strategicVerdict: `Single-action ingested role for ${meta.companyName}. Instant 8-block evaluation generated.`,
+        matchedSkills: classification.matchedSkills,
+        missingSkills: classification.missingSkills,
+        strategicVerdict: classification.strategicVerdictTemplate(meta.companyName),
       },
       assessmentIntel: {
         hasHistoricalData: true,
-        platform: 'HackerRank',
-        durationMinutes: 90,
-        frequentTopics: ['Algorithms', 'Systems Design', 'Data Structures'],
+        platform: classification.assessmentPlatform,
+        durationMinutes: classification.assessmentDurationMinutes,
+        frequentTopics: classification.assessmentTopics,
         difficulty: 'Medium',
         warmupPracticeUrl: 'https://leetcode.com',
       },

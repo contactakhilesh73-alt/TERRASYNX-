@@ -131,7 +131,18 @@ export interface UpcomingInternshipCycle {
   companyLogo: string;
   companyDomain: string;
   programTitle: string;
-  hiringCycleType: 'summer' | 'fall' | 'winter' | 'spring' | 'off_campus_drive';
+  hiringCycleType: 'summer' | 'fall' | 'winter' | 'spring' | 'off_campus_drive' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship';
+  programCategory?: 'internship' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship';
+  tierCategory?: 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'industry_tech' | 'global_full_ride' | 'scholarship';
+  rateType?: 'OFFICIAL_CONFIRMED' | 'MARKET_ESTIMATED'; // 'OFFICIAL_CONFIRMED' if exact stipend is verified, 'MARKET_ESTIMATED' if stipend is estimated/variable
+  eligibility?: string; // e.g. "UG 2nd/3rd/4th yr", "UG 3rd/4th yr", or "No Degree Barrier"
+  selectionCriteria?: string; // Formal selection parameters (e.g. GPA cutoff, PR history, research proposal, interview)
+  isGlobalFullRide?: boolean; // True for prestigious ₹3 - 4 Crore+ ($350k - $450k) undergraduate full-ride scholarships
+  fundingAmountText?: string; // Formatted value badge (e.g. "₹3.2 - ₹3.6 Crore ($360,000+ Full-Ride)")
+  coverageBreakdown?: string; // e.g. "100% Tuition + Housing + Food + Flights + Laptop + Research Stipend"
+  eligibilityCriteria?: string; // Explicit eligibility (e.g. Class 12th Pass with Maths 60%, 1st-Year CS, etc.)
+  targetAudienceText?: string; // Formatted badge text (e.g. "Class 12th Pass / 1st Year Undergrad")
+  isClass12Eligible?: boolean; // True for Class 12 / High school passout programs (TechBee, AFE, etc.)
   expectedAnnouncementMonth: string; // e.g. "July - August"
   startMonth: number; // 1-12 (e.g. 7 for July)
   startDay?: number; // 1-31 (Day of month when window typically opens)
@@ -141,10 +152,10 @@ export interface UpcomingInternshipCycle {
   daysRemaining?: number; // Days remaining if OPEN_NOW, or days until opening if UPCOMING
   exactWindowText?: string; // Formatted date window (e.g. "15 Aug – 21 Sep")
   expectedWindowDuration: string; // e.g. "3-4 weeks before cap"
-  targetBatches: number[]; // e.g. [2026, 2027]
+  targetBatches: number[]; // e.g. [2026, 2027] or [12] for class 12
   annualRecurrencePattern: string; // e.g. "Annual campus & off-campus cycle, typically opens mid-July"
   officialCareersUrl: string; // Official careers link to bookmark
-  historicalCompensation: string; // e.g. "₹1,15,000 - ₹1,35,000/mo (India) | $60 - $75/hr (US)"
+  historicalCompensation: string; // e.g. "₹1,15,00,000/mo" or "92 CHF/day"
   historicalAssessmentPlatform: string; // e.g. "CodeSignal / Google Screening"
   keyPreparationTopics: string[]; // e.g. ["Graphs & Trees", "Dynamic Programming", "System Design Basics"]
   authenticityStatus: 'CALENDAR_PREDICTABLE' | 'HISTORICALLY_CONFIRMED' | 'OFFICIALLY_SCHEDULED';

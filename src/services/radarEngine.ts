@@ -143,10 +143,14 @@ export class RadarEngine {
         // Permanently filter out the 6 purged demo listings from user cache
         opps = opps.filter(o => !this.PURGED_DEMO_IDS.has(o.id));
 
-        // Migrate / sync valid working career URLs & status tracker URLs
+        // Migrate / sync valid working career URLs, status tracker URLs, and ensure role-specific ATS gaps
         opps = opps.map(loadedOpp => {
           if (!loadedOpp.officialStatusTrackerUrl) {
             loadedOpp.officialStatusTrackerUrl = this.getOfficialStatusTrackerUrl(loadedOpp);
+          }
+          // Dynamic recalculation guarantees authentic role-specific ATS gaps
+          if (loadedOpp.fitment) {
+            loadedOpp.fitment = FitmentRecalculator.recalculate(loadedOpp, this.studentProfile);
           }
           return loadedOpp;
         });

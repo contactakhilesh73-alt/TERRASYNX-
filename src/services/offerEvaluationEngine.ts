@@ -401,107 +401,7 @@ ${studentProfile.email}`,
    * Pre-loads default authentic offers for student testing
    */
   public static getInitialCandidateOffers(): CandidateOffer[] {
-    const now = Date.now();
-    return [
-      {
-        id: 'off_stripe_swe_2026',
-        opportunityId: 'opp_stripe_infra_2026',
-        companyName: 'Stripe',
-        companyLogo: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=128&h=128&fit=crop',
-        roleTitle: 'Software Engineer Intern (Systems & Payments)',
-        location: 'San Francisco, CA / Seattle, WA',
-        receivedDate: now - 3 * 86400000,
-        deadlineDate: now + 5 * 86400000, // Exploding deadline in 5 days
-        compensation: {
-          currency: 'USD',
-          baseSalary: 68, // $68/hr
-          signOnBonus: 5000,
-          annualBonusTargetPercent: 0,
-          equityTotalGrant: 0,
-          equityVestingYears: 0,
-          equityVestingSchedule: 'standard_equal',
-          relocationStipend: 10000,
-          benefitsAnnualEstimate: 12000,
-          period: 'hourly',
-          hourlyHoursPerWeek: 40,
-          internDurationWeeks: 12,
-        },
-        status: 'active_review',
-        decisionScores: {
-          compensationWeight: 92,
-          learningTrajectoryWeight: 96,
-          prestigeWeight: 98,
-          workCultureWeight: 90,
-          locationWeight: 85,
-          compositeScore: 94,
-        },
-        notes: 'Incredible payments systems team. Highly competitive intern return offer conversion rate (>85%). Mentors assigned from foundational architecture.',
-      },
-      {
-        id: 'off_openai_mts_2026',
-        opportunityId: 'opp_openai_systems_2026',
-        companyName: 'OpenAI',
-        companyLogo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=128&h=128&fit=crop',
-        roleTitle: 'Member of Technical Staff - Systems & LLM Scaling',
-        location: 'San Francisco, CA',
-        receivedDate: now - 1 * 86400000,
-        deadlineDate: now + 9 * 86400000, // Exploding deadline in 9 days
-        compensation: {
-          currency: 'USD',
-          baseSalary: 195000,
-          signOnBonus: 40000,
-          annualBonusTargetPercent: 15,
-          equityTotalGrant: 280000, // PPU equity
-          equityVestingYears: 4,
-          equityVestingSchedule: 'standard_equal',
-          relocationStipend: 15000,
-          benefitsAnnualEstimate: 22000,
-          period: 'annual',
-        },
-        status: 'negotiating',
-        decisionScores: {
-          compensationWeight: 99,
-          learningTrajectoryWeight: 99,
-          prestigeWeight: 100,
-          workCultureWeight: 82,
-          locationWeight: 88,
-          compositeScore: 95,
-        },
-        notes: 'Core LLM training infra cluster team. Significant equity upside with profit participation units. Exploring negotiation on signing bonus.',
-      },
-      {
-        id: 'off_google_l3_2026',
-        opportunityId: 'opp_google_cloud_2026',
-        companyName: 'Google',
-        companyLogo: 'https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=128&h=128&fit=crop',
-        roleTitle: 'Software Engineer L3 (Google Cloud Distributed Systems)',
-        location: 'Mountain View, CA / Sunnyvale, CA',
-        receivedDate: now - 7 * 86400000,
-        deadlineDate: now + 3 * 86400000, // Exploding deadline in 3 days (URGENT)
-        compensation: {
-          currency: 'USD',
-          baseSalary: 152000,
-          signOnBonus: 25000,
-          annualBonusTargetPercent: 15,
-          equityTotalGrant: 120000,
-          equityVestingYears: 4,
-          equityVestingSchedule: 'frontloaded_uber', // 33/33/22/12
-          relocationStipend: 12000,
-          benefitsAnnualEstimate: 25000,
-          period: 'annual',
-        },
-        status: 'active_review',
-        decisionScores: {
-          compensationWeight: 86,
-          learningTrajectoryWeight: 90,
-          prestigeWeight: 95,
-          workCultureWeight: 94,
-          locationWeight: 86,
-          compositeScore: 90,
-        },
-        notes: 'Exceptional work-life balance and mentorship. Exploding deadline approaching soon; need to evaluate counter-offer vs OpenAI.',
-      }
-    ];
+    return [];
   }
 
   /**
@@ -512,7 +412,16 @@ ${studentProfile.email}`,
       const raw = localStorage.getItem(STORAGE_KEY_OFFERS);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) {
+          // Clean legacy mock demo offers if present
+          const cleaned = parsed.filter(
+            (o: CandidateOffer) => o.id !== 'off_stripe_swe_2026' && o.id !== 'off_openai_mts_2026' && o.id !== 'off_google_l3_2026'
+          );
+          if (cleaned.length !== parsed.length) {
+            this.saveOffers(cleaned);
+          }
+          return cleaned;
+        }
       }
     } catch {
       // ignore
