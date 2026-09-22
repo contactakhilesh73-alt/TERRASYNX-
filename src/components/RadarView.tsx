@@ -3,7 +3,7 @@
  * Strictly adhering to Strict Rules #1-#5: Every opportunity is rendered EXACTLY ONCE.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Opportunity } from '../types';
 import { OpportunityCard } from './OpportunityCard';
 import { UrlIngestionBar } from './UrlIngestionBar';
@@ -28,7 +28,8 @@ import {
   CheckCircle2,
   DollarSign,
   ShieldAlert,
-  Calendar
+  Calendar,
+  ChevronDown
 } from 'lucide-react';
 
 interface RadarViewProps {
@@ -61,6 +62,13 @@ export const RadarView: React.FC<RadarViewProps> = ({
   const [isScanningAts, setIsScanningAts] = useState<boolean>(false);
   const [scanProgressMsg, setScanProgressMsg] = useState<string>('');
   const [lastScanResult, setLastScanResult] = useState<string | null>(null);
+  // Progressive batch pagination (renders 18 cards initially, loads +18 on demand)
+  const [visibleCount, setVisibleCount] = useState<number>(18);
+
+  // Reset pagination when active filter, search, work mode, or sort order changes
+  useEffect(() => {
+    setVisibleCount(18);
+  }, [searchQuery, activeTab, selectedWorkMode, sortBy, blockUnpaidOnly]);
 
   const handleScanLiveAts = async () => {
     setIsScanningAts(true);
@@ -164,6 +172,11 @@ export const RadarView: React.FC<RadarViewProps> = ({
       return b.fitment.overallScore - a.fitment.overallScore;
     });
   }, [opportunities, searchQuery, activeTab, selectedWorkMode, sortBy]);
+
+  // Sliced list for fast progressive rendering (18 cards per batch)
+  const visibleOpportunities = useMemo(() => {
+    return filteredList.slice(0, visibleCount);
+  }, [filteredList, visibleCount]);
 
   return (
     <div id="radar-view-container" className="space-y-6">
@@ -480,7 +493,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
                 {activeTab === 'all' ? 'All Verified Opportunities' : `${activeTab.replace('_', ' ')} Opportunities`}
               </h3>
               <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950 px-2 py-0.5 rounded-full border border-cyan-800">
-                Showing {filteredList.length} of {opportunities.length}
+                Showing {Math.min(visibleCount, filteredList.length)} of {filteredList.length}
               </span>
             </div>
 
@@ -518,20 +531,70 @@ export const RadarView: React.FC<RadarViewProps> = ({
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredList.map(opp => (
-                <OpportunityCard
-                  key={opp.id}
-                  opportunity={opp}
-                  onMarkApplied={onMarkApplied}
-                  onOpenDetails={onOpenDetails}
-                  onInspectVerification={onInspectVerification}
-                  onFastApply={onFastApply}
-                  onOpenDossier={onOpenDossier}
-                  isAlertMuted={mutedAlertIds.includes(opp.id)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {visibleOpportunities.map(opp => (
+                  <OpportunityCard
+                    key={opp.id}
+                    opportunity={opp}
+                    onMarkApplied={onMarkApplied}
+                    onOpenDetails={onOpenDetails}
+                    onInspectVerification={onInspectVerification}
+                    onFastApply={onFastApply}
+                    onOpenDossier={onOpenDossier}
+                    isAlertMuted={mutedAlertIds.includes(opp.id)}
+                  />
+                ))}
+              </div>
+
+              {/* Progressive Load More / Show All Pagination Cockpit */}
+              {filteredList.length > 0 && (
+                visibleCount < filteredList.length ? (
+                  <div className="flex flex-col items-center justify-center pt-6 pb-2 gap-3">
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setVisibleCount(prev => Math.min(prev + 18, filteredList.length))}
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-mono text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition-all cursor-pointer"
+                      >
+                        <ChevronDown className="w-4 h-4" />
+                        <span>Load More Opportunities (+18)</span>
+                        <span className="px-1.5 py-0.5 rounded bg-slate-950/20 text-[10px]">
+                          {filteredList.length - visibleCount} remaining
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setVisibleCount(filteredList.length)}
+                        className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 font-mono text-xs font-semibold transition-all cursor-pointer"
+                      >
+                        Show All ({filteredList.length})
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
+                      <div className="w-32 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-cyan-400 transition-all duration-300"
+                          style={{ width: `${Math.min(100, Math.round((visibleCount / filteredList.length) * 100))}%` }}
+                        />
+                      </div>
+                      <span>
+                        {Math.min(visibleCount, filteredList.length)} of {filteredList.length} Loaded ({Math.min(100, Math.round((visibleCount / filteredList.length) * 100))}%)
+                      </span>
+                    </div>
+                  </div>
+                ) : filteredList.length > 18 ? (
+                  <div className="text-center py-4 border-t border-slate-800/80">
+                    <span className="text-xs font-mono text-slate-500 flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      All {filteredList.length} verified opportunities loaded
+                    </span>
+                  </div>
+                ) : null
+              )}
+            </>
           )}
         </div>
       )}

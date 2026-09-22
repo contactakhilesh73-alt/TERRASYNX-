@@ -53,7 +53,8 @@ import {
   X,
   Star,
   Radio,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown
 } from 'lucide-react';
 
 interface UpcomingInternshipsCalendarProps {
@@ -449,6 +450,18 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
 
     return baseList;
   }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, referenceDate, matrixFilter, studentBatch, trackedCycleIds]);
+
+  // Progressive batch rendering (16 cards per batch)
+  const [visibleCount, setVisibleCount] = useState<number>(16);
+
+  // Reset pagination when active filter, search, month, category, or simulation date changes
+  useEffect(() => {
+    setVisibleCount(16);
+  }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, referenceDate, matrixFilter, studentBatch, trackedCycleIds]);
+
+  const visibleCycles = useMemo(() => {
+    return filteredCycles.slice(0, visibleCount);
+  }, [filteredCycles, visibleCount]);
 
   // 1-Click Track Opportunity & Toggle Bookmark + Alerts
   const handleToggleTrack = (cycle: UpcomingInternshipCycle) => {
@@ -953,7 +966,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
               <span>1-Click Focus Filter Chips</span>
             </span>
             <div className="text-[11px] font-mono text-slate-400">
-              Showing <span className="font-bold text-slate-200">{filteredCycles.length}</span> verified tracks
+              Showing <span className="font-bold text-slate-200">{Math.min(visibleCount, filteredCycles.length)}</span> of <span className="font-bold text-slate-200">{filteredCycles.length}</span> verified tracks
             </div>
           </div>
 
@@ -1354,8 +1367,9 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
           <p className="text-xs text-slate-500 mt-1">Try switching to &quot;All Months&quot; or resetting the date filter.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredCycles.map(cycle => {
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {visibleCycles.map(cycle => {
             const isReminderSet = reminderAddedMap[cycle.id];
             const authenticity = getAuthenticityBadge(cycle.authenticityStatus);
             const statusBadge = getStatusBadge(cycle.currentStatus);
@@ -1825,6 +1839,55 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
             );
           })}
         </div>
+
+        {/* Progressive Load More / Show All Pagination Controls */}
+        {filteredCycles.length > 0 && (
+          visibleCount < filteredCycles.length ? (
+            <div className="flex flex-col items-center justify-center pt-6 pb-2 gap-3">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount(prev => Math.min(prev + 16, filteredCycles.length))}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-mono text-xs shadow-lg shadow-indigo-600/25 active:scale-95 transition-all cursor-pointer"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                  <span>Load More Recruitment Tracks (+16)</span>
+                  <span className="px-1.5 py-0.5 rounded bg-indigo-950/60 text-indigo-200 text-[10px] border border-indigo-400/30">
+                    {filteredCycles.length - visibleCount} remaining
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount(filteredCycles.length)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 font-mono text-xs font-semibold transition-all cursor-pointer"
+                >
+                  Show All ({filteredCycles.length})
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-mono text-slate-500">
+                <div className="w-36 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-indigo-500 transition-all duration-300"
+                    style={{ width: `${Math.min(100, Math.round((visibleCount / filteredCycles.length) * 100))}%` }}
+                  />
+                </div>
+                <span>
+                  {Math.min(visibleCount, filteredCycles.length)} of {filteredCycles.length} Tracks Loaded ({Math.min(100, Math.round((visibleCount / filteredCycles.length) * 100))}%)
+                </span>
+              </div>
+            </div>
+          ) : filteredCycles.length > 16 ? (
+            <div className="text-center py-4 border-t border-slate-800/80">
+              <span className="text-xs font-mono text-slate-500 flex items-center justify-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                All {filteredCycles.length} verified recruitment cycles loaded
+              </span>
+            </div>
+          ) : null
+        )}
+      </>
       )}
 
       {/* Floating Toast Alert Banner */}
