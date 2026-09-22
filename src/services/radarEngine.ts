@@ -7,6 +7,7 @@ import { Opportunity, StudentProfile, AlertEmailSimulation, ApplicationStage } f
 import { VerificationEngine } from './verificationEngine';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { AtsLiveService } from './atsLiveService';
+import { logger } from '../utils/logger';
 
 const STORAGE_KEYS = {
   OPPORTUNITIES: 'terrasynx_opportunities_v1',
@@ -422,7 +423,7 @@ export class RadarEngine {
 
       return addedCount;
     } catch (err) {
-      console.error('[RadarEngine] Error scanning live ATS boards:', err);
+      logger.error('RadarEngine', 'Error scanning live ATS boards', err);
       return 0;
     }
   }

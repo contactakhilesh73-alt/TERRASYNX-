@@ -25,7 +25,9 @@ import {
   Layers,
   Mic,
   Network,
-  Target
+  Target,
+  FileEdit,
+  Mail
 } from 'lucide-react';
 
 interface OpportunityDetailModalProps {
@@ -42,6 +44,8 @@ interface OpportunityDetailModalProps {
   onOpenCareerLaunchpad?: () => void;
   onOpenNetworkGraph?: (opportunity: Opportunity) => void;
   onOpenRecruiterRadar?: (opportunity: Opportunity) => void;
+  onOpenCoverLetter?: (opportunity: Opportunity) => void;
+  onOpenEmailDraft?: (opportunity: Opportunity) => void;
   isApplied: boolean;
 }
 
@@ -59,6 +63,8 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
   onOpenCareerLaunchpad,
   onOpenNetworkGraph,
   onOpenRecruiterRadar,
+  onOpenCoverLetter,
+  onOpenEmailDraft,
   isApplied,
 }) => {
   if (!opportunity) return null;
@@ -335,6 +341,34 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               >
                 <Target className="w-3.5 h-3.5 text-purple-400" />
                 <span>Recruiter Radar</span>
+              </button>
+            )}
+
+            {onOpenCoverLetter && (
+              <button
+                id="modal-cover-letter-btn"
+                onClick={() => {
+                  onOpenCoverLetter(opportunity);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:text-cyan-100 bg-cyan-950/60 border border-cyan-800/60 transition-colors cursor-pointer"
+                title="Generate personalized cover letter draft with Gemini AI"
+              >
+                <FileEdit className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Cover Letter Draft</span>
+              </button>
+            )}
+
+            {onOpenEmailDraft && (
+              <button
+                id="modal-email-draft-btn"
+                onClick={() => {
+                  onOpenEmailDraft(opportunity);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-indigo-300 hover:text-indigo-100 bg-indigo-950/60 border border-indigo-800/60 transition-colors cursor-pointer"
+                title="Draft cold outreach or referral request email (Draft only)"
+              >
+                <Mail className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Email Draft</span>
               </button>
             )}
 

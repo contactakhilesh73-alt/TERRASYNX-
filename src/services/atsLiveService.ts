@@ -9,6 +9,7 @@ import { FitmentRecalculator } from './fitmentRecalculator';
 import { RadarEngine } from './radarEngine';
 import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from '../data/atsTargets';
 import { RoleSkillClassifier } from './roleSkillClassifier';
+import { logger } from '../utils/logger';
 
 export type { ATSCompanyTarget };
 export { VERIFIED_ATS_TARGETS };
@@ -301,7 +302,7 @@ export class AtsLiveService {
             localStorage.setItem(CACHE_KEY, JSON.stringify(enrichedJobs));
             localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
           } catch (e) {
-            console.warn('[AtsLiveService] Failed to cache live jobs to localStorage:', e);
+            logger.warn('AtsLiveService', 'Failed to cache live jobs to localStorage', e);
           }
 
           if (onProgress) {
@@ -313,7 +314,7 @@ export class AtsLiveService {
         }
       }
     } catch (err) {
-      console.warn('[AtsLiveService] Backend /api/jobs/cached call failed, falling back to localStorage:', err);
+      logger.warn('AtsLiveService', 'Backend /api/jobs/cached call failed, falling back to localStorage', err);
     }
 
     // 2. Fallback: Browser LocalStorage Cache (if backend cache fails or is unreachable)
@@ -376,7 +377,7 @@ export class AtsLiveService {
         localStorage.setItem(CACHE_KEY, JSON.stringify(results));
         localStorage.setItem(CACHE_TIMESTAMP_KEY, now.toString());
       } catch (e) {
-        console.warn('[AtsLiveService] Failed to cache live jobs to localStorage:', e);
+        logger.warn('AtsLiveService', 'Failed to cache live jobs to localStorage', e);
       }
     }
 

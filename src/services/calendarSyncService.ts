@@ -5,6 +5,7 @@
  */
 
 import { CalendarEvent, Opportunity } from '../types';
+import { logger } from '../utils/logger';
 
 export class CalendarSyncService {
   private static STORAGE_KEY = 'terrasynx_calendar_events_v1';
@@ -29,7 +30,7 @@ export class CalendarSyncService {
           return cleaned;
         }
       } catch (e) {
-        console.warn('Failed to parse saved calendar events', e);
+        logger.warn('CalendarSyncService', 'Failed to parse saved calendar events', e);
       }
     }
 
@@ -41,7 +42,7 @@ export class CalendarSyncService {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(events));
     } catch (e) {
-      console.error('Failed to save calendar events', e);
+      logger.error('CalendarSyncService', 'Failed to save calendar events to localStorage', e);
     }
   }
 
@@ -55,7 +56,7 @@ export class CalendarSyncService {
           return cleaned;
         }
       } catch (e) {
-        console.warn('Failed to parse saved calendar events', e);
+        logger.warn('CalendarSyncService', 'Failed to parse saved calendar events', e);
       }
     }
     return [];

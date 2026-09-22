@@ -86,6 +86,7 @@ export interface Opportunity {
   workMode: WorkMode;
   location: string;
   department: string;                 // e.g. "Applied AI", "Infrastructure"
+  description?: string;                // Asli JD / Verified Job Description requirements
   officialApplyUrl: string;          // Strictly official application destination
   officialStatusTrackerUrl?: string; // Direct link to company candidate portal where students can log in and view live application status
   

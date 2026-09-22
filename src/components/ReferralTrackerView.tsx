@@ -33,7 +33,8 @@ import {
   ChevronRight, 
   Award, 
   RefreshCw,
-  Plus
+  Plus,
+  Mail
 } from 'lucide-react';
 
 interface ReferralTrackerViewProps {
@@ -41,6 +42,7 @@ interface ReferralTrackerViewProps {
   studentProfile: StudentProfile;
   onNavigateToPipeline?: () => void;
   onOpenOpportunity?: (opp: Opportunity) => void;
+  onOpenEmailDraft?: (opportunity: Opportunity) => void;
 }
 
 const STAGE_CONFIG: Record<ReferralSubmissionStage, { label: string; color: string; bg: string; border: string }> = {
@@ -87,6 +89,7 @@ export const ReferralTrackerView: React.FC<ReferralTrackerViewProps> = ({
   studentProfile,
   onNavigateToPipeline,
   onOpenOpportunity,
+  onOpenEmailDraft,
 }) => {
   const [records, setRecords] = useState<ReferralLifecycleRecord[]>(() => 
     ReferralLifecycleService.getRecords()
@@ -330,9 +333,23 @@ export const ReferralTrackerView: React.FC<ReferralTrackerViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {onOpenEmailDraft && (
+                        <button
+                          onClick={() => {
+                            const opp = opportunities.find(o => o.id === activeRecord.opportunityId) || opportunities[0];
+                            if (opp) onOpenEmailDraft(opp);
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-950/70 hover:bg-indigo-900/80 text-indigo-300 text-xs font-mono font-medium border border-indigo-800/60 transition-colors cursor-pointer"
+                          title="Draft Referral Outreach Email with Gemini AI"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Draft Outreach Email</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => handleCopy(activeRecord.portalSubmissionId, 'sub_id')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-medium border border-slate-700"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-medium border border-slate-700 cursor-pointer"
                       >
                         {copiedKey === 'sub_id' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                         <span>{copiedKey === 'sub_id' ? 'Copied ID' : 'Copy ID'}</span>

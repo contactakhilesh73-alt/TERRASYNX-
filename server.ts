@@ -7,6 +7,7 @@ import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
 import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from './src/data/atsTargets';
 import { RoleSkillClassifier } from './src/services/roleSkillClassifier';
+import { logger } from './src/utils/logger';
 
 const app = express();
 const PORT = 3000;
@@ -45,6 +46,7 @@ app.post('/api/dns/verify', async (req, res) => {
           resolvedIps = [lookup.address];
         }
       } catch (lookupErr: any) {
+        logger.warn('Server:DNS', `DNS lookup failed for domain: ${cleanDomain}`, lookupErr, { domain: cleanDomain });
         return res.json({
           success: false,
           domain: cleanDomain,
@@ -62,6 +64,7 @@ app.post('/api/dns/verify', async (req, res) => {
       resolvedAt: Date.now()
     });
   } catch (err: any) {
+    logger.error('Server:DNS', 'DNS verification exception', err, { domain: req.body?.domain });
     return res.status(500).json({
       success: false,
       error: err.message || 'DNS verification failed'
@@ -152,11 +155,233 @@ Return strictly valid JSON with no markdown wrapping:
       source: 'gemini-3.8-flash'
     });
   } catch (err: any) {
-    console.error('AI Fitment Evaluation Error:', err.message);
+    logger.error('Server:AIFitment', 'AI Fitment Evaluation Error', err);
     return res.status(200).json({
       success: false,
       fallbackToLocal: true,
       error: err.message
+    });
+  }
+});
+
+// REAL AI Personalized Cover Letter Drafting Endpoint using Gemini (Phase 8 Cover Letter Craft)
+app.post('/api/ai/generate-cover-letter', async (req, res) => {
+  try {
+    const { opportunity, profile, customNotes } = req.body;
+    if (!opportunity || !profile) {
+      return res.status(400).json({ success: false, error: 'Opportunity and profile are required' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      logger.warn('Server:CoverLetter', 'No GEMINI_API_KEY configured. Fallback to client synthesis.');
+      return res.status(200).json({
+        success: false,
+        fallbackToLocal: true,
+        reason: 'GEMINI_KEY_NOT_CONFIGURED',
+        message: 'No GEMINI_API_KEY configured. Fallback to algorithmic matrix.'
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const prompt = `You are an elite Silicon Valley executive career coach and technical talent advocate for early-career software engineers.
+Write an authentic, compelling, highly customized, and professional cover letter draft for the candidate applying to the specific target opportunity below.
+
+TARGET OPPORTUNITY:
+- Role Title: ${opportunity.title}
+- Company: ${opportunity.companyName}
+- Domain/Industry: ${opportunity.companyDomain || 'Technology'}
+- Department / Team: ${opportunity.department || 'Engineering'}
+- Work Mode: ${opportunity.workMode || 'Remote / Hybrid / On-site'}
+- Location: ${opportunity.location || 'Flexible'}
+- Compensation: ${opportunity.compensation ? `$${opportunity.compensation.amount?.toLocaleString()} ${opportunity.compensation.period}` : 'Competitive'}
+
+JOB DESCRIPTION (ASLI JD):
+${opportunity.description || 'Full-stack software engineering position requiring robust problem solving, algorithmic foundations, clean system architecture, collaborative development, and technical curiosity.'}
+
+CANDIDATE PROFILE (REAL SKILLS & PROJECTS):
+- Full Name: ${profile.fullName || 'Candidate'}
+- Degree & Major: ${profile.degree || 'B.Tech in Computer Science'}
+- University: ${profile.university || 'Target University'}
+- Graduation Year: ${profile.graduationYear || '2026'}
+- Cumulative CGPA / GPA: ${profile.cgpa || '8.5+'}
+- Core Technical Skills: ${(profile.primarySkills || []).join(', ') || 'TypeScript, React, Python, Distributed Systems'}
+- Familiar Technologies: ${(profile.secondarySkills || []).join(', ') || 'Docker, PostgreSQL, TailwindCSS, Git'}
+- Key Featured Projects:
+${(profile.projects || []).map((p: any, i: number) => `  ${i + 1}. ${p.title} (${(p.techStack || []).join(', ')}): ${p.description || ''} | Outcome/Impact: ${p.highlights || 'Engineered responsive features and resilient APIs.'}`).join('\n') || '  1. Distributed Microservices Architecture & Real-Time Sync Pipeline.'}
+${customNotes ? `\nSTUDENT CUSTOM NOTES / FOCUS AREA:\n${customNotes}` : ''}
+
+CRITICAL DRAFTING REQUIREMENTS:
+1. Tone: Professional, articulate, energetic, and authentic. Avoid dry cliches (e.g. avoid starting with "I am writing with great enthusiasm to apply for..."). Start with a strong, grounded hook demonstrating genuine interest in ${opportunity.companyName}'s engineering culture, mission, or technical challenges.
+2. Direct Connection: Connect 1-2 specific projects or experiences from the candidate's profile directly to the concrete responsibilities and technical requirements in the job description. Explicitly mention technologies both the candidate knows and the role demands.
+3. Quantifiable Impact & Learning Speed: Highlight demonstrated initiative, problem-solving ability, and curiosity.
+4. Structure:
+   - Header with Date, Candidate Name, Contact placeholder, and Target Company.
+   - Salutation to Hiring Team / Engineering Leadership at ${opportunity.companyName}.
+   - Paragraph 1: Purposeful Hook & Alignment with ${opportunity.companyName}'s engineering vision.
+   - Paragraph 2: Technical Depth & Project Evidence (demonstrating exact fit with role's responsibilities).
+   - Paragraph 3: Cultural contribution, fast ramp-up capability, and collaborative mindset.
+   - Professional Sign-off & Call to Action.
+5. Strict Length: Between 280 to 420 words (concise, high-impact, easy to scan).
+6. Format: Clean plain text with clear paragraph breaks. Do NOT wrap in markdown code fences or quote blocks. Return the raw cover letter text ready to read and edit.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        temperature: 0.35,
+      }
+    });
+
+    const coverLetter = response.text?.trim() || '';
+
+    logger.info('Server:CoverLetter', `Successfully generated personalized cover letter for ${profile.fullName || 'student'} -> ${opportunity.companyName}`);
+
+    return res.json({
+      success: true,
+      coverLetter,
+      source: 'gemini-3.8-flash',
+      generatedAt: Date.now()
+    });
+  } catch (err: any) {
+    logger.error('Server:CoverLetter', 'Cover Letter Generation Error', err);
+    return res.status(200).json({
+      success: false,
+      fallbackToLocal: true,
+      error: err.message || 'AI generation failed'
+    });
+  }
+});
+
+// Autonomous Outreach & Referral Email Draft Engine (Phase 9 Email Craft)
+// STRICT MANDATE: Draft only. Never auto-sends emails or modifies candidate application stage.
+app.post('/api/ai/generate-email-draft', async (req, res) => {
+  try {
+    const { opportunity, profile, type, recipientPersona, customNotes } = req.body;
+    if (!opportunity || !profile) {
+      return res.status(400).json({ success: false, error: 'Opportunity and profile are required' });
+    }
+
+    const draftType = type === 'referral-request' ? 'referral-request' : 'cold-outreach';
+    const persona = recipientPersona || (draftType === 'referral-request' ? 'alumni' : 'recruiter');
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      logger.warn('Server:EmailDraft', 'No GEMINI_API_KEY configured. Fallback to algorithmic draft.');
+      return res.status(200).json({
+        success: false,
+        fallbackToLocal: true,
+        reason: 'GEMINI_KEY_NOT_CONFIGURED',
+        message: 'No GEMINI_API_KEY configured. Fallback to algorithmic matrix.'
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const personaDescriptions: Record<string, string> = {
+      recruiter: 'A Technical Recruiter / Talent Acquisition Specialist sourcing candidates for this role.',
+      engineering_manager: 'The Engineering Manager or Tech Lead heading the engineering team.',
+      alumni: 'A campus alumnus / senior engineer from the student\'s college who works at this company.',
+      peer_engineer: 'A Software Engineer currently on the target engineering team.'
+    };
+
+    const targetPersonaDescription = personaDescriptions[persona] || personaDescriptions.recruiter;
+
+    const prompt = `You are a Silicon Valley technical career mentor and networking strategist specializing in high-converting cold outreach and referral emails for software engineers.
+Draft a highly personalized, crisp, respectful, and high-converting ${draftType === 'referral-request' ? 'REFERRAL REQUEST' : 'COLD OUTREACH'} email for the student candidate to send to ${targetPersonaDescription} at ${opportunity.companyName}.
+
+IMPORTANT STRICT RULE: This is a DRAFT ONLY for the candidate to review and manually copy into their email client.
+
+TARGET OPPORTUNITY:
+- Role Title: ${opportunity.title}
+- Company: ${opportunity.companyName}
+- Department: ${opportunity.department || 'Engineering'}
+- Location: ${opportunity.location || 'Remote / Hybrid'}
+- Job Description / Requirements (Asli JD):
+${opportunity.description || 'Software Engineering role requiring robust technical problem solving, coding foundations, system architecture, and collaborative teamwork.'}
+
+CANDIDATE CREDENTIALS (REAL PROFILE):
+- Full Name: ${profile.fullName || 'Candidate'}
+- Degree: ${profile.degree || 'B.Tech in Computer Science'}
+- College / University: ${profile.collegeName || profile.university || 'Target Institute'}
+- Graduation Year: ${profile.graduationYear || 2026}
+- CGPA: ${profile.currentCgpa || profile.cgpa || '8.5+'}
+- Primary Skills: ${(profile.primarySkills || []).join(', ') || 'TypeScript, React, Python, Go, Distributed Systems'}
+- Featured Projects:
+${(profile.projects || []).map((p: any, i: number) => `  ${i + 1}. ${p.title}: ${p.description || ''} (${(p.techStack || []).join(', ')})`).join('\n') || '  1. Distributed Systems & High-Throughput Service Architecture.'}
+${customNotes ? `\nCANDIDATE CUSTOM NOTES / EMPHASIS:\n${customNotes}` : ''}
+
+DRAFTING GUIDELINES:
+1. Subject Line:
+   - High open rate, concise (under 10 words).
+   - For Referral Request: e.g. "IIT Bombay '26 Grad | Referral Request - [Role Title] at [Company]" or "[College] Alum | Quick question regarding [Role Title] team"
+   - For Cold Outreach: e.g. "[Role Title] Inquiry — [Candidate Name] ([Top Skill / Relevant Project])"
+2. Body Tone & Structure:
+   - Length: Strictly 120 to 180 words. People are busy; respect their time.
+   - Opening: Gracious, specific hook (mentioning their company's tech/products or shared campus alumni connection).
+   - Value Proposition: 2 crisp bullet points connecting the candidate's actual projects/skills directly to what the JD requires.
+   - Ask: Low-friction ask (e.g. "Would you feel comfortable submitting an internal referral?" or "Would you have 10-15 minutes for a brief technical coffee chat?").
+   - Sign-off: Warm and professional, with candidate name and contact handles.
+3. Attachment Checklist:
+   - 3 to 4 concrete items the candidate should attach or link when actually sending (e.g. "Tailored 1-page PDF Resume highlighting Go & Distributed Systems", "Link to Requisition ID on career portal", "GitHub repository link").
+4. Follow-up Advice:
+   - 1 actionable tip on when and how to follow up if there is no response.
+
+Respond ONLY with a valid JSON object with the following structure (no markdown fences, no explanatory text):
+{
+  "subject": "string",
+  "body": "string",
+  "attachmentChecklist": ["item 1", "item 2", "item 3"],
+  "keyHooks": ["hook 1", "hook 2"],
+  "followUpAdvice": "string"
+}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        temperature: 0.3,
+        responseMimeType: 'application/json'
+      }
+    });
+
+    const responseText = response.text?.trim() || '{}';
+    let parsedData: any = {};
+    try {
+      parsedData = JSON.parse(responseText);
+    } catch (e) {
+      // Clean possible stray backticks if any
+      const cleaned = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+      parsedData = JSON.parse(cleaned);
+    }
+
+    logger.info('Server:EmailDraft', `Generated ${draftType} email draft for ${profile.fullName} -> ${opportunity.companyName}`);
+
+    return res.json({
+      success: true,
+      draft: {
+        type: draftType,
+        recipientPersona: persona,
+        subject: parsedData.subject || `Inquiry: ${opportunity.title} at ${opportunity.companyName}`,
+        body: parsedData.body || '',
+        attachmentChecklist: parsedData.attachmentChecklist || [
+          'Tailored 1-page PDF Resume',
+          'Link to official job posting',
+          'GitHub portfolio link'
+        ],
+        keyHooks: parsedData.keyHooks || [],
+        followUpAdvice: parsedData.followUpAdvice || 'Send a brief 2-sentence follow-up in 5 business days if no reply.'
+      },
+      source: 'gemini-3.8-flash',
+      generatedAt: Date.now()
+    });
+  } catch (err: any) {
+    logger.error('Server:EmailDraft', 'Email Draft Generation Error', err);
+    return res.status(200).json({
+      success: false,
+      fallbackToLocal: true,
+      error: err.message || 'AI generation failed'
     });
   }
 });
@@ -250,7 +475,7 @@ Strict Directives:
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error during Gemini generation';
-    console.error('Gemini Copilot Error:', errorMessage);
+    logger.error('Server:GeminiCopilot', 'Gemini Copilot Error', err);
     return res.status(200).json({
       success: false,
       fallbackToLocal: true,
@@ -596,7 +821,7 @@ app.get('/api/jobs/cached', async (req, res) => {
       serverTime: now,
     });
   } catch (err: any) {
-    console.error('[API /api/jobs/cached] Error:', err?.message);
+    logger.error('Server:AtsCache', 'Error in /api/jobs/cached ATS ingestion/cache', err);
     if (serverJobsCache.jobs.length > 0) {
       return res.json({
         success: true,
@@ -761,10 +986,10 @@ app.post('/api/auth/otp/send', async (req, res) => {
           const resendData = await resendResp.json().catch(() => ({}));
           if (resendResp.ok && (resendData as any)?.id) {
             dispatchedViaRealGateway = true;
-            console.log(`[AUTH-OTP] Successfully sent verification email to ${cleanDestination} via Resend. ID: ${(resendData as any).id}`);
+            logger.info('Server:AuthOtp', `Successfully sent verification email to ${cleanDestination} via Resend. ID: ${(resendData as any).id}`, { destination: cleanDestination, resendId: (resendData as any).id });
           } else {
             const errDetails = (resendData as any)?.message || 'Gateway transmission rejected';
-            console.error('[AUTH-OTP] Resend rejected dispatch:', resendData);
+            logger.error('Server:AuthOtp', 'Resend rejected dispatch', resendData, { destination: cleanDestination });
             if ((resendData as any)?.statusCode === 403 && typeof errDetails === 'string' && errDetails.includes('only send testing emails')) {
               return res.status(403).json({
                 success: false,
@@ -778,7 +1003,7 @@ app.post('/api/auth/otp/send', async (req, res) => {
             }
           }
         } catch (mailErr) {
-          console.error('[AUTH-OTP] Error dispatching via Resend:', mailErr);
+          logger.error('Server:AuthOtp', 'Error dispatching via Resend', mailErr, { destination: cleanDestination });
         }
       } else if (smtpHost && smtpUser && smtpPass) {
         try {
@@ -806,12 +1031,12 @@ app.post('/api/auth/otp/send', async (req, res) => {
             `,
           });
           dispatchedViaRealGateway = true;
-          console.log(`[AUTH-OTP] Sent verification email to ${cleanDestination} via SMTP (${smtpHost})`);
+          logger.info('Server:AuthOtp', `Sent verification email to ${cleanDestination} via SMTP (${smtpHost})`, { destination: cleanDestination, smtpHost });
         } catch (smtpErr) {
-          console.error('[AUTH-OTP] Error dispatching via SMTP:', smtpErr);
+          logger.error('Server:AuthOtp', 'Error dispatching via SMTP', smtpErr, { destination: cleanDestination, smtpHost });
         }
       } else {
-        console.log(`[AUTH-OTP] Security OTP generated and stored for ${cleanDestination} (no SMTP/Resend configured in env)`);
+        logger.info('Server:AuthOtp', `Security OTP generated and stored for ${cleanDestination} (no SMTP/Resend configured in env)`, { destination: cleanDestination });
       }
     } else if (channel === 'phone') {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -834,12 +1059,12 @@ app.post('/api/auth/otp/send', async (req, res) => {
             body: params.toString(),
           });
           dispatchedViaRealGateway = true;
-          console.log(`[AUTH-OTP] Sent SMS to ${cleanDestination} via Twilio`);
+          logger.info('Server:AuthOtp', `Sent SMS to ${cleanDestination} via Twilio`, { destination: cleanDestination });
         } catch (smsErr) {
-          console.error('[AUTH-OTP] Error dispatching via Twilio:', smsErr);
+          logger.error('Server:AuthOtp', 'Error dispatching via Twilio', smsErr, { destination: cleanDestination });
         }
       } else {
-        console.log(`[AUTH-OTP] Security OTP generated and stored for ${cleanDestination} (no Twilio configured in env)`);
+        logger.info('Server:AuthOtp', `Security OTP generated and stored for ${cleanDestination} (no Twilio configured in env)`, { destination: cleanDestination });
       }
     }
 
@@ -859,7 +1084,7 @@ app.post('/api/auth/otp/send', async (req, res) => {
       expiresInSeconds: 600,
     });
   } catch (err: any) {
-    console.error('[AUTH-OTP /send] Error:', err);
+    logger.error('Server:AuthOtp', '[AUTH-OTP /send] Error', err);
     return res.status(500).json({ success: false, error: err?.message || 'Failed to dispatch verification code' });
   }
 });
@@ -954,7 +1179,7 @@ app.post('/api/auth/otp/verify', (req, res) => {
       token: sessionToken,
     });
   } catch (err: any) {
-    console.error('[AUTH-OTP /verify] Error:', err);
+    logger.error('Server:AuthOtp', '[AUTH-OTP /verify] Error', err);
     return res.status(500).json({ success: false, error: err?.message || 'Verification process failed' });
   }
 });
@@ -1016,7 +1241,7 @@ app.post('/api/student/profile', (req, res) => {
 
     return res.json({ success: true, profile: sanitized });
   } catch (err: any) {
-    console.error('[API /student/profile] Error:', err);
+    logger.error('Server:StudentProfile', '[API /student/profile] Error', err);
     return res.status(500).json({ success: false, error: err?.message || 'Failed to save student profile' });
   }
 });
@@ -1034,7 +1259,7 @@ app.get('/api/student/profile/:userId', (req, res) => {
     const profile = serverCloudProfiles.get(userId) || null;
     return res.json({ success: true, profile });
   } catch (err: any) {
-    console.error('[API /student/profile/:userId] Error:', err);
+    logger.error('Server:StudentProfile', '[API /student/profile/:userId] Error', err, { userId: req.params.userId });
     return res.status(500).json({ success: false, error: err?.message || 'Failed to retrieve student profile' });
   }
 });
@@ -1172,12 +1397,12 @@ app.post('/api/alerts/dispatch-email', async (req, res) => {
           }),
         });
         realDispatched = true;
-        console.log(`[ALERT-RELAY] Successfully sent live no-reply alert to ${cleanRecipient} via Resend`);
+        logger.info('Server:AlertRelay', `Successfully sent live no-reply alert to ${cleanRecipient} via Resend`, { recipient: cleanRecipient, subject });
       } catch (err) {
-        console.error('[ALERT-RELAY] Resend dispatch error:', err);
+        logger.error('Server:AlertRelay', 'Resend dispatch error', err, { recipient: cleanRecipient, subject });
       }
     } else {
-      console.log(`[ALERT-RELAY] RESEND_API_KEY not configured. Preview Mode for ${cleanRecipient}: ${subject}`);
+      logger.info('Server:AlertRelay', `RESEND_API_KEY not configured. Preview Mode for ${cleanRecipient}`, { recipient: cleanRecipient, subject });
     }
 
     return res.json({
@@ -1193,7 +1418,7 @@ app.post('/api/alerts/dispatch-email', async (req, res) => {
         : `[Preview Mode] One-way no-reply alert generated for ${cleanRecipient}`,
     });
   } catch (err: any) {
-    console.error('[ALERT-RELAY /dispatch-email] Error:', err);
+    logger.error('Server:AlertRelay', '[ALERT-RELAY /dispatch-email] Error', err);
     return res.status(500).json({ success: false, error: err?.message || 'Failed to dispatch alert' });
   }
 });
@@ -1215,7 +1440,7 @@ async function startServer() {
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[TERRASYNX] Server running on http://0.0.0.0:${PORT}`);
+    logger.info('Server:Bootstrap', `TERRASYNX Server running on http://0.0.0.0:${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' });
   });
 }
 

@@ -4,6 +4,7 @@
  */
 
 import { Opportunity, VerificationProof } from '../types';
+import { logger } from '../utils/logger';
 
 export interface AuditInspectionReport {
   passedAllLayers: boolean;
@@ -128,9 +129,12 @@ export class VerificationEngine {
           ips: Array.isArray(data.resolvedIps) ? data.resolvedIps : [],
           checkFailed: false,
         };
+      } else {
+        logger.warn('VerificationEngine:DNS', `DNS verification endpoint returned status ${res.status}. Failing closed.`, undefined, { domain, status: res.status });
       }
-    } catch {
+    } catch (err: unknown) {
       // fail closed on network/service failure
+      logger.error('VerificationEngine:DNS', 'Live DNS resolution request failed. Failing closed.', err, { domain });
     }
     return { verified: false, ips: [], checkFailed: true };
   }

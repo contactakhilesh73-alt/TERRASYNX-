@@ -36,6 +36,8 @@ import { UpcomingInternshipsCalendar } from './components/UpcomingInternshipsCal
 import { HeartbeatScheduler } from './services/heartbeatScheduler';
 import { AuthModal } from './components/AuthModal';
 import { StudentOnboardingModal } from './components/StudentOnboardingModal';
+import { CoverLetterModal } from './components/CoverLetterModal';
+import { EmailDraftModal } from './components/EmailDraftModal';
 import { 
   signInWithGoogle, 
   signOutStudent, 
@@ -75,6 +77,8 @@ export default function App() {
   const [assessmentOpp, setAssessmentOpp] = useState<Opportunity | null>(null);
   const [fastApplyOpp, setFastApplyOpp] = useState<Opportunity | null>(null);
   const [selectedDossierOpp, setSelectedDossierOpp] = useState<Opportunity | null>(null);
+  const [coverLetterOpp, setCoverLetterOpp] = useState<Opportunity | null>(null);
+  const [emailDraftOpp, setEmailDraftOpp] = useState<Opportunity | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
@@ -98,6 +102,8 @@ export default function App() {
         setAssessmentOpp(null);
         setFastApplyOpp(null);
         setSelectedDossierOpp(null);
+        setCoverLetterOpp(null);
+        setEmailDraftOpp(null);
         setIsCopilotOpen(false);
         setIsShortcutsOpen(false);
         setIsAuditModalOpen(false);
@@ -330,6 +336,8 @@ export default function App() {
             onInspectVerification={setInspectedOpp}
             onFastApply={setFastApplyOpp}
             onOpenDossier={setSelectedDossierOpp}
+            onOpenCoverLetter={setCoverLetterOpp}
+            onOpenEmailDraft={setEmailDraftOpp}
             mutedAlertIds={mutedAlertIds}
           />
         )}
@@ -500,6 +508,7 @@ export default function App() {
             studentProfile={studentProfile}
             onNavigateToPipeline={() => setCurrentMode('pipeline')}
             onOpenOpportunity={setSelectedOpp}
+            onOpenEmailDraft={setEmailDraftOpp}
           />
         )}
 
@@ -583,7 +592,26 @@ export default function App() {
           setSelectedOpp(opp);
           setCurrentMode('recruiter_radar');
         }}
+        onOpenCoverLetter={setCoverLetterOpp}
+        onOpenEmailDraft={setEmailDraftOpp}
         isApplied={selectedOpp ? selectedOpp.stage !== 'discovered' && selectedOpp.stage !== 'archived' : false}
+      />
+
+      {/* Autonomous Personalized Cover Letter Studio Modal (Phase 8 Cover Letter Craft) */}
+      <CoverLetterModal
+        opportunity={coverLetterOpp}
+        profile={studentProfile}
+        isOpen={Boolean(coverLetterOpp)}
+        onClose={() => setCoverLetterOpp(null)}
+      />
+
+      {/* Autonomous Cold Outreach & Referral Request Email Studio Modal (Phase 9 Email Craft) */}
+      {/* Strict Mandate: "Draft only, kabhi bhejta nahi" */}
+      <EmailDraftModal
+        opportunity={emailDraftOpp}
+        profile={studentProfile}
+        isOpen={Boolean(emailDraftOpp)}
+        onClose={() => setEmailDraftOpp(null)}
       />
 
       {/* Smart Auto-Fill Assistant Modal (Req #4 & #17) */}

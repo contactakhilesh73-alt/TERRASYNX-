@@ -12,6 +12,7 @@ import {
   BackgroundCheckCompliance, 
   DayOneRampPlan 
 } from '../types';
+import { logger } from '../utils/logger';
 
 const ACCEPTANCE_STORAGE_KEY = 'terrasynx_offer_acceptance_record';
 
@@ -74,7 +75,7 @@ export class CareerLaunchpadService {
     try {
       localStorage.setItem(ACCEPTANCE_STORAGE_KEY, JSON.stringify(record));
     } catch (e) {
-      console.error('Failed to save acceptance record', e);
+      logger.error('CareerLaunchpadService', 'Failed to save acceptance record to localStorage', e);
     }
   }
 

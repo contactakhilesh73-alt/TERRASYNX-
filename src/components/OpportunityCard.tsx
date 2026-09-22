@@ -19,7 +19,9 @@ import {
   Layers,
   Sparkles,
   Info,
-  Zap
+  Zap,
+  FileEdit,
+  Mail
 } from 'lucide-react';
 
 interface OpportunityCardProps {
@@ -29,6 +31,8 @@ interface OpportunityCardProps {
   onInspectVerification?: (opportunity: Opportunity) => void;
   onFastApply?: (opportunity: Opportunity) => void;
   onOpenDossier?: (opportunity: Opportunity) => void;
+  onOpenCoverLetter?: (opportunity: Opportunity) => void;
+  onOpenEmailDraft?: (opportunity: Opportunity) => void;
   isAlertMuted: boolean;
 }
 
@@ -39,6 +43,8 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   onInspectVerification,
   onFastApply,
   onOpenDossier,
+  onOpenCoverLetter,
+  onOpenEmailDraft,
   isAlertMuted,
 }) => {
   // Real-time ticking countdown calculation (Zero-Lag, Rule #3)
@@ -225,6 +231,28 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           >
             <Layers className="w-3 h-3" />
             <span>8-Block Dossier</span>
+          </button>
+
+          {/* AI Cover Letter Draft Trigger */}
+          <button
+            id={`generate-cover-letter-card-btn-${opportunity.id}`}
+            onClick={() => onOpenCoverLetter ? onOpenCoverLetter(opportunity) : onOpenDetails(opportunity)}
+            className="flex items-center gap-1 text-[11px] text-cyan-400 hover:text-cyan-300 transition-colors font-medium px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 cursor-pointer"
+            title="Generate Personalized Cover Letter Draft with Gemini AI"
+          >
+            <FileEdit className="w-3 h-3 text-cyan-400" />
+            <span>Cover Letter</span>
+          </button>
+
+          {/* AI Cold Outreach & Referral Email Draft Trigger */}
+          <button
+            id={`generate-email-draft-card-btn-${opportunity.id}`}
+            onClick={() => onOpenEmailDraft ? onOpenEmailDraft(opportunity) : onOpenDetails(opportunity)}
+            className="flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 transition-colors font-medium px-2 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 cursor-pointer"
+            title="Draft Outreach & Referral Email with Gemini AI (Draft only)"
+          >
+            <Mail className="w-3 h-3 text-indigo-400" />
+            <span>Email Draft</span>
           </button>
         </div>
 

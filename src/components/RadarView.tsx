@@ -39,6 +39,8 @@ interface RadarViewProps {
   onInspectVerification?: (opportunity: Opportunity) => void;
   onFastApply?: (opportunity: Opportunity) => void;
   onOpenDossier?: (opportunity: Opportunity) => void;
+  onOpenCoverLetter?: (opportunity: Opportunity) => void;
+  onOpenEmailDraft?: (opportunity: Opportunity) => void;
   mutedAlertIds: string[];
 }
 
@@ -51,6 +53,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
   onInspectVerification,
   onFastApply,
   onOpenDossier,
+  onOpenCoverLetter,
+  onOpenEmailDraft,
   mutedAlertIds,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -542,6 +546,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
                     onInspectVerification={onInspectVerification}
                     onFastApply={onFastApply}
                     onOpenDossier={onOpenDossier}
+                    onOpenCoverLetter={onOpenCoverLetter}
+                    onOpenEmailDraft={onOpenEmailDraft}
                     isAlertMuted={mutedAlertIds.includes(opp.id)}
                   />
                 ))}
