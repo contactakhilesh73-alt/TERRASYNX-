@@ -107,7 +107,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
                   {opportunity.companyName}
                 </span>
 
-                {/* Cryptographic Verification Proof Pill (Strict Rule #2 & Multi-Layer Janch) */}
+                {/* Cryptographic Verification Proof Pill (Strict Rule #2 & Multi-Layer Audit) */}
                 <button
                   type="button"
                   onClick={(e) => {
@@ -115,10 +115,10 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
                     if (onInspectVerification) onInspectVerification(opportunity);
                   }}
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80 transition-all cursor-pointer shadow-sm shadow-emerald-950"
-                  title="Click to view official Multi-Layer Janch Certificate & Cryptographic Proof"
+                  title="Click to view official Multi-Layer Verification Certificate & Cryptographic Proof"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Janch Passed (4 Layers)</span>
+                  <span>Verified (4 Layers)</span>
                 </button>
 
                 {isAlertMuted && (
@@ -277,7 +277,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             <button
               onClick={() => onFastApply ? onFastApply(opportunity) : onOpenDetails(opportunity)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-md shadow-cyan-950/50 hover:shadow-cyan-500/20 transition-all font-mono cursor-pointer"
-              title="Smart Auto-Fill Assistant: Form fields pre-filled, review karke khud submit karein"
+              title="Smart Auto-Fill Assistant: Form fields pre-filled for your manual review and submission"
             >
               <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
               <span>Fast Apply</span>

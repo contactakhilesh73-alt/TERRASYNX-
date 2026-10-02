@@ -164,9 +164,9 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
     const categoryNames: Record<JanchAlertCategory, string> = {
       otp_verification: 'OTP Security Code',
       opportunity_alert: 'Verified Opportunity (Job/Internship)',
-      janch_pass_audit: 'Multi-Layer Janch Pass Audit',
+      janch_pass_audit: 'Multi-Layer Verification Audit',
       selection_milestone: 'Selection / Milestone Update',
-      action_roadmap: 'Aage Kya Karna Hai Roadmap',
+      action_roadmap: 'Action Roadmap & Preparation Guide',
     };
 
     setSendSuccessToast(`[no-reply@terrasynx.com] One-Way Alert Dispatched: ${categoryNames[category]}!`);
@@ -189,7 +189,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
               </span>
             </div>
             <h3 className="text-base font-bold text-slate-100 mt-1">
-              Multi-Layer Janch Verified Notification Dispatcher
+              Multi-Layer Verification Notification Dispatcher
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               Strict one-way broadcast. All alerts pass 4-layer validation (DNS origin, ATS endpoint, anti-scam scan, and cryptographic checksum).
@@ -198,7 +198,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
 
           <div className="flex items-center gap-2 text-xs font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-3 py-1.5 rounded-xl">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Multi-Layer Janch Active</span>
+            <span>Multi-Layer Verification Active</span>
           </div>
         </div>
 
@@ -236,7 +236,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
           >
             <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-[11px] mb-1">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>3. Janch Audit</span>
+              <span>3. Verification Audit</span>
             </div>
             <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
               Cryptographic verification certificate & zero-scam proof.
@@ -262,7 +262,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
           >
             <div className="flex items-center gap-1.5 text-indigo-400 font-bold text-[11px] mb-1">
               <Compass className="w-3.5 h-3.5" />
-              <span>5. Aage Kya Karein</span>
+              <span>5. Action Roadmap</span>
             </div>
             <div className="text-[10px] text-slate-400 group-hover:text-slate-200">
               Complete round-wise preparation roadmap & topics guide.
@@ -604,7 +604,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-mono font-bold text-xs cursor-pointer"
                           >
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                            <span>Inspect Janch Certificate (4 Layers)</span>
+                            <span>Inspect Verification Certificate (4 Layers)</span>
                           </button>
                         )}
                       </>

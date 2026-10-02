@@ -98,7 +98,7 @@ export const SystemAuditModal: React.FC<SystemAuditModalProps> = ({
       id: 'chk_fast_apply',
       category: 'Phase 3 Automation & Context',
       title: 'Smart Auto-Fill Assistant & Application Preparer',
-      description: 'Form fields pre-filled, review karke khud submit karein. Validates form fields, organizes verified profile data, and issues official CONF-2026 application receipts.',
+      description: 'Form fields pre-filled for manual student review and submission. Validates form fields, organizes verified profile data, and issues official CONF-2026 application receipts.',
       status: 'passed',
       proofMetric: 'Smart Pre-fill Ready • CONF-2026 Dossier Receipts',
     },

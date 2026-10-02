@@ -10,9 +10,11 @@ import {
   MockInterviewRoundType, 
   MockInterviewEvaluation, 
   MockInterviewSession, 
-  StudentProfile 
+  StudentProfile,
+  InterviewStory
 } from '../types';
 import { AiOrchestrationEngine } from './aiOrchestrationEngine';
+import { InterviewStoryBankService } from './interviewStoryBankService';
 
 const STORAGE_KEY_SESSIONS = 'terrasynx_mock_sessions_v1';
 
@@ -442,14 +444,34 @@ Return ONLY valid JSON.`;
     }
   }
 
-  public static saveSession(session: MockInterviewSession): void {
+  public static saveSession(session: MockInterviewSession, userId?: string): void {
     try {
       const existing = this.getSavedSessions();
       const updated = [session, ...existing.filter(s => s.id !== session.id)].slice(0, 30);
       localStorage.setItem(STORAGE_KEY_SESSIONS, JSON.stringify(updated));
+
+      // Prompt 16: Automatically synthesize and persist into Interview Story Bank if quality STAR format
+      if (session.evaluation && InterviewStoryBankService.isQualityStoryCandidate(session.evaluation)) {
+        const story = InterviewStoryBankService.createStoryFromSession(session, userId);
+        InterviewStoryBankService.saveStory(story, userId).catch(err => {
+          // non-blocking
+        });
+      }
     } catch {
       // Storage quota resilience
     }
+  }
+
+  /**
+   * Explicitly converts and saves a mock interview session to the student's Story Bank
+   */
+  public static async saveSessionToStoryBank(
+    session: MockInterviewSession, 
+    userId?: string
+  ): Promise<InterviewStory> {
+    const story = InterviewStoryBankService.createStoryFromSession(session, userId);
+    await InterviewStoryBankService.saveStory(story, userId);
+    return story;
   }
 
   public static deleteSession(sessionId: string): void {

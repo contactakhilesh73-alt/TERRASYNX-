@@ -46,6 +46,7 @@ interface MockInterviewStudioViewProps {
   onOpenDetails?: (opp: Opportunity) => void;
   onNavigateToPipeline?: () => void;
   onNavigateToOfferEvaluator?: () => void;
+  onNavigateToStoryBank?: () => void;
 }
 
 export const MockInterviewStudioView: React.FC<MockInterviewStudioViewProps> = ({
@@ -55,6 +56,7 @@ export const MockInterviewStudioView: React.FC<MockInterviewStudioViewProps> = (
   onOpenDetails,
   onNavigateToPipeline,
   onNavigateToOfferEvaluator,
+  onNavigateToStoryBank,
 }) => {
   // Selected Opportunity
   const [selectedOppId, setSelectedOppId] = useState<string>(
@@ -768,6 +770,40 @@ Result: Consequently, the system achieved a 45% latency reduction and zero data 
                   <p className="text-xs text-slate-200 leading-relaxed font-sans bg-slate-950/80 p-3 rounded-lg border border-slate-800/80">
                     "{currentEvaluation.modelAnswer}"
                   </p>
+                </div>
+
+                {/* Prompt 16: Persistent Story Bank Preserved Banner */}
+                <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-950/60 via-slate-900 to-cyan-950/50 border border-indigo-500/40 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                      <BookOpen className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                          Saved to Interview Story Bank
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          Santiago Reusable Pattern
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        This session's STAR narrative has been automatically preserved in your persistent repository for future interviews.
+                      </p>
+                    </div>
+                  </div>
+
+                  {onNavigateToStoryBank && (
+                    <button
+                      type="button"
+                      onClick={onNavigateToStoryBank}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-indigo-950 cursor-pointer"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>View in My Story Bank</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
 
               </div>

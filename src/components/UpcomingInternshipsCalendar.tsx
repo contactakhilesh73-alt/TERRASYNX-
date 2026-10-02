@@ -4,9 +4,9 @@
  * Truth-Anchored Seasonal Tracking with Day-Level Live Precision:
  * - Real-time dynamic evaluation against the exact day the student is viewing the application.
  * - 3 Primary Status Tabs:
- *   1. "Chal Rahi Hai (Open Now)": Currently active within the exact day window (e.g. 15 Aug – 21 Sep).
- *   2. "Aage Aane Wali (Upcoming)": Window has not yet opened for this cycle.
- *   3. "Is Saal Nikal Gayi (Passed)": Current day has passed the deadline (e.g. as soon as it is 22 Sep,
+ *   1. "Active (Open Now)": Currently active within the exact day window (e.g. 15 Aug – 21 Sep).
+ *   2. "Upcoming (Opening Soon)": Window has not yet opened for this cycle.
+ *   3. "Passed This Cycle": Current day has passed the deadline (e.g. as soon as it is 22 Sep,
  *      opportunities ending on 21 Sep automatically move here from Open Now!).
  * - Interactive Date Simulator for student testing (e.g. Test 20 Sep vs 22 Sep live transition).
  * - Month-wise & urgency-sorted listings.
@@ -414,7 +414,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
 
   // Filtered and day-level sorted cycles
   // STRICT ZERO-EXCLUSION MANDATE:
-  // "Kisi bhi opportunity ko kisi bhi student se kabhi hide mat karo — sirf badge badalta hai, card hamesha dikhti hai."
+  // "Never hide opportunities from students — only status badges change while cards remain visible."
   const filteredCycles = useMemo(() => {
     let baseList = UpcomingInternshipsService.filterUpcomingCycles({
       status: 'all',
@@ -607,21 +607,21 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     switch (status) {
       case 'OPEN_NOW':
         return {
-          label: 'Chal Rahi Hai (Open Now)',
+          label: 'Open Now',
           icon: CalendarCheck,
           containerClass: 'bg-emerald-950/60 text-emerald-300 border-emerald-600/80',
           dotColor: 'bg-emerald-400 animate-pulse',
         };
       case 'UPCOMING':
         return {
-          label: 'Aage Aane Wali (Upcoming)',
+          label: 'Upcoming Cycle',
           icon: CalendarClock,
           containerClass: 'bg-sky-950/60 text-sky-300 border-sky-600/80',
           dotColor: 'bg-sky-400',
         };
       case 'PASSED_THIS_CYCLE':
         return {
-          label: 'Is Saal Nikal Gayi (Passed)',
+          label: 'Closed This Cycle',
           icon: History,
           containerClass: 'bg-slate-900/90 text-slate-400 border-slate-700/80',
           dotColor: 'bg-slate-500',
@@ -708,7 +708,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 )}
               </div>
               <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
-                Every opportunity calculates &apos;Chal Rahi Hai&apos; vs &apos;Is Saal Nikal Gayi&apos; down to the exact day.
+                Every opportunity calculates &apos;Open Now&apos; vs &apos;Closed This Cycle&apos; down to the exact day.
               </span>
             </div>
           </div>
@@ -804,7 +804,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 line-clamp-1">
-                Window active abhi
+                Currently open
               </span>
             </button>
 
@@ -836,7 +836,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 line-clamp-1">
-                &lt;30 din me khul rahi
+                Opens in &lt;30 days
               </span>
             </button>
 
@@ -865,7 +865,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 line-clamp-1">
-                30+ din baad runway
+                30+ days runway
               </span>
             </button>
 
@@ -894,7 +894,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 </span>
               </div>
               <span className="text-[10px] text-slate-500 line-clamp-1">
-                Window band ho chuki
+                Closed this cycle
               </span>
             </button>
 
@@ -952,7 +952,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 line-clamp-1">
-                Puri calendar list
+                Complete calendar list
               </span>
             </button>
           </div>
@@ -1350,8 +1350,8 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
         <AlertCircle className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
         <div>
           <strong className="text-purple-300">Predictive Historical Model Notice: </strong>
-          Yeh listing live-scraped feeds nahi hain, balki pichle kai saalo ke documented recruitment patterns par aadharit calculation hai. 
-          Har card par diye gaye <span className="text-indigo-300 font-bold">Official Careers Portal ↗</span> link par click karke candidate khud company ki website par live status re-confirm karein.
+          These listings reflect multi-year documented recruitment patterns rather than real-time scraped feeds. 
+          Candidates are advised to click the <span className="text-indigo-300 font-bold">Official Careers Portal ↗</span> link on each card to re-confirm live opening dates directly on the company website.
         </div>
       </div>
 
@@ -1360,9 +1360,9 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
         <div className="p-12 text-center rounded-2xl border border-dashed border-slate-800 bg-slate-950/60">
           <Calendar className="w-8 h-8 text-slate-600 mx-auto mb-2" />
           <p className="text-sm font-bold text-slate-400">
-            {activeStatusTab === 'OPEN_NOW' && 'Is filter me filhal koi open window nahi mila'}
-            {activeStatusTab === 'UPCOMING' && 'Is filter me koi upcoming cycle nahi mila'}
-            {activeStatusTab === 'PASSED_THIS_CYCLE' && 'Is filter me koi passed cycle nahi mila'}
+            {activeStatusTab === 'OPEN_NOW' && 'No open recruitment windows found in this category'}
+            {activeStatusTab === 'UPCOMING' && 'No upcoming recruitment cycles found in this category'}
+            {activeStatusTab === 'PASSED_THIS_CYCLE' && 'No passed recruitment cycles found in this category'}
           </p>
           <p className="text-xs text-slate-500 mt-1">Try switching to &quot;All Months&quot; or resetting the date filter.</p>
         </div>
@@ -1522,7 +1522,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                           )}
                         </div>
                         <p className="text-xs font-mono font-black text-red-100 leading-snug tracking-tight">
-                          &ldquo;{cycle.disclaimerNotice || 'Exact dates aur seats officially university/scheme ki apni website par confirm karein — ye information guide ke roop me hai, final source nahi.'}&rdquo;
+                          &ldquo;{cycle.disclaimerNotice || 'Confirm exact dates and opening quotas directly on the official host university/program website — this schedule serves as an advisory guide.'}&rdquo;
                         </p>
                       </div>
                     </div>

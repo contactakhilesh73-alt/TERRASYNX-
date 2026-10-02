@@ -241,7 +241,7 @@ export const EmailDraftModal: React.FC<EmailDraftModalProps> = ({
           </button>
         </div>
 
-        {/* MANDATORY PROMINENT STUDENT AGENCY SAFETY BANNER (Strict Rule: "Draft only, kabhi bhejta nahi") */}
+        {/* MANDATORY PROMINENT STUDENT AGENCY SAFETY BANNER (Strict Rule: "Draft only, never auto-sent") */}
         <div className="bg-gradient-to-r from-amber-500/15 via-indigo-500/15 to-emerald-500/15 border-b border-amber-500/30 px-4 py-2.5 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2.5">
             <div className="p-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/40">
@@ -249,10 +249,10 @@ export const EmailDraftModal: React.FC<EmailDraftModalProps> = ({
             </div>
             <div>
               <p className="text-xs font-bold text-amber-200 uppercase tracking-wide font-mono">
-                🔒 Draft Only — Kabhi Bhejta Nahi
+                🔒 Draft Only — Never Auto-Sent
               </p>
               <p className="text-[11px] text-slate-300">
-                Terrasynx strictly synthesizes drafts for your eyes only. Hum kabhi bhi aapke email se auto-send nahi karte. You retain 100% control to review, edit, and send manually.
+                TERRASYNX strictly synthesizes drafts for your review only. We never auto-send from your mailbox. You retain 100% manual control to review, edit, and send.
               </p>
             </div>
           </div>
@@ -418,7 +418,7 @@ export const EmailDraftModal: React.FC<EmailDraftModalProps> = ({
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-bold text-slate-200 flex items-center gap-2 uppercase tracking-wider font-mono">
                 <Paperclip className="w-4 h-4 text-cyan-400" />
-                <span>Mandatory Attachment & Link Checklist (Send Karne Se Pehle)</span>
+                <span>Mandatory Attachment & Link Checklist (Verify Before Sending)</span>
               </h3>
               <span className="text-[11px] text-slate-400 font-mono">
                 {Object.values(checkedAttachments).filter(Boolean).length} / {attachmentChecklist.length} ready

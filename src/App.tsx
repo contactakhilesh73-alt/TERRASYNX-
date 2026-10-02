@@ -38,6 +38,8 @@ import { AuthModal } from './components/AuthModal';
 import { StudentOnboardingModal } from './components/StudentOnboardingModal';
 import { CoverLetterModal } from './components/CoverLetterModal';
 import { EmailDraftModal } from './components/EmailDraftModal';
+import { CompanyResearchModal } from './components/CompanyResearchModal';
+import { StoryBankView } from './components/StoryBankView';
 import { 
   signInWithGoogle, 
   signOutStudent, 
@@ -79,6 +81,7 @@ export default function App() {
   const [selectedDossierOpp, setSelectedDossierOpp] = useState<Opportunity | null>(null);
   const [coverLetterOpp, setCoverLetterOpp] = useState<Opportunity | null>(null);
   const [emailDraftOpp, setEmailDraftOpp] = useState<Opportunity | null>(null);
+  const [researchOpp, setResearchOpp] = useState<Opportunity | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
@@ -104,6 +107,7 @@ export default function App() {
         setSelectedDossierOpp(null);
         setCoverLetterOpp(null);
         setEmailDraftOpp(null);
+        setResearchOpp(null);
         setIsCopilotOpen(false);
         setIsShortcutsOpen(false);
         setIsAuditModalOpen(false);
@@ -149,6 +153,8 @@ export default function App() {
         'R': 'recruiter_radar',
         't': 'referral_tracker',
         'T': 'referral_tracker',
+        'b': 'story_bank',
+        'B': 'story_bank',
       };
 
       if (keyMap[e.key]) {
@@ -457,6 +463,23 @@ export default function App() {
             onOpenDetails={setSelectedOpp}
             onNavigateToPipeline={() => setCurrentMode('pipeline')}
             onNavigateToOfferEvaluator={() => setCurrentMode('offer_evaluator')}
+            onNavigateToStoryBank={() => setCurrentMode('story_bank')}
+          />
+        )}
+
+        {/* MODE 10B: Reusable Interview Story Bank (Prompt 16) */}
+        {currentMode === 'story_bank' && (
+          <StoryBankView
+            opportunities={opportunities}
+            studentProfile={studentProfile}
+            onNavigateToMockInterview={(oppId) => {
+              if (oppId) {
+                const matched = opportunities.find(o => o.id === oppId);
+                if (matched) setSelectedOpp(matched);
+              }
+              setCurrentMode('mock_interview');
+            }}
+            onNavigateToPipeline={() => setCurrentMode('pipeline')}
           />
         )}
 
@@ -594,7 +617,24 @@ export default function App() {
         }}
         onOpenCoverLetter={setCoverLetterOpp}
         onOpenEmailDraft={setEmailDraftOpp}
+        onOpenCompanyResearch={setResearchOpp}
         isApplied={selectedOpp ? selectedOpp.stage !== 'discovered' && selectedOpp.stage !== 'archived' : false}
+      />
+
+      {/* 6-Axis Deep Company Research Modal (Prompt 18) */}
+      <CompanyResearchModal
+        isOpen={Boolean(researchOpp)}
+        opportunity={researchOpp}
+        profile={studentProfile}
+        onClose={() => setResearchOpp(null)}
+        onNavigateToMockInterview={(oppId, prompt) => {
+          setResearchOpp(null);
+          if (oppId) {
+            const match = opportunities.find(o => o.id === oppId);
+            if (match) setSelectedOpp(match);
+          }
+          setCurrentMode('mock_interview');
+        }}
       />
 
       {/* Autonomous Personalized Cover Letter Studio Modal (Phase 8 Cover Letter Craft) */}
@@ -606,7 +646,7 @@ export default function App() {
       />
 
       {/* Autonomous Cold Outreach & Referral Request Email Studio Modal (Phase 9 Email Craft) */}
-      {/* Strict Mandate: "Draft only, kabhi bhejta nahi" */}
+      {/* Strict Mandate: "Draft only, never auto-sent" */}
       <EmailDraftModal
         opportunity={emailDraftOpp}
         profile={studentProfile}

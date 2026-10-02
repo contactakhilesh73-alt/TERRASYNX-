@@ -104,9 +104,11 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
       if (content) {
         const result = AppliedDossierService.importWorkspace(content);
         if (result.success) {
-          alert(`Workspace restored successfully! Loaded ${result.data?.appliedRecords.length} records.`);
+          setPurgeFeedback(`Workspace restored successfully! Loaded ${result.data?.appliedRecords.length} records.`);
+          setTimeout(() => setPurgeFeedback(null), 5000);
         } else {
-          alert(`Restore failed: ${result.message}`);
+          setPurgeFeedback(`Restore failed: ${result.message}`);
+          setTimeout(() => setPurgeFeedback(null), 5000);
         }
       }
     };
@@ -327,9 +329,9 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                                 DossierPdfService.generateMultiLayerJanchCertificatePDF(opp, audit);
                               }}
                               className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-800 transition-colors flex items-center space-x-1 cursor-pointer"
-                              title="Print Official Multi-Layer Janch Certificate"
+                              title="Print Official Multi-Layer Verification Certificate"
                             >
-                              <ShieldCheck className="w-3 h-3 mr-1 text-cyan-400" /> Janch Cert
+                              <ShieldCheck className="w-3 h-3 mr-1 text-cyan-400" /> Verification Cert
                             </button>
                           );
                         })()}

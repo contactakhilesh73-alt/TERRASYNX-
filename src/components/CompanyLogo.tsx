@@ -1,6 +1,6 @@
 /**
  * TERRASYNX: Authentic Enterprise Brand Models & High-Fidelity Company Logos
- * Strictly identical ("Hu-ba-hu") to official company logos and exact brand colors
+ * Strictly identical to official company logos and exact brand colors
  * so students can instantly identify the official corporate portals.
  */
 

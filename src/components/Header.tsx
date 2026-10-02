@@ -33,7 +33,8 @@ import {
   Phone,
   Mail,
   UserPlus,
-  LogIn
+  LogIn,
+  BookOpen
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -455,6 +456,21 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Mock Interview Studio</span>
             <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 font-mono">
               P7.1
+            </span>
+          </button>
+
+          <button
+            onClick={() => onModeChange('story_bank')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              currentMode === 'story_bank'
+                ? 'bg-indigo-500/20 text-indigo-200 border border-indigo-500/50 shadow-sm shadow-indigo-900/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+            <span>My Story Bank</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-indigo-950/80 text-cyan-300 border border-indigo-700/60 font-mono">
+              STAR
             </span>
           </button>
 

@@ -1,7 +1,7 @@
 /**
  * TERRASYNX: Smart Auto-Fill Assistant & Application Preparer (Req #4 & #17)
  * - Pre-fills candidate details accurately into application payloads.
- * - Form fields pre-filled, review karke khud submit karein.
+ * - Form fields pre-filled for candidate review and manual submission.
  * - Enforces mandatory Human Legal & Work-Auth Confirmation Gates.
  * - Produces immutable cryptographic submission receipts.
  */
@@ -166,7 +166,7 @@ export class FastApplyService {
       onProgressUpdate({
         step: 4,
         title: 'Form Pre-Fill Complete',
-        detail: 'Candidate details pre-filled. Ab official career page par jakar manual submission karein.',
+        detail: 'Candidate details pre-filled. Please proceed to the official career portal for manual submission.',
         completed: true,
       });
     }
@@ -191,14 +191,14 @@ export class FastApplyService {
     };
   }
 
-  // Save draft state if student clicks "Abhi Nahi, Draft / Pending Rakhein"
+  // Save draft state if candidate clicks "Not Yet — Keep as Draft"
   // Stage remains 'discovered' (does NOT move to 'applied')
   public static recordDraftPreparation(opportunity: Opportunity, notes?: string): void {
     const draftNote = notes || 'Application dossier prepared via Auto-Fill - Pending candidate submission on official portal.';
     RadarEngine.updateStage(opportunity.id, 'discovered', draftNote);
   }
 
-  // Student Confirmation Gate: ONLY called when user confirms "Haan, Maine Submit Kar Diya"
+  // Student Confirmation Gate: ONLY called when user confirms "Yes, I Have Submitted"
   public static async confirmStudentSubmission(
     opportunity: Opportunity,
     profile: StudentProfile,
@@ -255,8 +255,8 @@ export class FastApplyService {
       companyName: opportunity.companyName,
       actionUrl: opportunity.officialApplyUrl,
       actionAdvisorPoints: [
-        'Aapne khud confirm kiya ki application company portal par submit ho gayi hai.',
-        'Important: Yeh candidate self-reported application milestone hai (employer-certified receipt nahi).',
+        'You confirmed that your application was submitted on the official employer portal.',
+        'Notice: This milestone is self-reported by the candidate (not an employer-certified receipt).',
         `Official portal link: ${officialStatusTrackerUrl}`,
         'Job-specific "Apply Now" alerts automatically muted.',
         'Follow-up reminder scheduled in 7 days.',

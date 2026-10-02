@@ -266,9 +266,9 @@ export class RadarEngine {
         companyName: opp.companyName,
         actionUrl: opp.officialApplyUrl,
         actionAdvisorPoints: [
-          'Aapne khud confirm kiya ki application company portal par submit ho gayi hai.',
-          'Important: Yeh candidate self-reported application milestone hai (employer-certified receipt nahi).',
-          'Official application status track karne ke liye company ke career portal par check karein.',
+          'You confirmed that your application was submitted on the official employer portal.',
+          'Notice: This milestone is self-reported by the candidate (not an employer-certified receipt).',
+          'To track live application progress, please monitor the company\'s official career portal.',
           `Follow-up reminder queued for ${new Date(opp.followUpDeadlineAt).toLocaleDateString()}.`,
         ],
       });

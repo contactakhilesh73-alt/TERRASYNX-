@@ -567,7 +567,7 @@ export class DossierPdfService {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TERRASYNX - Official Multi-Layer Janch Certificate (${escapeHtml(opp.companyName)})</title>
+  <title>TERRASYNX - Official Multi-Layer Verification Certificate (${escapeHtml(opp.companyName)})</title>
   <style>
     @page {
       size: A4 portrait;
@@ -763,12 +763,12 @@ export class DossierPdfService {
         <div class="brand-sub">Autonomous Career Intelligence &amp; Verification Protocol</div>
       </div>
       <div class="badge-certified">
-        ✓ 100% Genuine &amp; Janch Passed
+        ✓ 100% Genuine &amp; Verified Authentic
       </div>
     </div>
 
     <!-- Title -->
-    <div class="cert-title">Multi-Layer Janch Authenticity Certificate</div>
+    <div class="cert-title">Multi-Layer Authenticity Verification Certificate</div>
     <div class="cert-desc">Official cryptographically verified proof of direct corporate career requisition</div>
 
     <!-- Requisition Details -->

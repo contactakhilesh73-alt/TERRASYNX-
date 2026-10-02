@@ -27,7 +27,8 @@ import {
   Network,
   Target,
   FileEdit,
-  Mail
+  Mail,
+  Compass
 } from 'lucide-react';
 
 interface OpportunityDetailModalProps {
@@ -46,6 +47,7 @@ interface OpportunityDetailModalProps {
   onOpenRecruiterRadar?: (opportunity: Opportunity) => void;
   onOpenCoverLetter?: (opportunity: Opportunity) => void;
   onOpenEmailDraft?: (opportunity: Opportunity) => void;
+  onOpenCompanyResearch?: (opportunity: Opportunity) => void;
   isApplied: boolean;
 }
 
@@ -65,6 +67,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
   onOpenRecruiterRadar,
   onOpenCoverLetter,
   onOpenEmailDraft,
+  onOpenCompanyResearch,
   isApplied,
 }) => {
   if (!opportunity) return null;
@@ -369,6 +372,20 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               >
                 <Mail className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Email Draft</span>
+              </button>
+            )}
+
+            {onOpenCompanyResearch && (
+              <button
+                id="modal-company-research-btn"
+                onClick={() => {
+                  onOpenCompanyResearch(opportunity);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:text-emerald-100 bg-emerald-950/60 border border-emerald-800/60 transition-colors cursor-pointer font-medium"
+                title="Run 6-Axis Company Intelligence & Strategic Interview Research"
+              >
+                <Compass className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Research This Company</span>
               </button>
             )}
 

@@ -1,6 +1,6 @@
 /**
  * TERRASYNX: Smart Auto-Fill Assistant Modal (Req #4 & #17)
- * - Form fields pre-filled, review karke khud submit karein
+ * - Form fields pre-filled for candidate review and manual submission
  * - Candidate profile & tailored resume pre-flight dossier
  * - Mandatory Legal & Work Authorization Confirmation Gate
  * - Honest Student Self-Reported Confirmation Gate
@@ -110,7 +110,7 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
     }
   };
 
-  // Step 2A: User confirms "Haan, Maine Submit Kar Diya"
+  // Step 2A: User confirms "Yes, I Have Submitted"
   const handleConfirmSubmission = async () => {
     try {
       const newReceipt = await FastApplyService.confirmStudentSubmission(
@@ -135,13 +135,13 @@ export const FastApplyModal: React.FC<FastApplyModalProps> = ({
     }
   };
 
-  // Step 2B: User says "Abhi Nahi, Draft / Pending Rakhein"
+  // Step 2B: User says "Not Yet, Keep as Draft / Pending"
   const handleKeepAsDraft = () => {
     FastApplyService.recordDraftPreparation(
       opportunity,
       'Application dossier pre-filled - Candidate has not yet submitted on official portal.'
     );
-    setDraftSavedMessage('Draft successfully saved! Ye opportunity aapke pipeline me Pending/Discovered stage me rahegi. Jab aap company portal par apply kar lein, tab wapas aakar confirm kar sakte hain.');
+    setDraftSavedMessage('Draft successfully saved! This opportunity will remain in your pipeline under the Discovered stage. Once you submit on the official portal, return here to confirm.');
   };
 
   const handleCopyConfirmation = () => {
@@ -237,7 +237,7 @@ record and does not replace employer application confirmation.`;
                 <div>
                   <h4 className="font-bold text-slate-200 text-xs">Smart Auto-Fill Assistant & Application Preparer</h4>
                   <p className="text-slate-400 text-[11px] mt-0.5 leading-relaxed">
-                    Form fields pre-filled, review karke khud submit karein. Ye assistant aapki verified profile details aur tailored resume organize karta hai taaki aap confidence ke sath official portal par review aur apply kar sakein.
+                    Form fields pre-filled for manual student review and submission. This assistant organizes your verified profile details and tailored resume so you can review and submit with confidence on the official portal.
                   </p>
                 </div>
               </div>
@@ -405,7 +405,7 @@ record and does not replace employer application confirmation.`;
               </div>
 
               <div className="text-[11px] font-mono text-cyan-400/80">
-                ✨ Form fields pre-filled, review karke khud submit karein
+                ✨ Form fields pre-filled — Review and submit manually
               </div>
             </div>
           )}
@@ -422,11 +422,11 @@ record and does not replace employer application confirmation.`;
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-100 text-sm">
-                      Ab official page par jaakar apna application submit karein
+                      Submit your application on the official career portal
                     </h3>
                     <p className="text-slate-300 text-xs mt-1 leading-relaxed">
-                      Aapki verified details aur ATS-aligned resume payload prepare ho chuka hai. 
-                      Neeche diye button par click karke <strong>{opportunity.companyName}</strong> ke official portal par jayein aur form review karke submit karein.
+                      Your verified credentials and ATS-aligned resume payload are prepared. 
+                      Click the button below to visit <strong>{opportunity.companyName}</strong>'s official portal to review and submit your application.
                     </p>
                   </div>
                 </div>
@@ -466,11 +466,11 @@ record and does not replace employer application confirmation.`;
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3.5 font-mono">
                 <div className="flex items-center gap-2 text-slate-200 text-xs border-b border-slate-800 pb-2.5">
                   <HelpCircle className="w-4 h-4 text-amber-400" />
-                  <span className="font-bold text-sm">Kya aapne wahan submit kar diya?</span>
+                  <span className="font-bold text-sm">Have you submitted on the official portal?</span>
                 </div>
 
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Honest Status Reporting: Jab tak aap company ke real portal par submit button nahi dabate, tab tak status 'Applied' nahi hona chahiye. Kripya apna sahi status chunein:
+                  Honest Status Reporting: Please only mark as 'Applied' once you have submitted on the employer's official portal. Please select your verified status:
                 </p>
 
                 {draftSavedMessage && (
@@ -480,27 +480,27 @@ record and does not replace employer application confirmation.`;
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  {/* Button: Haan, Maine Submit Kar Diya */}
+                  {/* Button: Yes, I Have Submitted */}
                   <button
                     onClick={handleConfirmSubmission}
                     className="p-3 rounded-xl border border-emerald-500/80 bg-emerald-950/40 hover:bg-emerald-950/70 text-emerald-300 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg shadow-emerald-950/40"
                   >
                     <CheckCircle className="w-4 h-4 text-emerald-400" />
-                    <span>Haan, Maine Submit Kar Diya</span>
+                    <span>Yes, I Have Submitted</span>
                   </button>
 
-                  {/* Button: Abhi Nahi, Draft / Pending Rakhein */}
+                  {/* Button: Not Yet — Keep as Draft */}
                   <button
                     onClick={handleKeepAsDraft}
                     className="p-3 rounded-xl border border-slate-800 bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
                     <Clock className="w-4 h-4 text-slate-400" />
-                    <span>Abhi Nahi, Draft / Pending Rakhein</span>
+                    <span>Not Yet — Keep as Draft</span>
                   </button>
                 </div>
 
                 <div className="text-[10px] text-slate-500 pt-1">
-                  * "Haan" click karne par hi Kanban stage 'applied' hoga aur email receipt banegi. "Abhi Nahi" par ye draft stage me rahega.
+                  * Clicking "Yes" advances the pipeline stage to 'Applied' and logs an official submission receipt. "Not Yet" preserves it in Draft status.
                 </div>
               </div>
 
@@ -519,7 +519,7 @@ record and does not replace employer application confirmation.`;
                   Application Submitted (Candidate Self-Reported)
                 </h3>
                 <p className="text-xs text-slate-300 max-w-md mx-auto">
-                  Aapne confirm kiya ki {opportunity.companyName} ke official career portal par application submit ho chuki hai.
+                  You confirmed that your application was submitted on {opportunity.companyName}'s official career portal.
                 </p>
               </div>
 
@@ -527,7 +527,7 @@ record and does not replace employer application confirmation.`;
               <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-800/40 text-xs text-amber-300 flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <div className="text-[11px] leading-relaxed">
-                  <strong>Zero-Fake Transparency Notice:</strong> Yeh confirmation candidate dwara self-reported hai (employer-certified status nahi). Real application progress dekhne ke liye hamesha {opportunity.companyName} ke candidate portal par login karein.
+                  <strong>Zero-Fake Transparency Notice:</strong> This milestone is self-reported by the candidate (not an employer-certified receipt). To track live application status, please log into {opportunity.companyName}'s official applicant portal.
                 </div>
               </div>
 
@@ -686,7 +686,7 @@ record and does not replace employer application confirmation.`;
                   className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-mono shadow-lg shadow-emerald-950 flex items-center gap-1.5 cursor-pointer"
                 >
                   <Check className="w-3.5 h-3.5" />
-                  <span>Haan, Maine Submit Kiya</span>
+                  <span>Yes, I Have Submitted</span>
                 </button>
               </div>
             </>

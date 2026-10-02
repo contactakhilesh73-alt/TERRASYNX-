@@ -86,7 +86,7 @@ export interface Opportunity {
   workMode: WorkMode;
   location: string;
   department: string;                 // e.g. "Applied AI", "Infrastructure"
-  description?: string;                // Asli JD / Verified Job Description requirements
+  description?: string;                // Verified Job Description requirements
   officialApplyUrl: string;          // Strictly official application destination
   officialStatusTrackerUrl?: string; // Direct link to company candidate portal where students can log in and view live application status
   
@@ -298,7 +298,8 @@ export type OperationalMode =
   | 'career_launchpad' // Executive Offer Acceptance, Team Matching & Day-One Onboarding Launchpad (Phase 7 Point 3)
   | 'network_graph' // Enterprise Alumni Referral Network Graph & Warm Path Matrix (Phase 8 Point 1)
   | 'recruiter_radar' // Recruiter Intelligence Dossier & Headhunter Outreach Radar (Phase 8 Point 2)
-  | 'referral_tracker'; // Referral Lifecycle Tracker & Application Back-Channel Status Reconciler (Phase 8 Point 3)
+  | 'referral_tracker' // Referral Lifecycle Tracker & Application Back-Channel Status Reconciler (Phase 8 Point 3)
+  | 'story_bank'; // Reusable Interview STAR Story Bank & Role-Matching Engine (Phase 9 Point 1)
 
 export type NavigationMode = OperationalMode;
 
@@ -554,6 +555,40 @@ export interface MockInterviewSession {
   candidateResponse: string;
   durationSeconds: number;
   evaluation?: MockInterviewEvaluation;
+}
+
+// Reusable Interview Story Bank (Prompt 16)
+export interface InterviewStory {
+  id: string;
+  userId?: string;
+  title: string;
+  companyName: string;
+  roleArchetype: string;
+  roundType: MockInterviewRoundType;
+  questionPrompt: string;
+  starSituation: string;
+  starTask: string;
+  starAction: string;
+  starResult: string;
+  fullNarrative: string;
+  tags: string[];
+  targetRoles: string[];
+  score: number; // 0 - 100
+  grade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'Needs Work';
+  metricsMentioned: string[];
+  strengths: string[];
+  growthAreas: string[];
+  sourceSessionId?: string;
+  isStarred?: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface StoryMatchSuggestion {
+  story: InterviewStory;
+  matchScore: number; // 0 - 100
+  matchReasons: string[];
+  recommendedPitchAngle: string;
 }
 
 // Offer Evaluation, Compensation Benchmarking & Negotiation Studio (Phase 7 Point 2)
@@ -878,6 +913,68 @@ export interface ReferralTrackerStats {
   interviewConvertedCount: number;
   averageSpeedToFirstInterviewDays: number;
   conversionRatePercent: number;
+}
+
+// ============================================================================
+// 6-AXIS DEEP COMPANY RESEARCH INTELLIGENCE (PROMPT 18)
+// ============================================================================
+
+export interface CompanyTechStrategyAxis {
+  coreStack: string[];
+  aiRoadmap: string;
+  architecturePriorities: string[];
+  engineeringPrinciples: string[];
+}
+
+export interface CompanyRecentNewsAxis {
+  headline: string;
+  summary: string;
+  impactOnHiring: string;
+  keyMilestones: string[];
+}
+
+export interface CompanyCultureAxis {
+  coreValues: string[];
+  engineeringCadence: string;
+  internAndJuniorExpectations: string;
+  workLifeStyle: string;
+}
+
+export interface CompanyChallengesAxis {
+  technicalBottlenecks: string[];
+  marketThreats: string[];
+  openProblemsCandidatesCanSolve: string[];
+}
+
+export interface CompanyCompetitorsAxis {
+  directRivals: string[];
+  marketMoat: string;
+  differentiation: string;
+  industryStanding: string;
+}
+
+export interface CompanyCandidateAngleAxis {
+  immediateValuePitch: string;
+  highImpactProjectIdeas: string[];
+  interviewTalkingPoints: string[];
+  questionsToAskInterviewer: string[];
+}
+
+export interface CompanyResearchDossier {
+  id: string;
+  companyName: string;
+  companyDomain: string;
+  targetRole?: string;
+  generatedAt: number;
+  source: 'gemini-3.8-flash' | 'algorithmic_fallback' | 'cached';
+  techStrategy: CompanyTechStrategyAxis;
+  recentNews: CompanyRecentNewsAxis;
+  culture: CompanyCultureAxis;
+  challenges: CompanyChallengesAxis;
+  competitors: CompanyCompetitorsAxis;
+  candidateAngle: CompanyCandidateAngleAxis;
+  summaryVerdict: string;
+  interviewAdvantageScore: number;
 }
 
 

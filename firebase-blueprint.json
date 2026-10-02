@@ -15,6 +15,32 @@
         "targetRoles": { "type": "array" },
         "updatedAt": { "type": "timestamp" }
       }
+    },
+    "interviewStories": {
+      "path": "students/{userId}/stories/{storyId}",
+      "description": "Reusable STAR-format interview stories synthesized from mock interviews and practice sessions",
+      "fields": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "companyName": { "type": "string" },
+        "roleArchetype": { "type": "string" },
+        "roundType": { "type": "string" },
+        "questionPrompt": { "type": "string" },
+        "starSituation": { "type": "string" },
+        "starTask": { "type": "string" },
+        "starAction": { "type": "string" },
+        "starResult": { "type": "string" },
+        "fullNarrative": { "type": "string" },
+        "tags": { "type": "array" },
+        "targetRoles": { "type": "array" },
+        "score": { "type": "number" },
+        "grade": { "type": "string" },
+        "isStarred": { "type": "boolean" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      }
     }
   }
 }
+

@@ -4,7 +4,7 @@
  * submission safety audits, and company tier success rates.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Opportunity, StudentProfile } from '../types';
 import { TelemetryAnalyticsService } from '../services/telemetryAnalyticsService';
 import { 
@@ -21,7 +21,13 @@ import {
   Target,
   Layers,
   FileCheck2,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  AlertTriangle,
+  Compass,
+  ArrowDownRight,
+  HelpCircle,
+  Activity
 } from 'lucide-react';
 
 interface AnalyticsDashboardViewProps {
@@ -37,7 +43,9 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
   onNavigateToPipeline,
   onNavigateToRadar,
 }) => {
+  const [rejectionTab, setRejectionTab] = useState<'company_type' | 'role_type'>('company_type');
   const telemetry = TelemetryAnalyticsService.computeTelemetry(opportunities, studentProfile);
+  const rejection = telemetry.rejectionAnalysis;
 
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-200">
@@ -136,7 +144,7 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
             <span className="text-[10px] font-mono text-purple-400">Profile Pre-filled</span>
           </div>
           <p className="text-[10px] text-slate-500 font-mono">
-            Form fields pre-filled, review karke khud submit karein.
+            Form fields pre-filled for manual student review and submission.
           </p>
         </div>
       </div>
@@ -289,6 +297,194 @@ export const AnalyticsDashboardView: React.FC<AnalyticsDashboardViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* REJECTION PATTERN ANALYSIS & DROP-OFF DIAGNOSTICS (PROMPT 19) */}
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900/90 to-rose-950/20 border border-slate-800 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/30">
+                <AlertTriangle className="w-4 h-4" />
+              </span>
+              <h3 className="text-base font-bold text-slate-100">
+                Rejection Pattern Analysis &amp; Attrition Diagnostics
+              </h3>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-950 text-rose-300 border border-rose-800/60">
+                Data-Driven Attrition Engine
+              </span>
+            </div>
+            <p className="text-xs text-slate-400">
+              Genuinely calculates where your applications face drop-offs by company tier and role archetype. Zero hardcoded placeholders.
+            </p>
+          </div>
+
+          {/* Segment Selector Tabs */}
+          <div className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+            <button
+              onClick={() => setRejectionTab('company_type')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all cursor-pointer ${
+                rejectionTab === 'company_type'
+                  ? 'bg-rose-950 text-rose-300 border border-rose-800/80 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              By Company Type
+            </button>
+            <button
+              onClick={() => setRejectionTab('role_type')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold font-mono transition-all cursor-pointer ${
+                rejectionTab === 'role_type'
+                  ? 'bg-rose-950 text-rose-300 border border-rose-800/80 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              By Role Type
+            </button>
+          </div>
+        </div>
+
+        {/* Top Attrition Metrics Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-1">
+            <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Overall Rejection Rate</span>
+              <XCircle className="w-4 h-4 text-rose-400" />
+            </div>
+            <div className="flex items-baseline gap-2 pt-1">
+              <span className="text-2xl font-black text-rose-400 font-mono">
+                {rejection.overallRejectionRate}%
+              </span>
+              <span className="text-xs text-slate-400 font-mono">
+                ({rejection.totalRejections} / {rejection.totalApplied} applied)
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 font-mono">
+              {rejection.activeInPipeline} active applications progressing in pipeline.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-1">
+            <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Highest Attrition Segment</span>
+              <AlertCircle className="w-4 h-4 text-amber-400" />
+            </div>
+            <div className="pt-1">
+              <span className="text-sm font-bold text-amber-300 block truncate">
+                {rejection.highestRejectionSegment ? rejection.highestRejectionSegment.name : 'Pipeline Balanced'}
+              </span>
+              <span className="text-xs text-amber-400/90 font-mono font-bold">
+                {rejection.highestRejectionSegment ? `${rejection.highestRejectionSegment.rejectionRate}% Rejection Rate` : 'Zero High-Risk Clusters'}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 font-mono truncate">
+              {rejection.highestRejectionSegment ? rejection.highestRejectionSegment.reason : 'No major bottlenecks detected.'}
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-1">
+            <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Highest Interview Yield</span>
+              <TrendingUp className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="pt-1">
+              <span className="text-sm font-bold text-emerald-300 block truncate">
+                {rejection.highestYieldSegment ? rejection.highestYieldSegment.name : 'In Progress'}
+              </span>
+              <span className="text-xs text-emerald-400 font-mono font-bold">
+                {rejection.highestYieldSegment ? `${rejection.highestYieldSegment.interviewRate}% Interview Rate` : 'Awaiting First Interviews'}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 font-mono truncate">
+              Highest conversion sweet-spot for your current skill profile.
+            </p>
+          </div>
+        </div>
+
+        {/* Detailed Segment Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {(rejectionTab === 'company_type' ? rejection.byCompanyType : rejection.byRoleType).map((segment, idx) => (
+            <div 
+              key={idx}
+              className="p-4 rounded-xl bg-slate-950/80 border border-slate-800/90 space-y-3 hover:border-slate-700/80 transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-200">{segment.name}</h4>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    {segment.appliedCount} applied • {segment.rejectedCount} rejected • {segment.interviewCount} interviewing
+                  </span>
+                </div>
+
+                <div className="text-right">
+                  <span className={`text-xs font-mono font-bold ${
+                    segment.rejectionRate >= 60 ? 'text-rose-400' : segment.rejectionRate >= 30 ? 'text-amber-400' : 'text-emerald-400'
+                  }`}>
+                    {segment.rejectionRate}% Rejection
+                  </span>
+                  <span className="block text-[10px] font-mono text-slate-500">
+                    {segment.interviewConversionRate}% to Interview
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden flex">
+                <div 
+                  className="h-full bg-rose-500 transition-all duration-300"
+                  style={{ width: `${segment.rejectionRate}%` }}
+                  title={`${segment.rejectionRate}% Rejected`}
+                />
+                <div 
+                  className="h-full bg-emerald-500 transition-all duration-300"
+                  style={{ width: `${segment.interviewConversionRate}%` }}
+                  title={`${segment.interviewConversionRate}% Interviewing`}
+                />
+              </div>
+
+              {/* Drop Stage & Root Cause */}
+              <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/60 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-[11px] font-mono">
+                  <span className="text-slate-400">Primary Drop Stage:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
+                    segment.primaryDropStage === 'Resume ATS Screening'
+                      ? 'bg-rose-950 text-rose-300 border-rose-800/50'
+                      : segment.primaryDropStage === 'Online Assessment (OA)'
+                      ? 'bg-amber-950 text-amber-300 border-amber-800/50'
+                      : 'bg-slate-800 text-slate-300 border-slate-700'
+                  }`}>
+                    {segment.primaryDropStage}
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  <strong className="text-slate-200">Root Cause:</strong> {segment.diagnosedRootCause}
+                </p>
+
+                <p className="text-[11px] text-cyan-300/90 leading-relaxed font-mono">
+                  <strong className="text-cyan-400">Actionable Fix:</strong> {segment.actionableRemedy}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tactical Remediation Advice List */}
+        <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Autonomous Strategic Advice &amp; Drop-Off Mitigation</span>
+          </div>
+          <div className="space-y-1.5">
+            {rejection.remediationAdvice.map((advice, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs text-slate-300 font-mono">
+                <span className="text-cyan-400 font-bold">•</span>
+                <span>{advice}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
+

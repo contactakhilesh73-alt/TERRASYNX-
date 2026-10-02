@@ -6,7 +6,7 @@
  *  2. Incoming & Outgoing Opportunities (Jobs + Internships)
  *  3. Multi-Layer Janch Pass Authenticity Audits
  *  4. Selection & Round Milestones (OA, Interview, Offers)
- *  5. Actionable Roadmaps ("Aage kya karna hai")
+ *  5. Actionable Roadmaps ("Next Recommended Actions")
  */
 
 import { Opportunity, StudentProfile, AlertEmailSimulation } from '../types';
@@ -100,7 +100,7 @@ export class NoReplyAlertService {
           id: `alert_audit_${now}`,
           type: 'janch_pass_audit',
           tier: 'slate',
-          subject: `🛡️ [Multi-Layer Janch Passed] Cryptographic Verification Certificate: ${company}`,
+          subject: `🛡️ [Multi-Layer Verification Passed] Cryptographic Verification Certificate: ${company}`,
           recipientEmail: payload.recipientEmail,
           fromHeader: this.SENDER_HEADER,
           payloadSizeKb: 21.0,
@@ -150,7 +150,7 @@ export class NoReplyAlertService {
           id: `alert_roadmap_${now}`,
           type: 'action_roadmap',
           tier: 'royal',
-          subject: `🗺️ [Aage Kya Karna Hai] Technical Preparation Roadmap for ${company}`,
+          subject: `🗺️ [Action Roadmap] Technical Preparation Roadmap for ${company}`,
           recipientEmail: payload.recipientEmail,
           fromHeader: this.SENDER_HEADER,
           payloadSizeKb: 22.4,

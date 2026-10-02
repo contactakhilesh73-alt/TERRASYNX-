@@ -269,7 +269,7 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-800 font-mono transition-colors cursor-pointer"
               >
                 <FileCheck2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Print Janch Certificate</span>
+                <span>Print Verification Certificate</span>
               </button>
             )}
 

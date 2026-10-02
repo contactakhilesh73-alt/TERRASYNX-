@@ -197,7 +197,7 @@ TARGET OPPORTUNITY:
 - Location: ${opportunity.location || 'Flexible'}
 - Compensation: ${opportunity.compensation ? `$${opportunity.compensation.amount?.toLocaleString()} ${opportunity.compensation.period}` : 'Competitive'}
 
-JOB DESCRIPTION (ASLI JD):
+JOB DESCRIPTION (VERIFIED JD):
 ${opportunity.description || 'Full-stack software engineering position requiring robust problem solving, algorithmic foundations, clean system architecture, collaborative development, and technical curiosity.'}
 
 CANDIDATE PROFILE (REAL SKILLS & PROJECTS):
@@ -298,7 +298,7 @@ TARGET OPPORTUNITY:
 - Company: ${opportunity.companyName}
 - Department: ${opportunity.department || 'Engineering'}
 - Location: ${opportunity.location || 'Remote / Hybrid'}
-- Job Description / Requirements (Asli JD):
+- Job Description / Requirements (Verified JD):
 ${opportunity.description || 'Software Engineering role requiring robust technical problem solving, coding foundations, system architecture, and collaborative teamwork.'}
 
 CANDIDATE CREDENTIALS (REAL PROFILE):
@@ -378,6 +378,141 @@ Respond ONLY with a valid JSON object with the following structure (no markdown 
     });
   } catch (err: any) {
     logger.error('Server:EmailDraft', 'Email Draft Generation Error', err);
+    return res.status(200).json({
+      success: false,
+      fallbackToLocal: true,
+      error: err.message || 'AI generation failed'
+    });
+  }
+});
+
+// Deep 6-Axis Company Research (Prompt 18)
+app.post('/api/ai/company-research', async (req, res) => {
+  try {
+    const { companyName, companyDomain, targetRole, jobDescription, profile } = req.body;
+    if (!companyName) {
+      return res.status(400).json({ success: false, error: 'companyName is required' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      logger.warn('Server:CompanyResearch', 'No GEMINI_API_KEY configured. Fallback to algorithmic synthesis.');
+      return res.status(200).json({
+        success: false,
+        fallbackToLocal: true,
+        reason: 'GEMINI_KEY_NOT_CONFIGURED',
+        message: 'No GEMINI_API_KEY configured. Fallback to algorithmic research matrix.'
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const prompt = `You are a Principal Technical Architect, Senior Equity Research Analyst, and Silicon Valley Engineering Hiring Director.
+Perform an exhaustive, factual, strategic, and high-signal 6-Axis Company Research dossier for:
+
+TARGET COMPANY:
+- Company Name: ${companyName}
+- Domain: ${companyDomain || companyName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'}
+${targetRole ? `- Target Role: ${targetRole}` : ''}
+${jobDescription ? `- Job Description Context: ${jobDescription.slice(0, 1500)}` : ''}
+
+${profile ? `CANDIDATE CONTEXT:
+- Major & Degree: ${profile.degree || 'Computer Science / Engineering'}
+- Graduation Year: ${profile.graduationYear || '2026'}
+- Primary Skills: ${(profile.primarySkills || []).join(', ') || 'Distributed Systems, TypeScript, Python'}
+- Featured Projects: ${(profile.projects || []).map((p: any) => p.title).join(', ') || 'Cloud Platforms, Full-Stack Architecture'}` : ''}
+
+Conduct a deep-dive analysis across exactly these 6 Axes:
+1. Tech Strategy:
+   - Core production technology stack (languages, databases, cloud, frameworks).
+   - Real-world AI / Machine Learning roadmap and product integrations.
+   - Core architectural priorities (scalability, low-latency, real-time distributed state, resilience).
+   - Key engineering principles & culture of code.
+2. Recent News & Developments:
+   - Recent landmark product launches, technical breakthroughs, or strategic shifts.
+   - Impact of these developments on engineering headcount and hiring velocity.
+   - Key milestones from the last 6-18 months.
+3. Culture & Work Environment:
+   - Stated and actual cultural values (e.g. high autonomy, memo-driven, blameless post-mortems).
+   - Engineering release cadence & ownership philosophy.
+   - Expectations from interns, new grads, and junior engineers.
+   - Daily operational pace and collaboration norms.
+4. Strategic Challenges:
+   - Current technical bottlenecks & architectural friction points.
+   - Competitive market headwinds and macroeconomic threats.
+   - Specific open engineering problems that a sharp intern/new grad can write code to solve.
+5. Competitors & Market Landscape:
+   - 3-5 direct industry rivals & tech alternatives.
+   - Differentiated technological or network moat.
+   - Core product differentiation in customer minds.
+   - Current market positioning & standing.
+6. Candidate Value Angle:
+   - Exact, high-impact value pitch: Why this candidate will ramp up fast and deliver immediate value.
+   - 2-3 specific project ideas tailored to the company's pain points.
+   - 3-4 razor-sharp talking points for technical and behavioral interview rounds.
+   - 3 provocative, high-conviction questions for the candidate to ask the interviewer.
+
+Provide your output as a strictly valid, single JSON object conforming to this TypeScript interface:
+{
+  "techStrategy": {
+    "coreStack": string[],
+    "aiRoadmap": string,
+    "architecturePriorities": string[],
+    "engineeringPrinciples": string[]
+  },
+  "recentNews": {
+    "headline": string,
+    "summary": string,
+    "impactOnHiring": string,
+    "keyMilestones": string[]
+  },
+  "culture": {
+    "coreValues": string[],
+    "engineeringCadence": string,
+    "internAndJuniorExpectations": string,
+    "workLifeStyle": string
+  },
+  "challenges": {
+    "technicalBottlenecks": string[],
+    "marketThreats": string[],
+    "openProblemsCandidatesCanSolve": string[]
+  },
+  "competitors": {
+    "directRivals": string[],
+    "marketMoat": string,
+    "differentiation": string,
+    "industryStanding": string
+  },
+  "candidateAngle": {
+    "immediateValuePitch": string,
+    "highImpactProjectIdeas": string[],
+    "interviewTalkingPoints": string[],
+    "questionsToAskInterviewer": string[]
+  },
+  "summaryVerdict": string,
+  "interviewAdvantageScore": number
+}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        temperature: 0.2,
+        responseMimeType: 'application/json'
+      }
+    });
+
+    const responseText = response.text?.trim() || '{}';
+    const parsed = JSON.parse(responseText);
+
+    return res.json({
+      success: true,
+      dossier: parsed,
+      source: 'gemini-3.8-flash',
+      generatedAt: Date.now()
+    });
+  } catch (err: any) {
+    logger.error('Server:CompanyResearch', 'Company Research Generation Error', err);
     return res.status(200).json({
       success: false,
       fallbackToLocal: true,
@@ -1290,7 +1425,7 @@ app.post('/api/alerts/dispatch-email', async (req, res) => {
     }
 
     const cleanRecipient = String(recipientEmail).trim().toLowerCase();
-    const janchChecksum = `TX-JANCH-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const janchChecksum = `TX-AUDIT-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
     // Render high-fidelity, verified No-Reply HTML Template
     const pointsList = Array.isArray(actionAdvisorPoints)
@@ -1314,7 +1449,7 @@ app.post('/api/alerts/dispatch-email', async (req, res) => {
               </div>
             </div>
             <div style="background: #064e3b; color: #34d399; border: 1px solid #059669; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-              🛡️ Janch Passed
+              🛡️ Verified Authentic
             </div>
           </div>
 
