@@ -10,6 +10,7 @@ import { Opportunity, StudentProfile } from '../types';
 import { ResumeCrafterService, TailoredResumeResult } from '../services/resumeCrafterService';
 import { MultiPersonaService, CandidatePersona, AtsGapAnalysis } from '../services/multiPersonaService';
 import { CompanyLogo } from './CompanyLogo';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { 
   FileText, 
   Sparkles, 
@@ -412,7 +413,7 @@ export const ResumeCrafterView: React.FC<ResumeCrafterViewProps> = ({
                 Ready to submit? Paste this clean text directly into the company ATS application form.
               </span>
               <a
-                href={selectedOpp.officialApplyUrl}
+                href={resolveCanonicalApplyUrl(selectedOpp)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 text-xs font-bold text-cyan-400 hover:text-cyan-300 font-mono"

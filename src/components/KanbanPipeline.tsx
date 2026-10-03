@@ -3,9 +3,12 @@
  * Conforming strictly to SYSTEM_SPEC (Rules #1-#5, Req #1-#22)
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Opportunity, ApplicationStage } from '../types';
 import { CompanyLogo } from './CompanyLogo';
+import { AppliedDossierService } from '../services/appliedDossierService';
+import { FollowUpCadenceService } from '../services/followUpCadenceService';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { 
   KanbanSquare, 
   ArrowRight, 
@@ -24,8 +27,14 @@ import {
   Zap,
   FolderArchive,
   Mic,
-  DollarSign
+  DollarSign,
+  Mail,
+  ShieldCheck,
+  AlertTriangle,
+  RefreshCw
 } from 'lucide-react';
+import { EmailDraftType } from '../services/emailDraftService';
+import { PipelineIntegrityService, PipelineHealthReport } from '../services/pipelineIntegrityService';
 
 interface KanbanPipelineProps {
   opportunities: Opportunity[];
@@ -36,6 +45,7 @@ interface KanbanPipelineProps {
   onOpenMockInterview?: (opportunity: Opportunity) => void;
   onOpenOfferEvaluator?: (opportunity: Opportunity) => void;
   onOpenCareerLaunchpad?: () => void;
+  onOpenEmailDraft?: (opportunity: Opportunity, type?: EmailDraftType) => void;
 }
 
 interface ColumnConfig {
@@ -99,9 +109,46 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
   onOpenMockInterview,
   onOpenOfferEvaluator,
   onOpenCareerLaunchpad,
+  onOpenEmailDraft,
 }) => {
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [tempNotes, setTempNotes] = useState<string>('');
+
+  // PROMPT 23: Pipeline Integrity Automated Suite State
+  const [healthReport, setHealthReport] = useState<PipelineHealthReport>(() => 
+    PipelineIntegrityService.runHealthCheck(opportunities)
+  );
+  const [isFixing, setIsFixing] = useState<boolean>(false);
+  const [showIssueDetails, setShowIssueDetails] = useState<boolean>(false);
+  const [fixSuccessToast, setFixSuccessToast] = useState<string | null>(null);
+
+  // Sync health report whenever opportunities list updates
+  useEffect(() => {
+    setHealthReport(PipelineIntegrityService.runHealthCheck(opportunities));
+  }, [opportunities]);
+
+  const handleRunHealthCheck = () => {
+    const report = PipelineIntegrityService.runHealthCheck(opportunities);
+    setHealthReport(report);
+    if (report.isHealthy) {
+      setFixSuccessToast('Pipeline is 100% healthy: 0 duplicates, 0 inconsistencies.');
+      setTimeout(() => setFixSuccessToast(null), 3000);
+    }
+  };
+
+  const handleFixAll = () => {
+    setIsFixing(true);
+    try {
+      const { fixedCount, report } = PipelineIntegrityService.fixAll(opportunities);
+      setHealthReport(report);
+      setFixSuccessToast(`Fixed ${fixedCount} issue${fixedCount === 1 ? '' : 's'} successfully: duplicates merged & statuses normalized.`);
+      setTimeout(() => setFixSuccessToast(null), 4000);
+    } catch {
+      // safe fallback
+    } finally {
+      setIsFixing(false);
+    }
+  };
 
   const handleStartEditNotes = (opp: Opportunity) => {
     setEditingNotesId(opp.id);
@@ -186,6 +233,119 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
         </div>
       </div>
 
+      {/* PROMPT 23: Pipeline Health & Automated Integrity Sentinel Card */}
+      <div 
+        id="pipeline-health-card"
+        className={`p-3.5 rounded-2xl border transition-all ${
+          healthReport.isHealthy 
+            ? 'bg-slate-900/60 border-slate-800' 
+            : 'bg-amber-950/30 border-amber-800/80 shadow-md shadow-amber-950/20'
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl shrink-0 ${
+              healthReport.isHealthy
+                ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
+                : 'bg-amber-950 text-amber-300 border border-amber-800/80'
+            }`}>
+              {healthReport.isHealthy ? (
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+              )}
+            </div>
+
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold font-mono text-slate-200">
+                  Pipeline Health:
+                </span>
+                <span className={`text-xs font-mono font-bold ${
+                  healthReport.isHealthy ? 'text-emerald-400' : 'text-amber-300'
+                }`}>
+                  {healthReport.isHealthy 
+                    ? '✅ 0 duplicates, 0 inconsistencies'
+                    : `⚠️ ${healthReport.totalIssuesCount} anomal${healthReport.totalIssuesCount === 1 ? 'y' : 'ies'} detected (${healthReport.duplicateCount} dups, ${healthReport.statusInconsistencyCount} status, ${healthReport.orphanDataCount} corrupt)`
+                  }
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">
+                  ({healthReport.totalChecked} roles checked)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 font-sans">
+                {healthReport.summaryMessage}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center flex-wrap">
+            {fixSuccessToast && (
+              <span className="text-[11px] font-mono text-emerald-400 font-semibold animate-pulse mr-1">
+                {fixSuccessToast}
+              </span>
+            )}
+
+            {!healthReport.isHealthy && (
+              <button
+                onClick={handleFixAll}
+                disabled={isFixing}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-mono font-bold shadow-md shadow-amber-950/50 transition-all cursor-pointer"
+                title="1-Click Auto-Heal: Merges duplicates, normalizes stages to canonical forms, and cleans corrupt data"
+              >
+                <Zap className="w-3.5 h-3.5 fill-slate-950" />
+                <span>{isFixing ? 'Fixing...' : 'Fix All'}</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleRunHealthCheck}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors cursor-pointer border border-slate-700"
+              title="Run Automated Data Integrity Check"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+              <span>Run Health Check</span>
+            </button>
+
+            {healthReport.issues.length > 0 && (
+              <button
+                onClick={() => setShowIssueDetails(!showIssueDetails)}
+                className="px-2 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs font-mono cursor-pointer"
+              >
+                {showIssueDetails ? 'Hide Details' : 'View Details'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Expandable Issue Details List */}
+        {showIssueDetails && healthReport.issues.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-slate-800/80 space-y-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">
+              Integrity Issues Detected:
+            </span>
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+              {healthReport.issues.map(iss => (
+                <div key={iss.id} className="p-2 rounded-lg bg-slate-950 border border-slate-800 text-[11px] font-mono flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className={`px-1.5 py-0.2 rounded text-[9px] uppercase font-bold shrink-0 ${
+                      iss.type === 'duplicate' ? 'bg-amber-950 text-amber-300 border border-amber-800' :
+                      iss.type === 'inconsistent_status' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' :
+                      'bg-rose-950 text-rose-300 border border-rose-800'
+                    }`}>
+                      {iss.type.replace('_', ' ')}
+                    </span>
+                    <span className="text-slate-200 font-bold truncate">{iss.companyName}</span>
+                    <span className="text-slate-400 truncate">— {iss.description}</span>
+                  </div>
+                  <span className="text-[10px] text-slate-500 shrink-0 hidden sm:inline">{iss.suggestedFix}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* 5 Kanban Stage Columns Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 overflow-x-auto pb-4">
         {COLUMNS.map(col => {
@@ -228,8 +388,10 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
                     const next = getNextStage(opp.stage);
                     const prev = getPrevStage(opp.stage);
 
-                    // Check if 7 days follow up reached (Req #3)
-                    const isFollowUpDue = opp.followUpDeadlineAt && Date.now() >= opp.followUpDeadlineAt && opp.stage === 'applied';
+                    // Check if 7 days follow up reached (Prompt 21 & Req #3)
+                    const daysElapsed = opp.stage === 'applied' ? FollowUpCadenceService.getDaysElapsed(opp) : 0;
+                    const isFollowUpDue = opp.stage === 'applied' && daysElapsed >= 7;
+                    const appliedRecord = AppliedDossierService.getRecordByOpportunityId(opp.id);
 
                     return (
                       <div
@@ -270,11 +432,52 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
                           {opp.compensation.range}
                         </div>
 
-                        {/* 7-Day Follow-Up Alert Banner (Req #3) */}
+                        {/* Submission Provenance Route Tag */}
+                        {appliedRecord && (
+                          <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono gap-1">
+                            <span className={`px-1.5 py-0.5 rounded font-bold ${
+                              appliedRecord.submissionRoute === 'direct_official_ats'
+                                ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                                : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                            }`}>
+                              {appliedRecord.submissionRoute === 'direct_official_ats' ? '🏢 Official ATS' : '⚡ System Assist'}
+                            </span>
+                            {appliedRecord.applicantEmail && (
+                              <span className="text-slate-400 truncate max-w-[120px]" title={`Logged via ${appliedRecord.applicantEmail}`}>
+                                {appliedRecord.applicantEmail}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 7-Day Follow-Up Alert Banner (Prompt 21 & Req #3) */}
                         {isFollowUpDue && (
-                          <div className="mt-2 p-1.5 rounded bg-amber-950/60 border border-amber-800/80 text-amber-300 text-[10px] font-mono flex items-center gap-1.5 animate-pulse">
-                            <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                            <span>7-Day Follow-Up Due! Email recruiter</span>
+                          <div className="mt-2 p-2 rounded-lg bg-amber-950/80 border border-amber-800 text-amber-200 text-[10px] font-mono space-y-1.5">
+                            <div className="flex items-center justify-between gap-1">
+                              <div className="flex items-center gap-1.5 font-bold text-amber-300">
+                                <AlertCircle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                                <span>Follow-Up Due ({daysElapsed}d)</span>
+                              </div>
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/60 text-amber-300 border border-amber-700">
+                                7+ Days
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-300 font-sans leading-snug">
+                              Aapne {opp.companyName} ko {daysElapsed} din pehle apply kiya tha — polite follow-up email bhejne ka samay hai!
+                            </p>
+                            {onOpenEmailDraft && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onOpenEmailDraft(opp, 'follow-up');
+                                }}
+                                className="w-full mt-1 py-1 px-2 rounded bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold font-mono text-[10px] flex items-center justify-center gap-1.5 cursor-pointer shadow transition-colors"
+                                title="Open EmailDraftModal with tailored 7-day follow-up email"
+                              >
+                                <Mail className="w-3 h-3" />
+                                <span>Draft Follow-Up Email</span>
+                              </button>
+                            )}
                           </div>
                         )}
 
@@ -342,6 +545,17 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
                           >
                             Intel
                           </button>
+
+                          <a
+                            href={resolveCanonicalApplyUrl(opp)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[10px] text-slate-300 hover:text-cyan-300 px-1.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-800 border border-slate-700 font-mono transition-colors"
+                            title="Open exact single-role official application form"
+                          >
+                            <span>Portal</span>
+                            <ExternalLink className="w-2.5 h-2.5 text-cyan-400" />
+                          </a>
 
                           {onOpenMockInterview && (
                             <button

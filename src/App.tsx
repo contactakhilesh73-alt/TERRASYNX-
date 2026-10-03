@@ -38,8 +38,13 @@ import { AuthModal } from './components/AuthModal';
 import { StudentOnboardingModal } from './components/StudentOnboardingModal';
 import { CoverLetterModal } from './components/CoverLetterModal';
 import { EmailDraftModal } from './components/EmailDraftModal';
+import { EmailDraftType } from './services/emailDraftService';
 import { CompanyResearchModal } from './components/CompanyResearchModal';
+import { CompanyRedFlagModal } from './components/CompanyRedFlagModal';
+import { SelfReportApplyModal } from './components/SelfReportApplyModal';
 import { StoryBankView } from './components/StoryBankView';
+import { AppliedDossierService } from './services/appliedDossierService';
+import { PipelineIntegrityService } from './services/pipelineIntegrityService';
 import { 
   signInWithGoogle, 
   signOutStudent, 
@@ -81,7 +86,15 @@ export default function App() {
   const [selectedDossierOpp, setSelectedDossierOpp] = useState<Opportunity | null>(null);
   const [coverLetterOpp, setCoverLetterOpp] = useState<Opportunity | null>(null);
   const [emailDraftOpp, setEmailDraftOpp] = useState<Opportunity | null>(null);
+  const [emailDraftType, setEmailDraftType] = useState<EmailDraftType>('referral-request');
   const [researchOpp, setResearchOpp] = useState<Opportunity | null>(null);
+
+  const handleOpenEmailDraft = (opp: Opportunity, type: EmailDraftType = 'referral-request') => {
+    setEmailDraftOpp(opp);
+    setEmailDraftType(type);
+  };
+  const [redFlagOpp, setRedFlagOpp] = useState<Opportunity | null>(null);
+  const [selfReportOpp, setSelfReportOpp] = useState<Opportunity | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState<boolean>(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
@@ -108,6 +121,8 @@ export default function App() {
         setCoverLetterOpp(null);
         setEmailDraftOpp(null);
         setResearchOpp(null);
+        setRedFlagOpp(null);
+        setSelfReportOpp(null);
         setIsCopilotOpen(false);
         setIsShortcutsOpen(false);
         setIsAuditModalOpen(false);
@@ -171,6 +186,14 @@ export default function App() {
     RadarEngine.init();
     HeartbeatScheduler.init();
 
+    // PROMPT 23: Run Pipeline Integrity Check on App Load
+    try {
+      const initialOpps = RadarEngine.getOpportunities();
+      PipelineIntegrityService.runHealthCheck(initialOpps);
+    } catch {
+      // safe fallback
+    }
+
     const updateState = () => {
       setOpportunities(RadarEngine.getActiveRadarOpportunities());
       setStudentProfile(RadarEngine.getStudentProfile());
@@ -180,6 +203,13 @@ export default function App() {
 
     updateState();
     const unsubscribe = RadarEngine.subscribe(updateState);
+
+    // Initial mount sync for active session
+    const active = loadStudentSession();
+    if (active?.uid || active?.email) {
+      AppliedDossierService.syncWithCloud(active.uid, active?.channel === 'google', active?.email).catch(() => {});
+    }
+
     return () => unsubscribe();
   }, []);
 
@@ -216,6 +246,9 @@ export default function App() {
             RadarEngine.updateStudentProfile(initialSeed);
             setStudentProfile(RadarEngine.getStudentProfile());
           }
+
+          // Real-time synchronization of all user job applications from Firestore and by candidate Gmail
+          await AppliedDossierService.syncWithCloud(firebaseUser.uid, true, firebaseUser.email || undefined);
         } catch (err) {
           console.error('Failed to sync student record with Firestore:', err);
         }
@@ -227,7 +260,31 @@ export default function App() {
 
   // Handlers
   const handleMarkApplied = (jobId: string) => {
-    RadarEngine.updateStage(jobId, 'applied');
+    const opp = opportunities.find(o => o.id === jobId);
+    if (opp) {
+      AppliedDossierService.recordDirectAtsApplication(
+        opp,
+        currentUser?.email || studentProfile.email,
+        currentUser?.uid,
+        currentUser?.channel === 'google'
+      );
+    } else {
+      RadarEngine.updateStage(jobId, 'applied');
+    }
+  };
+
+  const handleOpenSelfReport = (opp: Opportunity) => {
+    setSelfReportOpp(opp);
+  };
+
+  const handleConfirmSelfReport = async (opp: Opportunity, applicantEmail: string, notes?: string) => {
+    await AppliedDossierService.recordDirectAtsApplication(
+      opp,
+      applicantEmail,
+      currentUser?.uid,
+      currentUser?.channel === 'google',
+      notes
+    );
   };
 
   const handleUpdateStage = (jobId: string, nextStage: ApplicationStage, notes?: string) => {
@@ -264,6 +321,9 @@ export default function App() {
         // Automatically open onboarding modal so candidate enters degree, college name, skills, batch
         setIsOnboardingOpen(true);
       }
+
+      // Synchronize applications submitted under this identity & Gmail
+      await AppliedDossierService.syncWithCloud(session.uid, session.channel === 'google', session.email || undefined);
     } catch (err) {
       console.error('Error synchronizing profile after login:', err);
       setIsOnboardingOpen(true);
@@ -343,7 +403,8 @@ export default function App() {
             onFastApply={setFastApplyOpp}
             onOpenDossier={setSelectedDossierOpp}
             onOpenCoverLetter={setCoverLetterOpp}
-            onOpenEmailDraft={setEmailDraftOpp}
+            onOpenEmailDraft={handleOpenEmailDraft}
+            onSelfReportApplied={handleOpenSelfReport}
             mutedAlertIds={mutedAlertIds}
           />
         )}
@@ -365,6 +426,7 @@ export default function App() {
               setCurrentMode('offer_evaluator');
             }}
             onOpenCareerLaunchpad={() => setCurrentMode('career_launchpad')}
+            onOpenEmailDraft={handleOpenEmailDraft}
           />
         )}
 
@@ -397,6 +459,7 @@ export default function App() {
             onOpenDetails={setSelectedOpp}
             onMarkApplied={handleMarkApplied}
             onInspectVerification={setInspectedOpp}
+            onOpenEmailDraft={handleOpenEmailDraft}
           />
         )}
 
@@ -531,7 +594,7 @@ export default function App() {
             studentProfile={studentProfile}
             onNavigateToPipeline={() => setCurrentMode('pipeline')}
             onOpenOpportunity={setSelectedOpp}
-            onOpenEmailDraft={setEmailDraftOpp}
+            onOpenEmailDraft={handleOpenEmailDraft}
           />
         )}
 
@@ -616,9 +679,24 @@ export default function App() {
           setCurrentMode('recruiter_radar');
         }}
         onOpenCoverLetter={setCoverLetterOpp}
-        onOpenEmailDraft={setEmailDraftOpp}
+        onOpenEmailDraft={handleOpenEmailDraft}
         onOpenCompanyResearch={setResearchOpp}
+        onOpenCompanyRedFlags={setRedFlagOpp}
+        allOpportunities={opportunities}
+        onSelectOpportunity={setSelectedOpp}
+        onSelfReportApplied={handleOpenSelfReport}
         isApplied={selectedOpp ? selectedOpp.stage !== 'discovered' && selectedOpp.stage !== 'archived' : false}
+      />
+
+      {/* Interview & Company Red-Flag Detector Modal (Prompt 20) */}
+      <CompanyRedFlagModal
+        isOpen={Boolean(redFlagOpp)}
+        opportunity={redFlagOpp}
+        onClose={() => setRedFlagOpp(null)}
+        onOpenCompanyResearch={(opp) => {
+          setRedFlagOpp(null);
+          setResearchOpp(opp);
+        }}
       />
 
       {/* 6-Axis Deep Company Research Modal (Prompt 18) */}
@@ -652,6 +730,7 @@ export default function App() {
         profile={studentProfile}
         isOpen={Boolean(emailDraftOpp)}
         onClose={() => setEmailDraftOpp(null)}
+        defaultType={emailDraftType}
       />
 
       {/* Smart Auto-Fill Assistant Modal (Req #4 & #17) */}
@@ -682,7 +761,7 @@ export default function App() {
         onClose={() => setAssessmentOpp(null)}
       />
 
-      {/* Santiago 8-Block (A to H) Deep Reasoning Dossier Modal (Phase 5 Point 2) */}
+      {/* TERRASYNX 8-Block (A to H) Deep Reasoning Dossier Modal (Phase 5 Point 2) */}
       {selectedDossierOpp && (
         <DossierModal
           opportunity={selectedDossierOpp}
@@ -727,6 +806,16 @@ export default function App() {
         initialProfile={studentProfile}
         onSave={handleUpdateProfile}
         onDismiss={() => setIsOnboardingOpen(false)}
+      />
+
+      {/* Direct ATS Self-Report Submission Modal (Linked to Candidate Gmail ID) */}
+      <SelfReportApplyModal
+        opportunity={selfReportOpp}
+        currentUser={currentUser}
+        defaultEmail={studentProfile.email}
+        onClose={() => setSelfReportOpp(null)}
+        onConfirm={handleConfirmSelfReport}
+        onOpenGoogleSignIn={handleGoogleSignIn}
       />
 
     </div>

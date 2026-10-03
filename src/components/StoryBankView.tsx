@@ -1,6 +1,6 @@
 /**
  * TERRASYNX: Reusable Interview Story Bank View (Prompt 16)
- * Santiago-inspired persistent STAR repository created from evaluated mock interview
+ * TERRASYNX persistent STAR repository created from evaluated mock interview
  * sessions and saved in Firestore (under student profile) with local resilience.
  *
  * Provides full editing, tagging, role-based best-story recommendation, and
@@ -269,7 +269,7 @@ export const StoryBankView: React.FC<StoryBankViewProps> = ({
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 tracking-wide uppercase font-mono">
-                Prompt 16 • Santiago Reusable Repository
+                TERRASYNX Reusable Narrative Repository
               </span>
               <span className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium font-mono">
                 <CheckCircle2 className="w-3.5 h-3.5" />

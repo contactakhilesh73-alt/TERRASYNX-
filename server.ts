@@ -8,6 +8,7 @@ import { createServer as createViteServer } from 'vite';
 import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from './src/data/atsTargets';
 import { RoleSkillClassifier } from './src/services/roleSkillClassifier';
 import { logger } from './src/utils/logger';
+import { resolveCanonicalApplyUrl, sanitizeOpportunityUrls } from './src/utils/portalUrlResolver';
 
 const app = express();
 const PORT = 3000;
@@ -521,6 +522,112 @@ Provide your output as a strictly valid, single JSON object conforming to this T
   }
 });
 
+// ============================================================================
+// PROMPT 20: INTERVIEW & COMPANY RED-FLAG DETECTOR (Real Gemini 3.8 Flash)
+// ============================================================================
+app.post('/api/ai/company-redflags', async (req, res) => {
+  try {
+    const { companyName, companyDomain, targetRole } = req.body;
+    if (!companyName) {
+      return res.status(400).json({ success: false, error: 'companyName is required' });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      logger.warn('Server:CompanyRedFlags', 'No GEMINI_API_KEY configured. Fallback to algorithmic red-flag analyzer.');
+      return res.status(200).json({
+        success: false,
+        fallbackToLocal: true,
+        reason: 'GEMINI_KEY_NOT_CONFIGURED',
+        message: 'No GEMINI_API_KEY configured. Fallback to algorithmic red-flag detector.'
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+
+    const prompt = `You are a Senior Technical Talent Advocate, Workplace Culture Analyst, and Corporate Due Diligence Specialist.
+Analyze public knowledge (Glassdoor employee reviews, Blind discussions, news reports, Reddit engineering threads, WARN notices, and executive transitions) for:
+
+TARGET COMPANY:
+- Company Name: ${companyName}
+- Domain: ${companyDomain || companyName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com'}
+${targetRole ? `- Target Role: ${targetRole}` : ''}
+
+Evaluate exactly these 5 potential workplace culture red flags:
+1. high attrition/layoff history: frequent workforce reductions, mass RIFs, PIP factory culture, volatile tenure.
+2. toxic-culture signals: micromanagement, blame culture, poor psychological safety, combative review cycles, burnout pressure.
+3. unpaid-overtime patterns: grind expectation, crunch culture, uncompensated 60+ hour work weeks, weekend on-call abuse, blurred boundary norms.
+4. unusually fast hiring (desperation signal): hiring without proper technical bar, rapid backfilling due to sudden team departures, bait-and-switch role responsibilities.
+5. leadership controversy: CEO/founder public scandals, regulatory investigations, executive churn, ethically questionable business pivots.
+
+Output Requirements:
+- Return 0 to 5 red flags (can be empty or 0-1 if the company has a clean, high-morale reputation; do NOT hallucinate fake scandals).
+- For EACH identified red flag:
+  * category: exactly one of ['attrition_layoff', 'toxic_culture', 'unpaid_overtime', 'desperation_hiring', 'leadership_controversy']
+  * categoryLabel: human-readable label
+  * title: concise 3-8 word title
+  * severity: 'high' | 'medium' | 'low'
+  * description: 1-2 objective, factual sentences detailing what is reported or observed.
+  * whyThisMatters: EXACTLY ONE LINE explaining why this matters specifically to a student, intern, or engineer joining this company.
+  * confidence: 'verified' (if backed by major news, documented WARN notices, or consistent widespread reports) OR 'unverified' (if anecdotal, unconfirmed Glassdoor/Reddit sentiment).
+  * unverifiedNote: If confidence is 'unverified', you MUST explicitly provide: "Unverified signal — apna khud research bhi karein" (strictly adhering to the transparent estimate-labeling principle). If verified, set to null.
+- riskLevel: 'clean' | 'low' | 'moderate' | 'elevated' | 'high'
+- overallScore: integer from 0 to 100 (100 = completely clean and healthy culture, 30 = severe red flags)
+- summaryVerdict: 2-3 sentences evaluating whether this company is genuinely good to work for from an early-career perspective.
+- interviewVettingQuestions: 2-3 diplomatic, respectful questions the candidate can tactfully ask their interviewer to verify these aspects without sounding confrontational.
+
+Respond strictly in valid JSON format matching this schema:
+{
+  "riskLevel": "low",
+  "overallScore": 85,
+  "summaryVerdict": "...",
+  "redFlags": [
+    {
+      "id": "rf_1",
+      "category": "attrition_layoff",
+      "categoryLabel": "Attrition & Layoff Track Record",
+      "title": "...",
+      "severity": "medium",
+      "description": "...",
+      "whyThisMatters": "...",
+      "confidence": "verified",
+      "unverifiedNote": null
+    }
+  ],
+  "interviewVettingQuestions": [
+    "How does the engineering organization measure sustainable sprint pacing and on-call health?",
+    "..."
+  ]
+}`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        temperature: 0.2
+      }
+    });
+
+    const text = response.text || '{}';
+    const parsed = JSON.parse(text);
+
+    return res.status(200).json({
+      success: true,
+      report: parsed,
+      source: 'gemini-3.8-flash',
+      generatedAt: Date.now()
+    });
+  } catch (err: any) {
+    logger.error('Server:CompanyRedFlags', 'Company Red-Flag Analysis Error', err);
+    return res.status(200).json({
+      success: false,
+      fallbackToLocal: true,
+      error: err.message || 'AI red-flag analysis failed'
+    });
+  }
+});
+
 // Multi-AI Orchestration Status (Req #19, #20, #21)
 app.get('/api/ai/status', (req, res) => {
   res.json({
@@ -711,7 +818,7 @@ async function fetchGreenhouseJobsServer(target: ATSCompanyTarget): Promise<any[
         workMode,
         location: locationName,
         department: classification.department,
-        officialApplyUrl: job.absolute_url || `https://boards.greenhouse.io/${target.slug}/jobs/${job.id}`,
+        officialApplyUrl: `https://job-boards.greenhouse.io/embed/job_app?for=${target.slug}&token=${job.id}`,
         releasedAt: now - (6 * HOUR),
         deadlineAt,
         verification: {
@@ -874,8 +981,9 @@ async function getOrFetchCachedServerJobs(forceRefresh = false): Promise<{ jobs:
 
   // Return immediately if cache is fresh and not empty (and forceRefresh is not requested)
   if (!forceRefresh && serverJobsCache.jobs.length > 0 && now < serverJobsCache.expiresAt) {
+    const sanitized = serverJobsCache.jobs.map(j => sanitizeOpportunityUrls({ ...j }));
     return {
-      jobs: serverJobsCache.jobs,
+      jobs: sanitized,
       cached: true,
       cachedAt: serverJobsCache.cachedAt,
       expiresAt: serverJobsCache.expiresAt,
@@ -911,7 +1019,9 @@ async function getOrFetchCachedServerJobs(forceRefresh = false): Promise<{ jobs:
     const collected: any[] = [];
     for (const res of settled) {
       if (res.status === 'fulfilled' && Array.isArray(res.value)) {
-        collected.push(...res.value);
+        for (const job of res.value) {
+          collected.push(sanitizeOpportunityUrls({ ...job }));
+        }
       }
     }
 
@@ -994,6 +1104,8 @@ interface ServerOtpRecord {
 // In-memory cryptographically verified stores
 const serverOtpStore = new Map<string, ServerOtpRecord>();
 const serverCloudProfiles = new Map<string, Record<string, unknown>>();
+const serverStudentApplications = new Map<string, Map<string, any>>();
+const serverEmailApplications = new Map<string, Map<string, any>>();
 
 // Clean text stripping HTML and dangerous control characters
 function sanitizeServerInput(val: unknown): string {
@@ -1396,6 +1508,107 @@ app.get('/api/student/profile/:userId', (req, res) => {
   } catch (err: any) {
     logger.error('Server:StudentProfile', '[API /student/profile/:userId] Error', err, { userId: req.params.userId });
     return res.status(500).json({ success: false, error: err?.message || 'Failed to retrieve student profile' });
+  }
+});
+
+/**
+ * POST /api/student/applications
+ * Persists student job application with submission route provenance
+ */
+app.post('/api/student/applications', (req, res) => {
+  try {
+    const { userId, application } = req.body;
+    if (!userId || !application || !application.opportunityId) {
+      return res.status(400).json({ success: false, error: 'userId and application with opportunityId are required' });
+    }
+    let userApps = serverStudentApplications.get(userId);
+    if (!userApps) {
+      userApps = new Map();
+      serverStudentApplications.set(userId, userApps);
+    }
+    const appRecord = {
+      ...application,
+      updatedAt: Date.now(),
+    };
+    userApps.set(application.opportunityId, appRecord);
+
+    // Also index under normalized email if applicantEmail is provided
+    if (application.applicantEmail && typeof application.applicantEmail === 'string') {
+      const cleanEmail = application.applicantEmail.toLowerCase().trim();
+      if (cleanEmail) {
+        let emailApps = serverEmailApplications.get(cleanEmail);
+        if (!emailApps) {
+          emailApps = new Map();
+          serverEmailApplications.set(cleanEmail, emailApps);
+        }
+        emailApps.set(application.opportunityId, appRecord);
+      }
+    }
+
+    return res.json({ success: true, count: userApps.size });
+  } catch (err: any) {
+    logger.error('Server:StudentApplications', '[POST /api/student/applications] Error', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Failed to save application' });
+  }
+});
+
+/**
+ * GET /api/student/applications/:userId
+ * Retrieves all applications submitted by this student user
+ */
+app.get('/api/student/applications/:userId', (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ success: false, error: 'User ID is required' });
+    }
+    const userApps = serverStudentApplications.get(userId);
+    const applications = userApps ? Array.from(userApps.values()) : [];
+    return res.json({ success: true, applications });
+  } catch (err: any) {
+    logger.error('Server:StudentApplications', '[GET /api/student/applications/:userId] Error', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Failed to retrieve applications' });
+  }
+});
+
+/**
+ * GET /api/student/applications/by-email/:email
+ * Retrieves all applications matching a student's Gmail/email address
+ */
+app.get('/api/student/applications/by-email/:email', (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required' });
+    }
+    const cleanEmail = decodeURIComponent(email).toLowerCase().trim();
+    const results = new Map<string, any>();
+
+    // 1. Direct email store lookup
+    const emailApps = serverEmailApplications.get(cleanEmail);
+    if (emailApps) {
+      for (const [k, v] of emailApps.entries()) {
+        results.set(k, v);
+      }
+    }
+
+    // 2. Scan user apps for matching applicantEmail
+    for (const userMap of serverStudentApplications.values()) {
+      for (const [oppId, app] of userMap.entries()) {
+        if (app.applicantEmail && String(app.applicantEmail).toLowerCase().trim() === cleanEmail) {
+          results.set(oppId, app);
+        }
+      }
+    }
+
+    return res.json({ 
+      success: true, 
+      email: cleanEmail,
+      applications: Array.from(results.values()) 
+    });
+  } catch (err: any) {
+    logger.error('Server:StudentApplications', '[GET /api/student/applications/by-email/:email] Error', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Failed to retrieve applications by email' });
   }
 });
 

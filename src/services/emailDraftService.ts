@@ -1,7 +1,7 @@
 import { Opportunity, StudentProfile } from '../types';
 import { logger } from '../utils/logger';
 
-export type EmailDraftType = 'cold-outreach' | 'referral-request';
+export type EmailDraftType = 'cold-outreach' | 'referral-request' | 'follow-up';
 export type RecipientPersona = 'recruiter' | 'engineering_manager' | 'alumni' | 'peer_engineer';
 
 export interface EmailDraftData {
@@ -190,6 +190,25 @@ ${candidateName}
 ${profile.email} | ${profile.linkedinUrl || 'linkedin.com/in/candidate'}`;
         followUpAdvice = 'Recruiters and managers are inundated; follow up once after 4-5 business days.';
       }
+    } else if (type === 'follow-up') {
+      subject = `Following Up on Application: ${roleTitle} — ${candidateName}`;
+      body = `Hi [Hiring Team / Recruiter Name],
+
+I hope you are having a productive week!
+
+I am writing to politely follow up on my application for the ${roleTitle} position at ${company}, which I submitted approximately a week ago through your official career portal.
+
+I remains deeply enthusiastic about the opportunity to contribute to ${company}'s engineering goals, particularly given my practical experience with ${matchedSkills} and recent project work on "${topProject.title}".
+
+I wanted to kindly inquire about the recruitment timeline for this cohort and see if there are any additional materials, portfolio projects, or code samples I can provide to support my candidacy.
+
+Thank you very much for your time and continued consideration!
+
+Warm regards,
+${candidateName}
+${profile.email}${profile.phoneNumber ? ` | ${profile.phoneNumber}` : ''}
+LinkedIn: ${profile.linkedinUrl || 'linkedin.com/in/candidate'} | GitHub: ${profile.githubUrl || 'github.com/candidate'}`;
+      followUpAdvice = '7 days is the optimal polite follow-up window. Keep your check-in brief, courteous, and positive.';
     } else {
       // Cold Outreach Email
       subject = `${roleTitle} Candidate Intro: ${candidateName} (${topProject.title.slice(0, 24)})`;

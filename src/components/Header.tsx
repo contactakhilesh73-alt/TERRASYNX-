@@ -128,19 +128,6 @@ export const Header: React.FC<HeaderProps> = ({
               </kbd>
             </button>
           )}
-          {onOpenAudit && (
-            <>
-              <span className="text-slate-700">|</span>
-              <button
-                onClick={onOpenAudit}
-                className="flex items-center gap-1.5 text-teal-400 hover:text-teal-300 transition-colors cursor-pointer text-[10px]"
-                title="Open Production Certification & Audit Suite"
-              >
-                <Award className="w-3.5 h-3.5" />
-                <span className="font-mono font-semibold">Audit Suite</span>
-              </button>
-            </>
-          )}
           {onOpenDossierVault && (
             <>
               <span className="text-slate-700">|</span>

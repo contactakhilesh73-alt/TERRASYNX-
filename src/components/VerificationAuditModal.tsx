@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Opportunity } from '../types';
 import { VerificationEngine, AuditInspectionReport } from '../services/verificationEngine';
 import { DossierPdfService } from '../services/dossierPdfService';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { 
   X, 
   ShieldCheck, 
@@ -20,7 +21,9 @@ import {
   Loader2,
   Printer,
   FileCheck2,
-  Download
+  Download,
+  Link2,
+  Clock
 } from 'lucide-react';
 
 interface VerificationAuditModalProps {
@@ -145,9 +148,9 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
               </div>
             )}
 
-            {/* 3 Inspection Audit Layers */}
+            {/* 5 Inspection Audit Layers (Multi-Layer Janch Protocol) */}
             <div className="mt-5 space-y-3">
-              {/* Layer 1 */}
+              {/* Layer 1: DNS & Root Domain Lock */}
               <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
@@ -177,7 +180,7 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
                 </p>
               </div>
 
-              {/* Layer 2 */}
+              {/* Layer 2: Direct ATS API Handshake */}
               <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
@@ -189,39 +192,55 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono">
-                  Origin feeder: <strong className="text-slate-300">{audit.atsProvider} Enterprise Endpoint</strong> (No middleman aggregator).
+                  Origin feeder: <strong className="text-slate-300">{audit.atsProvider} Enterprise Endpoint</strong> (No middleman aggregator or fake scraping).
                 </p>
               </div>
 
-              {/* Layer 3 */}
+              {/* Layer 3: Single-Role Apply URL Integrity */}
+              <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
+                    <Link2 className="w-4 h-4 text-cyan-400" />
+                    <span>Layer 3: Single-Role Apply URL Integrity</span>
+                  </div>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                    {audit.layers.layer3SinglePortalStatus}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-mono">
+                  Guaranteed exact requisition form: Opens this single specific job directly without dropping candidates onto general multi-job career lists.
+                </p>
+              </div>
+
+              {/* Layer 4: Student Safety & Zero-Fee Shield */}
               <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
                     <Lock className="w-4 h-4 text-emerald-400" />
-                    <span>Layer 3: Student Safety & Zero-Fee Shield</span>
+                    <span>Layer 4: Student Safety & Zero-Fee Shield</span>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                    {audit.layers.layer3SafetyStatus}
+                    {audit.layers.layer4SafetyStatus}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono">
-                  Zero application fees confirmed. Compensation benchmark: <strong className="text-emerald-400">{opportunity.compensation.range}</strong> ({opportunity.compensation.transparentBenchmark || 'Community/Market benchmark'}).
+                  Zero application fees confirmed. Verified paid role: <strong className="text-emerald-400">{opportunity.compensation.range}</strong> ({opportunity.compensation.transparentBenchmark || 'Community/Market benchmark'}).
                 </p>
               </div>
 
-              {/* Layer 4 */}
+              {/* Layer 5: Active Hiring Window & Anti-Ghosting */}
               <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/80 space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-200">
-                    <Fingerprint className="w-4 h-4 text-amber-400" />
-                    <span>Layer 4: SHA-256 Digital Seal Handshake</span>
+                    <Clock className="w-4 h-4 text-amber-400" />
+                    <span>Layer 5: Active Hiring Window & Anti-Ghosting</span>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
-                    CRYPTOGRAPHIC_PASSED
+                    {audit.layers.layer5ActiveHiringStatus}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono">
-                  Tamper-evident hash registered on official candidate record.
+                  Requisition active and accepting student applications. Verified within official hiring cycle window.
                 </p>
               </div>
             </div>
@@ -274,12 +293,12 @@ export const VerificationAuditModal: React.FC<VerificationAuditModalProps> = ({
             )}
 
             <a
-              href={opportunity.officialApplyUrl}
+              href={resolveCanonicalApplyUrl(opportunity)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-mono transition-colors"
             >
-              <span>Verify on Official Domain</span>
+              <span>Open Exact Requisition Form</span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-950" />
             </a>
           </div>

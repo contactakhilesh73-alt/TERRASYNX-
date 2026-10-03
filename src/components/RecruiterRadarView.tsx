@@ -12,7 +12,7 @@ import {
   RecruiterNode, 
   RecruiterOutreachPackage 
 } from '../types';
-import { RecruiterRadarService } from '../services/recruiterRadarService';
+import { RecruiterRadarService, SuggestSearchQuery } from '../services/recruiterRadarService';
 import { 
   Target, 
   Users, 
@@ -38,7 +38,11 @@ import {
   Award,
   AlertCircle,
   RotateCcw,
-  Plus
+  Plus,
+  Compass,
+  Globe,
+  Shield,
+  Info
 } from 'lucide-react';
 
 interface RecruiterRadarViewProps {
@@ -64,6 +68,8 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
   const [activeTab, setActiveTab] = useState<'cockpit' | 'dna_dossier' | 'cadence_sentinel'>('cockpit');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isSuggestSearchModalOpen, setIsSuggestSearchModalOpen] = useState<boolean>(false);
+  const [copiedQueryId, setCopiedQueryId] = useState<string | null>(null);
 
   // New Recruiter Form State
   const [newFullName, setNewFullName] = useState<string>('');
@@ -79,6 +85,23 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
   const selectedOpp = useMemo(() => {
     return opportunities.find(o => o.id === selectedOppId) || opportunities[0] || null;
   }, [opportunities, selectedOppId]);
+
+  // PROMPT 22: Suggest Search Presets (Ethically Scoped Contact Discovery)
+  const suggestPresets: SuggestSearchQuery[] = useMemo(() => {
+    const targetComp = selectedOpp?.companyName || 'Target Company';
+    const targetRole = selectedOpp?.title;
+    return RecruiterRadarService.getSuggestSearchPresets(targetComp, targetRole);
+  }, [selectedOpp]);
+
+  const handleCopyQuery = async (id: string, queryText: string) => {
+    try {
+      await navigator.clipboard.writeText(queryText);
+      setCopiedQueryId(id);
+      setTimeout(() => setCopiedQueryId(null), 2000);
+    } catch {
+      // ignore
+    }
+  };
 
   const filteredRecruiters = useMemo(() => {
     return recruiters.filter(r => {
@@ -236,6 +259,15 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
           </div>
           
           <button
+            onClick={() => setIsSuggestSearchModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-purple-500/50 hover:border-purple-400 text-purple-300 hover:text-purple-200 text-xs font-mono font-bold transition-all cursor-pointer shadow-sm"
+            title="Ethically discover verified LinkedIn recruiters via safe Google Search queries (Zero automated scraping)"
+          >
+            <Search className="w-3.5 h-3.5 text-purple-400" />
+            <span>Suggest Search (ToS-Safe)</span>
+          </button>
+
+          <button
             onClick={() => setIsAddModalOpen(true)}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold transition-all cursor-pointer shadow-lg shadow-purple-950/50"
           >
@@ -357,7 +389,15 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
               TERRASYNX strictly adheres to Zero Fake Data: Connect genuine university sourcers, technical recruiters, and engineering hiring managers to unlock reverse-engineered DNA profiles and 3-step follow-up timelines.
             </p>
           </div>
-          <div className="flex items-center justify-center gap-3 pt-2">
+          <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
+            <button
+              onClick={() => setIsSuggestSearchModalOpen(true)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 text-purple-200 text-xs font-mono font-bold transition-all cursor-pointer shadow-sm"
+              title="Generate precision Google queries to find recruiters on LinkedIn (ToS-Safe)"
+            >
+              <Search className="w-3.5 h-3.5 text-purple-400" />
+              <span>Suggest Recruiter Search on Google ↗</span>
+            </button>
             <button
               onClick={() => setIsAddModalOpen(true)}
               className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold transition-all cursor-pointer shadow-lg shadow-purple-950/50"
@@ -829,6 +869,31 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
               </button>
             </div>
 
+            {/* Safe Suggest Search in Add Modal */}
+            <div className="p-3 rounded-xl bg-purple-950/40 border border-purple-900/60 text-xs space-y-1.5 font-mono">
+              <div className="flex items-center justify-between text-purple-300 font-bold">
+                <span className="flex items-center gap-1.5">
+                  <Search className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Looking for recruiters at {newCompanyName || selectedOpp?.companyName || 'this company'}?</span>
+                </span>
+                <span className="text-[10px] text-purple-400/80 bg-purple-950 px-1.5 py-0.2 rounded border border-purple-800">
+                  Ethical ToS-Safe
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300 font-sans leading-relaxed">
+                Zero automated scraping. Run a targeted Google search to inspect public LinkedIn results yourself, then paste their verified details below.
+              </p>
+              <a
+                href={RecruiterRadarService.getSuggestSearchUrl(newCompanyName || selectedOpp?.companyName || 'Technology', selectedOpp?.title)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 text-[11px] font-bold border border-purple-500/50 transition-colors"
+              >
+                <span>Run Google Search for {newCompanyName || selectedOpp?.companyName || 'Company'} Recruiters (New Tab)</span>
+                <ExternalLink className="w-3 h-3 text-purple-300" />
+              </a>
+            </div>
+
             <form onSubmit={handleAddRecruiterSubmit} className="space-y-4 text-xs font-mono">
               <div className="space-y-1">
                 <label className="text-slate-300">Recruiter Full Name:</label>
@@ -933,6 +998,184 @@ export const RecruiterRadarView: React.FC<RecruiterRadarViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Suggest Search (Prompt 22 — Ethically Scoped Recruiter Discovery) */}
+      {isSuggestSearchModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-150">
+          <div 
+            className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-slate-900 border border-purple-900/60 shadow-2xl shadow-purple-950/50 p-6 space-y-5 text-slate-100 scrollbar-thin"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300">
+                  <Search className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-base font-bold text-white font-mono">
+                      Suggest Search — Ethically Scoped Contact Discovery
+                    </h3>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold">
+                      100% ToS-Compliant
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-mono mt-0.5">
+                    Safe Google Search queries for {selectedOpp?.companyName || 'Target Company'} recruiters on LinkedIn • Zero scraping, Zero ban risk
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsSuggestSearchModalOpen(false)}
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Ethical Scoping / Anti-Ban Guarantee Banner */}
+            <div className="p-4 rounded-xl bg-slate-950/80 border border-emerald-900/40 text-xs text-slate-300 flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <strong className="text-emerald-300 font-mono text-[11px] uppercase tracking-wider">
+                    Safe &amp; Compliant Contact Discovery Principle (Prompt 22):
+                  </strong>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
+                  Automated scraping of LinkedIn directly violates their Terms of Service and risks permanent candidate account bans.
+                  Instead of risky background scrapers, TERRASYNX builds <strong>targeted Google search queries</strong>.
+                  You click to open Google in a new tab, verify genuine talent leads on public web profiles, and manually save them via <strong>"+ Add Contact"</strong>.
+                </p>
+              </div>
+            </div>
+
+            {/* Target Requisition Context Card */}
+            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block">Target Entity &amp; Requisition:</span>
+                <span className="text-xs font-bold text-white font-mono">
+                  {selectedOpp?.companyName} <span className="text-purple-400 font-normal">—</span> {selectedOpp?.title}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-purple-400 bg-purple-950 px-2 py-0.5 rounded border border-purple-800">
+                {selectedOpp?.verification?.rootDomain || `${selectedOpp?.companyName.toLowerCase().replace(/\s+/g, '')}.com`}
+              </span>
+            </div>
+
+            {/* Search Query Presets Grid */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+                <span className="uppercase tracking-wider font-bold text-slate-300">
+                  Targeted LinkedIn Search Vectors ({suggestPresets.length})
+                </span>
+                <span className="text-[10px] text-slate-500">
+                  Click link to search in new Google tab
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                {suggestPresets.map((preset) => {
+                  const isCopied = copiedQueryId === preset.id;
+
+                  return (
+                    <div 
+                      key={preset.id}
+                      className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-purple-800/60 transition-colors space-y-3"
+                    >
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-100 font-mono">
+                              {preset.title}
+                            </span>
+                            <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800">
+                              {preset.roleCategory}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 font-sans mt-0.5">
+                            {preset.rationale}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleCopyQuery(preset.id, preset.query)}
+                            className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-mono flex items-center gap-1.5 transition-colors cursor-pointer"
+                            title="Copy query string to clipboard"
+                          >
+                            {isCopied ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-400" />
+                                <span className="text-emerald-300">Copied!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3 text-slate-400" />
+                                <span>Copy Query</span>
+                              </>
+                            )}
+                          </button>
+
+                          <a
+                            href={preset.googleSearchUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-mono font-bold text-[11px] flex items-center gap-1.5 transition-all shadow-md shadow-purple-950/50 cursor-pointer"
+                            title="Open Google Search in a new tab"
+                          >
+                            <span>Open on Google</span>
+                            <ExternalLink className="w-3 h-3 text-purple-200" />
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Monospace Query Box */}
+                      <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800/80 font-mono text-[11px] text-purple-300 break-all select-all flex items-center justify-between gap-2">
+                        <span className="text-slate-300">{preset.query}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-4 border-t border-slate-800 flex items-center justify-between gap-3 flex-wrap">
+              <span className="text-[11px] text-slate-400 font-mono">
+                Found a verified recruiter on LinkedIn? Save them here:
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsSuggestSearchModalOpen(false);
+                    if (selectedOpp) {
+                      setNewCompanyName(selectedOpp.companyName);
+                      setNewDepartment(selectedOpp.department || 'Software Engineering');
+                    }
+                    setIsAddModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-purple-950/50"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Contact Manually</span>
+                </button>
+
+                <button
+                  onClick={() => setIsSuggestSearchModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono cursor-pointer transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}

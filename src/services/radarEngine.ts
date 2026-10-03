@@ -8,6 +8,7 @@ import { VerificationEngine } from './verificationEngine';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { AtsLiveService } from './atsLiveService';
 import { logger } from '../utils/logger';
+import { sanitizeOpportunityUrls, resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 
 const STORAGE_KEYS = {
   OPPORTUNITIES: 'terrasynx_opportunities_v1',
@@ -146,6 +147,8 @@ export class RadarEngine {
 
         // Migrate / sync valid working career URLs, status tracker URLs, and ensure role-specific ATS gaps
         opps = opps.map(loadedOpp => {
+          // Guarantee canonical, SSL-safe direct applicant portal URL (fixes Back to safety & dead redirectors)
+          loadedOpp = sanitizeOpportunityUrls(loadedOpp);
           if (!loadedOpp.officialStatusTrackerUrl) {
             loadedOpp.officialStatusTrackerUrl = this.getOfficialStatusTrackerUrl(loadedOpp);
           }
@@ -231,6 +234,13 @@ export class RadarEngine {
     return [...this.opportunities];
   }
 
+  // Update complete opportunity collection after integrity cleaning / deduplication
+  public static setOpportunities(newOpps: Opportunity[]): void {
+    this.opportunities = this.deduplicateOpportunities(newOpps);
+    this.persistOpportunities();
+    this.notify();
+  }
+
   // Get filtered active opportunities (Strict Rule #2: Cryptographically Certified & Non-Archived)
   public static getActiveRadarOpportunities(): Opportunity[] {
     const certified = VerificationEngine.filterOnlyCertifiedOpportunities(this.opportunities);
@@ -264,7 +274,7 @@ export class RadarEngine {
         jobId: opp.id,
         jobTitle: opp.title,
         companyName: opp.companyName,
-        actionUrl: opp.officialApplyUrl,
+        actionUrl: resolveCanonicalApplyUrl(opp),
         actionAdvisorPoints: [
           'You confirmed that your application was submitted on the official employer portal.',
           'Notice: This milestone is self-reported by the candidate (not an employer-certified receipt).',
@@ -385,6 +395,7 @@ export class RadarEngine {
 
   // Phase 5 Point 3: Manually or URL Ingested Opportunity addition with zero-duplicate protection
   public static addNewOpportunity(newOpp: Opportunity): boolean {
+    newOpp = sanitizeOpportunityUrls({ ...newOpp });
     const normId = newOpp.id.trim();
     const normUrl = (newOpp.officialApplyUrl || '').toLowerCase().trim().replace(/\/+$/, '');
     const normCompanyTitle = `${(newOpp.companyName || '').toLowerCase().trim()}:::${(newOpp.title || '').toLowerCase().trim()}`;

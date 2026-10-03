@@ -1,5 +1,5 @@
 /**
- * TERRASYNX: Santiago 8-Block (A-H) Deep Reasoning Engine (Phase 5 Point 2)
+ * TERRASYNX: 8-Block (A-H) Deep Reasoning Engine (Phase 5 Point 2)
  * Produces structured, non-hallucinatory dossiers following career-ops oferta.md specifications.
  * Enforces strict source-labeling ([JD-wording], [JD-structure], [estimate]) and hard blockers.
  */
@@ -11,7 +11,7 @@ const DOSSIER_STORAGE_PREFIX = 'terrasynx_dossier_v1_';
 export class DossierEngine {
   private static dossierCache: Map<string, EightBlockDossier> = new Map();
 
-  // Detect realistic archetype matching Santiago's 6 verified taxonomy categories
+  // Detect realistic archetype matching TERRASYNX verified taxonomy categories
   private static detectArchetype(title: string, dept: string): RoleArchetype {
     const text = `${title} ${dept}`.toLowerCase();
     if (text.includes('agent') || text.includes('autonomous') || text.includes('orchestrat')) {
@@ -61,7 +61,7 @@ export class DossierEngine {
           mitigationStrategy: 'Lead with this project in the top 1/3 of the resume.'
         };
       } else {
-        // Strict Santiago rule: estimates cannot receive a weight higher than 3
+        // Strict TERRASYNX rule: estimates cannot receive a weight higher than 3
         return {
           requirement: r.req,
           weight: 3, // Capped to 3 to prevent artificial score inflation

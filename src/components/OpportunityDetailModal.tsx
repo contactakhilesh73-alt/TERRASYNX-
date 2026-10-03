@@ -3,9 +3,11 @@
  * Conforming strictly to SYSTEM_SPEC (Rules #1-#5, Req #1-#22)
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Opportunity } from '../types';
 import { CompanyLogo } from './CompanyLogo';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { AppliedDossierService } from '../services/appliedDossierService';
 import { 
   X, 
   ShieldCheck, 
@@ -48,6 +50,10 @@ interface OpportunityDetailModalProps {
   onOpenCoverLetter?: (opportunity: Opportunity) => void;
   onOpenEmailDraft?: (opportunity: Opportunity) => void;
   onOpenCompanyResearch?: (opportunity: Opportunity) => void;
+  onOpenCompanyRedFlags?: (opportunity: Opportunity) => void;
+  allOpportunities?: Opportunity[];
+  onSelectOpportunity?: (opportunity: Opportunity) => void;
+  onSelfReportApplied?: (opportunity: Opportunity) => void;
   isApplied: boolean;
 }
 
@@ -68,9 +74,23 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
   onOpenCoverLetter,
   onOpenEmailDraft,
   onOpenCompanyResearch,
+  onOpenCompanyRedFlags,
+  allOpportunities,
+  onSelectOpportunity,
+  onSelfReportApplied,
   isApplied,
 }) => {
   if (!opportunity) return null;
+
+  const otherCompanyRoles = useMemo(() => {
+    if (!opportunity || !allOpportunities) return [];
+    const cName = (opportunity.companyName || '').toLowerCase().trim();
+    return allOpportunities.filter(o => 
+      (o.companyName || '').toLowerCase().trim() === cName && o.id !== opportunity.id
+    );
+  }, [opportunity, allOpportunities]);
+
+  const appliedRecord = isApplied ? AppliedDossierService.getRecordByOpportunityId(opportunity.id) : undefined;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
@@ -109,6 +129,48 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Applied Provenance Status Panel (Gmail Identity & Submission Route) */}
+        {isApplied && (
+          <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/60 via-slate-950 to-slate-900 border border-emerald-800/80 shadow-md">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span className="font-bold text-sm text-emerald-300">
+                  Application Logged & Verified
+                </span>
+                {appliedRecord?.applicantEmail && (
+                  <span className="text-xs font-mono text-emerald-400/90 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                    Logged with: {appliedRecord.applicantEmail}
+                  </span>
+                )}
+              </div>
+              <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono ${
+                appliedRecord?.submissionRoute === 'direct_official_ats'
+                  ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                  : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+              }`}>
+                {appliedRecord?.submissionRoute === 'direct_official_ats' ? '🏢 Submitted on Official ATS' : '⚡ Submitted via TERRASYNX Assistant'}
+              </span>
+            </div>
+
+            {appliedRecord?.confirmationId && (
+              <div className="mt-2 text-xs font-mono text-slate-400 flex items-center gap-3 flex-wrap">
+                <span>Confirmation ID: <strong className="text-slate-200">{appliedRecord.confirmationId}</strong></span>
+                <span>•</span>
+                <span>Applied: {new Date(appliedRecord.appliedTimestamp).toLocaleDateString()}</span>
+                {appliedRecord.sha256Proof && (
+                  <>
+                    <span>•</span>
+                    <span className="text-[11px] text-slate-500 truncate" title={appliedRecord.sha256Proof}>
+                      Proof: {appliedRecord.sha256Proof.slice(0, 14)}...
+                    </span>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Grid Stats */}
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
@@ -239,20 +301,103 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
           )}
         </div>
 
+        {/* Other Open Opportunities at This Exact Employer (Phase 5 Single-Role Isolation) */}
+        {otherCompanyRoles.length > 0 && (
+          <div className="mt-6 pt-5 border-t border-slate-800">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CompanyLogo
+                  domain={opportunity.companyDomain}
+                  name={opportunity.companyName}
+                  size="sm"
+                />
+                <h4 className="text-sm font-bold text-slate-200">
+                  Other Active Openings at {opportunity.companyName}
+                </h4>
+                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">
+                  {otherCompanyRoles.length} more
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                Each button opens its own exact role form
+              </span>
+            </div>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {otherCompanyRoles.map((role) => (
+                <div
+                  key={role.id}
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition-colors"
+                >
+                  <div className="min-w-0 pr-3">
+                    <h5 className="text-xs font-bold text-slate-200 truncate">
+                      {role.title}
+                    </h5>
+                    <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5 flex-wrap">
+                      <span>{role.location}</span>
+                      <span>•</span>
+                      <span className="capitalize">{role.workMode}</span>
+                      {role.fitment && (
+                        <>
+                          <span>•</span>
+                          <span className="text-emerald-400 font-mono font-semibold">
+                            {role.fitment.compositeScore}% fit
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {onSelectOpportunity && (
+                      <button
+                        onClick={() => onSelectOpportunity(role)}
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                        title="View details for this role"
+                      >
+                        Inspect
+                      </button>
+                    )}
+                    <a
+                      href={resolveCanonicalApplyUrl(role)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-1 text-xs font-bold font-mono rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 transition-colors"
+                      title="Apply directly to this single specific role in new tab"
+                    >
+                      <span>Apply</span>
+                      <ExternalLink className="w-3 h-3 text-cyan-400" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons (Req #4, #7, #17) */}
         <div className="mt-6 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <button
-            onClick={() => onMarkApplied(opportunity.id)}
-            disabled={isApplied}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer ${
-              isApplied
-                ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-            }`}
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>{isApplied ? 'Application Registered' : 'Quick Mark Applied'}</span>
-          </button>
+          {!isApplied ? (
+            <button
+              onClick={() => {
+                if (onSelfReportApplied) {
+                  onSelfReportApplied(opportunity);
+                } else {
+                  onMarkApplied(opportunity.id);
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-blue-950/80 hover:bg-blue-900 text-blue-300 border border-blue-800 transition-colors cursor-pointer font-mono"
+              title="Log that you applied on the official ATS portal using your Gmail"
+            >
+              <CheckCircle2 className="w-4 h-4 text-blue-400" />
+              <span>I Applied on ATS Portal</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>Application Registered</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2.5 flex-wrap">
             {onOpenDossier && (
@@ -262,7 +407,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                   onOpenDossier(opportunity);
                 }}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-amber-300 hover:text-amber-200 bg-amber-950/60 border border-amber-800/60 transition-colors cursor-pointer font-mono"
-                title="Inspect Santiago 8-Block (A to H) Evaluation Dossier"
+                title="Inspect TERRASYNX 8-Block (A to H) Evaluation Dossier"
               >
                 <Layers className="w-3.5 h-3.5" />
                 <span>8-Block Dossier</span>
@@ -389,25 +534,29 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               </button>
             )}
 
-            <a
-              href={opportunity.officialApplyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800"
-            >
-              <span>Official Apply Page</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-            </a>
+            {onOpenCompanyRedFlags && (
+              <button
+                id="modal-company-redflags-btn"
+                onClick={() => {
+                  onOpenCompanyRedFlags(opportunity);
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:text-rose-100 bg-rose-950/60 border border-rose-800/60 transition-colors cursor-pointer font-medium"
+                title="Check workplace culture, attrition history, overtime, and leadership controversy before interviews"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                <span>Check Red Flags</span>
+              </button>
+            )}
 
             <a
-              href={opportunity.officialStatusTrackerUrl || `https://${opportunity.companyDomain}/careers`}
+              href={resolveCanonicalApplyUrl(opportunity)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:text-cyan-200 bg-cyan-950/40 border border-cyan-800/60 hover:bg-cyan-900/40"
-              title="View Candidate Status on Official Career Portal"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-gradient-to-r from-cyan-400 to-cyan-300 hover:from-cyan-300 hover:to-cyan-200 shadow-md shadow-cyan-950/50 transition-all font-mono"
+              title="Open Official Direct Application Form (Single Role Only)"
             >
-              <span>Career Portal Tracker</span>
-              <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Apply to This Role (Single Portal)</span>
+              <ExternalLink className="w-4 h-4 text-slate-950" />
             </a>
 
             {!isApplied && onFastApply && (

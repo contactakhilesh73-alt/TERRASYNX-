@@ -40,6 +40,28 @@
         "createdAt": { "type": "timestamp" },
         "updatedAt": { "type": "timestamp" }
       }
+    },
+    "studentApplications": {
+      "path": "students/{userId}/applications/{applicationId}",
+      "description": "Student job applications tracking route provenance (terrasynx_assisted vs direct_official_ats), email identity, and cryptographic confirmation proof",
+      "fields": {
+        "opportunityId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "jobTitle": { "type": "string" },
+        "companyDomain": { "type": "string" },
+        "applicantEmail": { "type": "string" },
+        "applicantUid": { "type": "string" },
+        "submissionRoute": { "type": "string" },
+        "routeLabel": { "type": "string" },
+        "appliedTimestamp": { "type": "number" },
+        "confirmationId": { "type": "string" },
+        "sha256Proof": { "type": "string" },
+        "portalType": { "type": "string" },
+        "officialApplyUrl": { "type": "string" },
+        "currentStage": { "type": "string" },
+        "customNotes": { "type": "string" },
+        "updatedAt": { "type": "timestamp" }
+      }
     }
   }
 }

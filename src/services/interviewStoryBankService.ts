@@ -4,7 +4,7 @@
  * editable story repository backed by Firestore (under the student's profile) with
  * 100% offline fallback in LocalStorage (Rule #20).
  *
- * Implements Santiago's reusable story bank pattern with role-based match suggestion.
+ * Implements TERRASYNX reusable story bank architecture with role-based match suggestion.
  */
 
 import { 
@@ -541,7 +541,7 @@ export class InterviewStoryBankService {
   public static exportStoryBankAsText(stories: InterviewStory[], studentName: string = 'Candidate'): void {
     const header = `======================================================================
 TERRASYNX INTERVIEW STAR STORY BANK
-Reusable Persistent Narrative Repository (Santiago Pattern)
+Reusable Persistent Narrative Repository (TERRASYNX Architecture)
 Candidate: ${studentName}
 Total Verified Stories: ${stories.length}
 Exported: ${new Date().toLocaleString()}

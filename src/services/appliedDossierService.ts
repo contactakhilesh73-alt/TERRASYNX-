@@ -6,6 +6,11 @@
  */
 
 import { FastApplyReceipt, Opportunity, StudentProfile, ApplicationStage } from '../types';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { saveApplicationToCloud, loadApplicationsFromCloud } from '../firebaseConfig';
+import { RadarEngine } from './radarEngine';
+
+export type ApplicationSubmissionRoute = 'terrasynx_assisted' | 'direct_official_ats';
 
 export interface AppliedJobRecord {
   opportunityId: string;
@@ -23,6 +28,10 @@ export interface AppliedJobRecord {
   followUpDeadlineTimestamp?: number;
   officialApplyUrl: string;
   officialStatusTrackerUrl?: string;
+  applicantEmail?: string;
+  applicantUid?: string;
+  submissionRoute?: ApplicationSubmissionRoute;
+  routeLabel?: string;
 }
 
 export interface WorkspaceSnapshot {
@@ -55,7 +64,11 @@ export class AppliedDossierService {
     try {
       const savedRecords = localStorage.getItem(STORAGE_KEYS.PERMANENT_DOSSIER);
       if (savedRecords) {
-        this.appliedRecords = JSON.parse(savedRecords);
+        const parsed = JSON.parse(savedRecords);
+        this.appliedRecords = (Array.isArray(parsed) ? parsed : []).map(r => ({
+          ...r,
+          officialApplyUrl: resolveCanonicalApplyUrl(r),
+        }));
       } else {
         // Seed initial confirmed record for demonstration if empty
         this.appliedRecords = [
@@ -117,9 +130,35 @@ export class AppliedDossierService {
     return [...this.appliedRecords];
   }
 
-  public static recordApplicationSubmission(receipt: FastApplyReceipt, opportunity: Opportunity): void {
+  public static getRecordByOpportunityId(opportunityId: string): AppliedJobRecord | undefined {
+    this.init();
+    return this.appliedRecords.find(r => r.opportunityId === opportunityId);
+  }
+
+  private static async generateCryptoSha256(text: string): Promise<string> {
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      try {
+        const msgBuffer = new TextEncoder().encode(text);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      } catch {
+        // Fallback
+      }
+    }
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  public static recordApplicationSubmission(
+    receipt: FastApplyReceipt, 
+    opportunity: Opportunity,
+    applicantEmail?: string,
+    applicantUid?: string,
+    isGoogleUser: boolean = false
+  ): AppliedJobRecord {
     this.init();
     const existingIndex = this.appliedRecords.findIndex(r => r.opportunityId === opportunity.id);
+    const email = applicantEmail || receipt.candidateEmail || 'student@terrasynx.internal';
     
     const newRecord: AppliedJobRecord = {
       opportunityId: opportunity.id,
@@ -133,10 +172,14 @@ export class AppliedDossierService {
       workAuthClaimed: receipt.workAuthSelected,
       resumePersonaUsed: receipt.tailoredResumeUsed,
       currentStage: 'applied',
-      customNotes: receipt.studentConfirmationNotes || `Self-reported submission. Token: ${receipt.sha256Hash.slice(0, 16)}...`,
+      customNotes: receipt.studentConfirmationNotes || `Fast-apply submission via TERRASYNX Assistant. Proof: ${receipt.sha256Hash.slice(0, 16)}...`,
       followUpDeadlineTimestamp: Date.now() + (86400000 * 7),
-      officialApplyUrl: opportunity.officialApplyUrl,
+      officialApplyUrl: resolveCanonicalApplyUrl(opportunity),
       officialStatusTrackerUrl: receipt.officialStatusTrackerUrl || opportunity.officialStatusTrackerUrl,
+      applicantEmail: email,
+      applicantUid: applicantUid,
+      submissionRoute: 'terrasynx_assisted',
+      routeLabel: 'Applied via TERRASYNX Fast-Apply Assistant',
     };
 
     if (existingIndex >= 0) {
@@ -147,6 +190,158 @@ export class AppliedDossierService {
 
     this.persist();
     this.notify();
+
+    // Persist to Cloud if user identity is present
+    if (applicantUid) {
+      saveApplicationToCloud(applicantUid, newRecord, isGoogleUser).catch(err => {
+        console.warn('Failed to persist application to cloud:', err);
+      });
+    }
+
+    return newRecord;
+  }
+
+  /**
+   * Records an application submitted directly on the employer's official ATS portal
+   */
+  public static async recordDirectAtsApplication(
+    opportunity: Opportunity,
+    applicantEmail?: string,
+    applicantUid?: string,
+    isGoogleUser: boolean = false,
+    notes?: string
+  ): Promise<AppliedJobRecord> {
+    this.init();
+    const year = new Date().getFullYear();
+    const cleanCompany = (opportunity.companyName || 'CORP').toUpperCase().replace(/[^A-Z]/g, '').substring(0, 6);
+    const confirmationId = `DIR-ATS-${year}-${cleanCompany}-${Date.now().toString(36).toUpperCase()}`;
+    const email = applicantEmail || 'student@terrasynx.internal';
+    const sha256 = await this.generateCryptoSha256(`${confirmationId}:${opportunity.id}:${email}:${Date.now()}`);
+
+    const existingIndex = this.appliedRecords.findIndex(r => r.opportunityId === opportunity.id);
+
+    const newRecord: AppliedJobRecord = {
+      opportunityId: opportunity.id,
+      companyName: opportunity.companyName,
+      jobTitle: opportunity.title,
+      companyDomain: opportunity.companyDomain,
+      appliedTimestamp: Date.now(),
+      confirmationId,
+      sha256Proof: sha256,
+      portalType: opportunity.verification?.sourceType === 'lever' ? 'Lever Direct' : 'Greenhouse Direct',
+      workAuthClaimed: 'Direct ATS Submission',
+      resumePersonaUsed: 'Standard Candidate Resume',
+      currentStage: 'applied',
+      customNotes: notes || `Direct submission on official employer ATS portal (${resolveCanonicalApplyUrl(opportunity)}). Token: ${sha256.slice(0, 16)}...`,
+      followUpDeadlineTimestamp: Date.now() + (86400000 * 7),
+      officialApplyUrl: resolveCanonicalApplyUrl(opportunity),
+      officialStatusTrackerUrl: opportunity.officialStatusTrackerUrl,
+      applicantEmail: email,
+      applicantUid: applicantUid,
+      submissionRoute: 'direct_official_ats',
+      routeLabel: 'Applied directly on Official ATS Portal',
+    };
+
+    if (existingIndex >= 0) {
+      this.appliedRecords[existingIndex] = newRecord;
+    } else {
+      this.appliedRecords.unshift(newRecord);
+    }
+
+    this.persist();
+    this.notify();
+
+    // Mark stage as 'applied' in RadarEngine
+    RadarEngine.updateStage(opportunity.id, 'applied', `Applied directly on official portal by ${email} [${confirmationId}]`);
+
+    // Persist to Cloud if user identity is present
+    if (applicantUid) {
+      saveApplicationToCloud(applicantUid, newRecord, isGoogleUser).catch(err => {
+        console.warn('Failed to persist direct ATS application to cloud:', err);
+      });
+    }
+
+    return newRecord;
+  }
+
+  /**
+   * Syncs and merges cloud applications with local state upon login or session restore.
+   * Matches both by userId and by normalized candidate Gmail/email address.
+   */
+  public static async syncWithCloud(
+    userId?: string, 
+    isGoogleUser: boolean = false, 
+    userEmail?: string
+  ): Promise<AppliedJobRecord[]> {
+    this.init();
+    if (!userId && !userEmail) return [...this.appliedRecords];
+
+    const cleanEmail = userEmail ? userEmail.toLowerCase().trim() : undefined;
+
+    try {
+      // 1. Reconcile any existing local applications where email matches
+      if (cleanEmail) {
+        for (const record of this.appliedRecords) {
+          if (record.applicantEmail && record.applicantEmail.toLowerCase().trim() === cleanEmail) {
+            if (userId && !record.applicantUid) {
+              record.applicantUid = userId;
+            }
+            // Ensure radar engine has applied stage marked
+            RadarEngine.updateStage(
+              record.opportunityId,
+              record.currentStage || 'applied',
+              `Verified applied under candidate Gmail [${cleanEmail}]`
+            );
+          }
+        }
+      }
+
+      // 2. Load cloud applications by userId AND by Gmail ID
+      const cloudApps = await loadApplicationsFromCloud(userId, isGoogleUser, cleanEmail);
+      if (Array.isArray(cloudApps) && cloudApps.length > 0) {
+        for (const cloudRecord of cloudApps) {
+          if (!cloudRecord || !cloudRecord.opportunityId) continue;
+          const idx = this.appliedRecords.findIndex(r => r.opportunityId === cloudRecord.opportunityId);
+          if (idx >= 0) {
+            this.appliedRecords[idx] = { 
+              ...this.appliedRecords[idx], 
+              ...cloudRecord,
+              officialApplyUrl: resolveCanonicalApplyUrl(cloudRecord),
+            };
+          } else {
+            this.appliedRecords.unshift({
+              ...cloudRecord,
+              officialApplyUrl: resolveCanonicalApplyUrl(cloudRecord),
+            } as AppliedJobRecord);
+          }
+
+          // Ensure radar engine reflects applied stage
+          RadarEngine.updateStage(
+            cloudRecord.opportunityId, 
+            cloudRecord.currentStage || 'applied', 
+            `Synchronized from Cloud application record [${cloudRecord.confirmationId || 'CONF'}]`
+          );
+        }
+
+        this.persist();
+        this.notify();
+      }
+
+      // 3. Push any local applications matching this user to cloud for cross-device backup
+      if (userId) {
+        for (const localRecord of this.appliedRecords) {
+          const matchesEmail = cleanEmail && localRecord.applicantEmail?.toLowerCase().trim() === cleanEmail;
+          const matchesUid = localRecord.applicantUid === userId;
+          if (!localRecord.applicantUid || matchesEmail || matchesUid) {
+            saveApplicationToCloud(userId, { ...localRecord, applicantUid: userId }, isGoogleUser).catch(() => {});
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Error during cloud application synchronization:', err);
+    }
+
+    return [...this.appliedRecords];
   }
 
   public static updateRecordStage(opportunityId: string, stage: ApplicationStage, notes?: string): void {

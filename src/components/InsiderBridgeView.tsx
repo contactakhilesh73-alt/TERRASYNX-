@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { Opportunity, StudentProfile, InsiderContact, OutreachChannel } from '../types';
 import { CompanyLogo } from './CompanyLogo';
 import { InsiderOutreachService } from '../services/insiderOutreachService';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { 
   Users, 
   Linkedin, 
@@ -189,7 +190,7 @@ export const InsiderBridgeView: React.FC<InsiderBridgeViewProps> = ({
                   View Dossier
                 </button>
                 <a
-                  href={selectedOpp.officialApplyUrl}
+                  href={resolveCanonicalApplyUrl(selectedOpp)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:text-cyan-200 bg-cyan-950/60 border border-cyan-800/60 transition-colors"

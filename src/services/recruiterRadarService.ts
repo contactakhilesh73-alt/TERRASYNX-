@@ -12,6 +12,15 @@ import {
   StudentProfile 
 } from '../types';
 
+export interface SuggestSearchQuery {
+  id: string;
+  title: string;
+  roleCategory: string;
+  query: string;
+  googleSearchUrl: string;
+  rationale: string;
+}
+
 const STORAGE_KEY_RECRUITERS = 'terrasynx_recruiter_radar_nodes_v1';
 
 export class RecruiterRadarService {
@@ -113,6 +122,90 @@ export class RecruiterRadarService {
       avgResponseRatePercent: avgResponse,
       activeTargetCompaniesCount: companies
     };
+  }
+
+  /**
+   * PROMPT 22: Suggest Search (Ethically Scoped Contact Discovery)
+   * Builds safe, ToS-compliant Google search URLs targeting verified LinkedIn profiles
+   * without running automated scraping or risking LinkedIn Terms of Service violations.
+   * 
+   * Strict Safety Principle:
+   * "site:linkedin.com [Company Name] recruiter OR \"talent acquisition\" [role-type]"
+   * Opens Google in a new browser tab for the student to verify themselves, then manually add via "+ Add Contact".
+   */
+  public static buildSuggestSearchQuery(companyName: string, roleTitle?: string): string {
+    const cleanCompany = (companyName || '').trim();
+    // Clean role title of noise words like "Internship", "(2026)", "New Grad" to keep search targeted
+    const cleanRole = (roleTitle || '')
+      .replace(/junior|intern|internship|new grad|entry level|\(20\d\d\)/gi, '')
+      .trim();
+
+    if (cleanRole) {
+      return `site:linkedin.com "${cleanCompany}" (recruiter OR "talent acquisition") "${cleanRole}"`;
+    }
+    return `site:linkedin.com "${cleanCompany}" (recruiter OR "talent acquisition")`;
+  }
+
+  public static getSuggestSearchUrl(companyName: string, roleTitle?: string): string {
+    const query = this.buildSuggestSearchQuery(companyName, roleTitle);
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+  }
+
+  /**
+   * Generates targeted search presets for early-career students:
+   * 1. General Tech Recruiter & Talent Acquisition
+   * 2. University / Campus Recruiting Lead
+   * 3. Engineering Hiring Manager
+   * 4. Technical Sourcer
+   */
+  public static getSuggestSearchPresets(companyName: string, roleTitle?: string): SuggestSearchQuery[] {
+    const cleanCompany = (companyName || '').trim();
+    const cleanRole = (roleTitle || '')
+      .replace(/junior|intern|internship|new grad|entry level|\(20\d\d\)/gi, '')
+      .trim();
+
+    return [
+      {
+        id: 'tech_recruiter',
+        title: 'Tech Recruiter & Talent Acquisition',
+        roleCategory: 'Recruiter / Sourcer',
+        query: `site:linkedin.com "${cleanCompany}" (recruiter OR "talent acquisition") ${cleanRole ? `"${cleanRole}"` : ''}`.trim(),
+        googleSearchUrl: `https://www.google.com/search?q=${encodeURIComponent(
+          `site:linkedin.com "${cleanCompany}" (recruiter OR "talent acquisition") ${cleanRole ? `"${cleanRole}"` : ''}`.trim()
+        )}`,
+        rationale: 'Finds technical talent partners actively hiring for this team.'
+      },
+      {
+        id: 'university_recruiting',
+        title: 'University & Campus Recruiting Lead',
+        roleCategory: 'Campus / Early Talent',
+        query: `site:linkedin.com "${cleanCompany}" ("university recruiter" OR "campus recruiter" OR "early talent")`.trim(),
+        googleSearchUrl: `https://www.google.com/search?q=${encodeURIComponent(
+          `site:linkedin.com "${cleanCompany}" ("university recruiter" OR "campus recruiter" OR "early talent")`.trim()
+        )}`,
+        rationale: 'Directly locates leads dedicated to student internships & new grad cohorts.'
+      },
+      {
+        id: 'engineering_hiring_manager',
+        title: 'Engineering Hiring Manager / Lead',
+        roleCategory: 'Hiring Decision Maker',
+        query: `site:linkedin.com "${cleanCompany}" ("engineering manager" OR "engineering lead" OR "director of engineering") ${cleanRole ? `"${cleanRole}"` : ''}`.trim(),
+        googleSearchUrl: `https://www.google.com/search?q=${encodeURIComponent(
+          `site:linkedin.com "${cleanCompany}" ("engineering manager" OR "engineering lead" OR "director of engineering") ${cleanRole ? `"${cleanRole}"` : ''}`.trim()
+        )}`,
+        rationale: 'Identifies engineering managers with direct budget and opening authority.'
+      },
+      {
+        id: 'technical_sourcer',
+        title: 'Technical Sourcer',
+        roleCategory: 'Outbound Talent Scout',
+        query: `site:linkedin.com "${cleanCompany}" ("technical sourcer" OR "tech sourcer") ${cleanRole ? `"${cleanRole}"` : ''}`.trim(),
+        googleSearchUrl: `https://www.google.com/search?q=${encodeURIComponent(
+          `site:linkedin.com "${cleanCompany}" ("technical sourcer" OR "tech sourcer") ${cleanRole ? `"${cleanRole}"` : ''}`.trim()
+        )}`,
+        rationale: 'Reaches sourcers who actively review candidate GitHubs, portfolios, and code.'
+      }
+    ];
   }
 
   /**

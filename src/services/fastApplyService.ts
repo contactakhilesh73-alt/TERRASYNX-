@@ -8,6 +8,8 @@
 
 import { Opportunity, StudentProfile, FastApplyReceipt } from '../types';
 import { RadarEngine } from './radarEngine';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { AppliedDossierService } from './appliedDossierService';
 
 const RECEIPTS_STORAGE_KEY = 'terrasynx_submission_receipts';
 
@@ -184,7 +186,7 @@ export class FastApplyService {
       workAuthSelected: legalAnswers.sponsorshipStatus,
       tailoredResumeUsed: tailoredResumeName,
       portalType,
-      officialApplyUrl: opportunity.officialApplyUrl,
+      officialApplyUrl: resolveCanonicalApplyUrl(opportunity),
       officialStatusTrackerUrl,
       preparationDurationSec: totalLatencySec,
       preparedAt: Date.now(),
@@ -229,14 +231,15 @@ export class FastApplyService {
       humanLatencySeconds: preparationDurationSec,
       antiBotStatus: 'Student Self-Reported Submission',
       status: 'confirmed',
-      receiptUrl: opportunity.officialApplyUrl,
+      receiptUrl: resolveCanonicalApplyUrl(opportunity),
       selfConfirmedByStudent: true,
       officialStatusTrackerUrl,
       studentConfirmationNotes: 'Candidate self-confirmed manual submission on official company career portal.',
     };
 
-    // Save receipt in permanent client-side storage
+    // Save receipt in permanent client-side storage & record application in permanent dossier
     this.saveReceipt(receipt);
+    AppliedDossierService.recordApplicationSubmission(receipt, opportunity, profile.email);
 
     // Update Kanban stage in RadarEngine to 'applied' ONLY NOW
     RadarEngine.updateStage(
@@ -253,7 +256,7 @@ export class FastApplyService {
       jobId: opportunity.id,
       jobTitle: opportunity.title,
       companyName: opportunity.companyName,
-      actionUrl: opportunity.officialApplyUrl,
+      actionUrl: resolveCanonicalApplyUrl(opportunity),
       actionAdvisorPoints: [
         'You confirmed that your application was submitted on the official employer portal.',
         'Notice: This milestone is self-reported by the candidate (not an employer-certified receipt).',

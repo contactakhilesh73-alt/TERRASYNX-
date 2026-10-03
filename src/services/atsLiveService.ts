@@ -10,6 +10,7 @@ import { RadarEngine } from './radarEngine';
 import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from '../data/atsTargets';
 import { RoleSkillClassifier } from './roleSkillClassifier';
 import { logger } from '../utils/logger';
+import { sanitizeOpportunityUrls } from '../utils/portalUrlResolver';
 
 export type { ATSCompanyTarget };
 export { VERIFIED_ATS_TARGETS };
@@ -100,7 +101,7 @@ export class AtsLiveService {
         workMode,
         location: locationName,
         department: classification.department,
-        officialApplyUrl: job.absolute_url || `https://boards.greenhouse.io/${target.slug}/jobs/${job.id}`,
+        officialApplyUrl: `https://job-boards.greenhouse.io/embed/job_app?for=${target.slug}&token=${job.id}`,
         releasedAt: now - (6 * HOUR),
         deadlineAt,
         verification: {
@@ -289,11 +290,14 @@ export class AtsLiveService {
       if (response.ok) {
         const data = await response.json();
         if (data && data.success && Array.isArray(data.jobs) && data.jobs.length > 0) {
-          // Recalculate candidate-specific fitment dynamically
-          const enrichedJobs: Opportunity[] = data.jobs.map((job: Opportunity) => ({
-            ...job,
-            fitment: FitmentRecalculator.recalculate(job, studentProfile),
-          }));
+          // Recalculate candidate-specific fitment dynamically and enforce canonical verified URLs
+          const enrichedJobs: Opportunity[] = data.jobs.map((job: Opportunity) => {
+            const sanitized = sanitizeOpportunityUrls({ ...job });
+            return {
+              ...sanitized,
+              fitment: FitmentRecalculator.recalculate(sanitized, studentProfile),
+            };
+          });
 
           this.cachedLiveJobs = enrichedJobs;
 
@@ -326,10 +330,13 @@ export class AtsLiveService {
       try {
         const parsed = JSON.parse(cachedData);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const enriched = parsed.map((j: Opportunity) => ({
-            ...j,
-            fitment: FitmentRecalculator.recalculate(j, studentProfile),
-          }));
+          const enriched = parsed.map((j: Opportunity) => {
+            const sanitized = sanitizeOpportunityUrls({ ...j });
+            return {
+              ...sanitized,
+              fitment: FitmentRecalculator.recalculate(sanitized, studentProfile),
+            };
+          });
           this.cachedLiveJobs = enriched;
           if (onProgress) {
             onProgress('Browser LocalStorage Fallback', enriched.length);

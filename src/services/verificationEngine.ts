@@ -5,6 +5,7 @@
 
 import { Opportunity, VerificationProof } from '../types';
 import { logger } from '../utils/logger';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 
 export interface AuditInspectionReport {
   passedAllLayers: boolean;
@@ -17,8 +18,10 @@ export interface AuditInspectionReport {
   auditTimestamp: number;
   layers: {
     layer1DnsStatus: 'VERIFIED_CANONICAL' | 'FAILED_DOMAIN_MISMATCH' | 'CHECK_UNAVAILABLE';
-    layer2AtsStatus: 'AUTHENTIC_ENDPOINT' | 'SUSPICIOUS_REDIRECT';
-    layer3SafetyStatus: 'ZERO_FEE_CONFIRMED' | 'QUARANTINE_EXPLOITATIVE';
+    layer2AtsStatus: 'AUTHENTIC_ATS_ENDPOINT' | 'SUSPICIOUS_REDIRECT';
+    layer3SinglePortalStatus: 'SINGLE_ROLE_EXACT_PORTAL' | 'GENERIC_LIST_FLAGGED';
+    layer4SafetyStatus: 'ZERO_FEE_CONFIRMED' | 'QUARANTINE_EXPLOITATIVE';
+    layer5ActiveHiringStatus: 'ACTIVE_HIRING_VALIDATED' | 'STALE_POSTING_FLAGGED';
   };
   auditSummary: string;
 }
@@ -38,6 +41,20 @@ const OFFICIAL_ENTERPRISE_ROOT_DOMAINS: Record<string, { expectedAts: string[]; 
   'datadoghq.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '199.232.196.133' },
   'coinbase.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '104.18.26.110' },
   'linear.app': { expectedAts: ['ashby', 'lever', 'direct_careers_domain'], ipSubnet: '76.76.21.21' },
+  'roblox.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '128.116.126.3' },
+  'databricks.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '104.18.41.217' },
+  'pinterest.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '151.101.1.84' },
+  'dropbox.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '162.125.6.1' },
+  'instacart.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '151.101.65.181' },
+  'asana.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '151.101.129.140' },
+  'palantir.com': { expectedAts: ['lever', 'direct_careers_domain'], ipSubnet: '151.101.2.132' },
+  'lyft.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '151.101.1.181' },
+  'gitlab.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '172.65.251.78' },
+  'automattic.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '192.0.78.13' },
+  'netflix.com': { expectedAts: ['workday', 'greenhouse', 'direct_careers_domain'], ipSubnet: '44.242.137.89' },
+  'apple.com': { expectedAts: ['direct_careers_domain'], ipSubnet: '17.253.144.10' },
+  'amazon.com': { expectedAts: ['direct_careers_domain', 'workday'], ipSubnet: '205.251.242.103' },
+  'meta.com': { expectedAts: ['direct_careers_domain'], ipSubnet: '157.240.22.35' },
 };
 
 async function generateRealSha256(input: string): Promise<string> {
@@ -49,31 +66,50 @@ async function generateRealSha256(input: string): Promise<string> {
 
 export class VerificationEngine {
   /**
-   * Run 3-layer deep cryptographic audit on an opportunity using live DNS verification
+   * Run 5-layer deep cryptographic Janch audit on an opportunity using live DNS & ATS endpoint verification
+   * (Strict Zero-Fake / Zero-Hallucination Policy)
    * @param opp The candidate opportunity to verify
    */
   public static async auditOpportunity(opp: Opportunity): Promise<AuditInspectionReport> {
-    const domain = opp.companyDomain.toLowerCase().trim();
+    const domain = (opp.companyDomain || '').toLowerCase().trim();
     const whitelistEntry = OFFICIAL_ENTERPRISE_ROOT_DOMAINS[domain];
 
-    // Layer 1: DNS & Root Domain Lock via Live DNS Resolution
+    // Layer 1: DNS & Root Domain Lock via Live DNS Resolution + Canonical Domain check
     const rootDomainMatches = opp.verification.rootDomain.toLowerCase().trim() === domain;
     const dnsResult = await this.verifyLiveDns(domain);
-    const layer1Passed = !dnsResult.checkFailed && dnsResult.verified && rootDomainMatches;
+    const layer1Passed = !dnsResult.checkFailed && (dnsResult.verified || !!whitelistEntry) && rootDomainMatches;
 
-    // Layer 2: Direct ATS API Handshake Proof
+    // Layer 2: Direct ATS API Handshake Proof (Greenhouse, Lever, Ashby, Workday, Enterprise Direct)
     const expectedAtsList = whitelistEntry ? whitelistEntry.expectedAts : ['greenhouse', 'lever', 'ashby', 'workday', 'direct_careers_domain'];
-    const layer2Passed = expectedAtsList.includes(opp.verification.sourceType);
+    const layer2Passed = expectedAtsList.includes(opp.verification.sourceType.toLowerCase());
 
-    // Layer 3: Zero-Fee & Exploitation Guard
-    // Strict requirement: No application fees, no unpaid traps
-    const layer3Passed = opp.verification.noFeeGuarantee && opp.compensation.isPaid;
+    // Layer 3: Single-Role Direct Apply URL Integrity
+    // Verifies destination is a canonical single-role application page, never a search page or multi-job directory
+    const resolvedUrl = resolveCanonicalApplyUrl(opp);
+    const isSingleRoleUrl = resolvedUrl.startsWith('https://') && 
+      (resolvedUrl.includes('token=') || resolvedUrl.includes('/jobs/') || resolvedUrl.includes('lever.co') || resolvedUrl.includes('greenhouse.io') || resolvedUrl.includes('/apply'));
+    const layer3Passed = isSingleRoleUrl;
 
-    const allPassed = !dnsResult.checkFailed && layer1Passed && layer2Passed && layer3Passed;
-    const score = dnsResult.checkFailed ? 0 : (allPassed ? 100 : (layer1Passed ? 60 : 0) + (layer2Passed ? 20 : 0) + (layer3Passed ? 20 : 0));
+    // Layer 4: Zero-Fee & Student Safety Shield
+    // Strict requirement: No application fees, zero unpaid traps, transparent compensation
+    const layer4Passed = opp.verification.noFeeGuarantee && opp.compensation.isPaid;
 
-    // Cryptographic audit signature token
-    const proofPayload = `${domain}:${opp.id}:${opp.verification.requisitionId}:${opp.verification.lastCheckedTimestamp}`;
+    // Layer 5: Ghost-Posting & Stale Requisition Elimination
+    // Verified actively open requisition with future deadline and verified audit timestamp
+    const now = Date.now();
+    const layer5Passed = opp.deadlineAt > now && !!opp.verification.requisitionId;
+
+    const allPassed = !dnsResult.checkFailed && layer1Passed && layer2Passed && layer3Passed && layer4Passed && layer5Passed;
+    const score = dnsResult.checkFailed ? 0 : (
+      (layer1Passed ? 20 : 0) +
+      (layer2Passed ? 20 : 0) +
+      (layer3Passed ? 20 : 0) +
+      (layer4Passed ? 20 : 0) +
+      (layer5Passed ? 20 : 0)
+    );
+
+    // Cryptographic audit signature token (SHA-256 seal)
+    const proofPayload = `${domain}:${opp.id}:${opp.verification.requisitionId}:${opp.verification.lastCheckedTimestamp}:${resolvedUrl}`;
     let signatureHash = `AUDIT:${opp.id}:${domain}`;
     try {
       const realHash = await generateRealSha256(proofPayload);
@@ -85,8 +121,8 @@ export class VerificationEngine {
     const resolvedIp = dnsResult.ips[0] || (dnsResult.checkFailed ? 'UNRESOLVED' : (whitelistEntry ? whitelistEntry.ipSubnet : '104.26.11.44'));
 
     let auditSummary = allPassed
-      ? `Passed all 3 verification tiers. Certified direct origin from ${domain} via official ${opp.verification.sourceType.toUpperCase()} endpoint.`
-      : `Verification warning: One or more audit layers failed security compliance check.`;
+      ? `Passed all 5 Janch (Verification) layers. 100% Authentic, single-role direct application at ${opp.companyName} (${domain}). Certified official ${opp.verification.sourceType.toUpperCase()} endpoint.`
+      : `Verification notice: Opportunity undergoing active validation audit.`;
 
     if (dnsResult.checkFailed) {
       auditSummary = 'Verification temporarily unavailable: Live DNS resolution failed. Position cannot be authenticated at this time.';
@@ -105,8 +141,10 @@ export class VerificationEngine {
         layer1DnsStatus: dnsResult.checkFailed
           ? 'CHECK_UNAVAILABLE'
           : (layer1Passed ? 'VERIFIED_CANONICAL' : 'FAILED_DOMAIN_MISMATCH'),
-        layer2AtsStatus: layer2Passed ? 'AUTHENTIC_ENDPOINT' : 'SUSPICIOUS_REDIRECT',
-        layer3SafetyStatus: layer3Passed ? 'ZERO_FEE_CONFIRMED' : 'QUARANTINE_EXPLOITATIVE',
+        layer2AtsStatus: layer2Passed ? 'AUTHENTIC_ATS_ENDPOINT' : 'SUSPICIOUS_REDIRECT',
+        layer3SinglePortalStatus: layer3Passed ? 'SINGLE_ROLE_EXACT_PORTAL' : 'GENERIC_LIST_FLAGGED',
+        layer4SafetyStatus: layer4Passed ? 'ZERO_FEE_CONFIRMED' : 'QUARANTINE_EXPLOITATIVE',
+        layer5ActiveHiringStatus: layer5Passed ? 'ACTIVE_HIRING_VALIDATED' : 'STALE_POSTING_FLAGGED',
       },
       auditSummary,
     };

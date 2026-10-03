@@ -20,7 +20,9 @@ import {
   getFirestore, 
   doc, 
   setDoc, 
-  getDoc, 
+  getDoc,
+  collection,
+  getDocs,
   serverTimestamp 
 } from 'firebase/firestore';
 import { StudentProfile, AuthUserSession } from './types';
@@ -346,4 +348,137 @@ export async function loadStudentProfileCloud(
   }
 
   return null;
+}
+
+/**
+ * Unified Cloud Application Save:
+ * - If user is signed in with Google -> persists to Firestore (`students/{userId}/applications/{opportunityId}`)
+ * - Always syncs to `/api/student/applications` for server-side persistence
+ */
+export async function saveApplicationToCloud(
+  userId: string,
+  application: any,
+  isGoogleUser: boolean
+): Promise<void> {
+  if (!userId || !application?.opportunityId) return;
+
+  const sanitized = {
+    opportunityId: sanitizeInputText(application.opportunityId),
+    companyName: sanitizeInputText(application.companyName),
+    jobTitle: sanitizeInputText(application.jobTitle),
+    companyDomain: sanitizeInputText(application.companyDomain),
+    appliedTimestamp: Number(application.appliedTimestamp) || Date.now(),
+    confirmationId: sanitizeInputText(application.confirmationId),
+    sha256Proof: sanitizeInputText(application.sha256Proof),
+    portalType: sanitizeInputText(application.portalType),
+    workAuthClaimed: sanitizeInputText(application.workAuthClaimed),
+    resumePersonaUsed: sanitizeInputText(application.resumePersonaUsed),
+    currentStage: sanitizeInputText(application.currentStage || 'applied'),
+    customNotes: sanitizeInputText(application.customNotes),
+    officialApplyUrl: sanitizeInputText(application.officialApplyUrl),
+    officialStatusTrackerUrl: sanitizeInputText(application.officialStatusTrackerUrl),
+    applicantEmail: sanitizeInputText(application.applicantEmail),
+    applicantUid: sanitizeInputText(application.applicantUid || userId),
+    submissionRoute: sanitizeInputText(application.submissionRoute || 'terrasynx_assisted'),
+    routeLabel: sanitizeInputText(application.routeLabel || 'Applied via TERRASYNX Fast-Apply Assistant'),
+  };
+
+  // If authenticated via Google Firebase Auth, persist to Firestore
+  if (isGoogleUser && auth.currentUser) {
+    try {
+      const appDocRef = doc(db, 'students', userId, 'applications', sanitized.opportunityId);
+      await setDoc(appDocRef, {
+        ...sanitized,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    } catch (fsErr) {
+      console.warn('Firestore application write error:', fsErr);
+    }
+  }
+
+  // Also persist in Server Cloud Store for resilience
+  try {
+    await fetch('/api/student/applications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, application: sanitized }),
+    });
+  } catch (apiErr) {
+    console.warn('Server application save error:', apiErr);
+  }
+}
+
+/**
+ * Unified Cloud Application Load:
+ * - Tries Firestore first if Google user
+ * - Fetches from Server Cloud Store by userId and by candidate email
+ * - Deduplicates and returns all applications tied to student's identity
+ */
+export async function loadApplicationsFromCloud(
+  userId?: string,
+  isGoogleUser: boolean = false,
+  userEmail?: string
+): Promise<any[]> {
+  const mergedMap = new Map<string, any>();
+
+  // 1. If Google User and UID present, query Firestore
+  if (isGoogleUser && auth.currentUser && userId) {
+    try {
+      const colRef = collection(db, 'students', userId, 'applications');
+      const snap = await getDocs(colRef);
+      if (!snap.empty) {
+        snap.forEach(d => {
+          const data = d.data();
+          if (data && data.opportunityId) {
+            mergedMap.set(data.opportunityId, data);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('Firestore applications read error:', err);
+    }
+  }
+
+  // 2. Fetch server applications by userId
+  if (userId) {
+    try {
+      const res = await fetch(`/api/student/applications/${encodeURIComponent(userId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.applications)) {
+          for (const app of data.applications) {
+            if (app && app.opportunityId) {
+              mergedMap.set(app.opportunityId, { ...mergedMap.get(app.opportunityId), ...app });
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Server applications read error by userId:', err);
+    }
+  }
+
+  // 3. Fetch server applications by candidate email (cross-device & external self-applied reconciliation)
+  if (userEmail) {
+    const cleanEmail = userEmail.toLowerCase().trim();
+    if (cleanEmail) {
+      try {
+        const res = await fetch(`/api/student/applications/by-email/${encodeURIComponent(cleanEmail)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.applications)) {
+            for (const app of data.applications) {
+              if (app && app.opportunityId) {
+                mergedMap.set(app.opportunityId, { ...mergedMap.get(app.opportunityId), ...app });
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Server applications read error by email:', err);
+      }
+    }
+  }
+
+  return Array.from(mergedMap.values());
 }

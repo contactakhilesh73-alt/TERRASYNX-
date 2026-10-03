@@ -1,7 +1,7 @@
 /**
  * TERRASYNX: Single-Action Job URL Ingestion Bar (Phase 5 Point 3)
  * Lets users paste any ATS or Careers URL (Greenhouse, Lever, Ashby, direct domain)
- * to instantly ingest, verify, and generate a Santiago 8-Block Dossier.
+ * to instantly ingest, verify, and generate a TERRASYNX 8-Block Dossier.
  */
 
 import React, { useState } from 'react';

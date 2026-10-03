@@ -41,10 +41,11 @@ interface RadarViewProps {
   onOpenDossier?: (opportunity: Opportunity) => void;
   onOpenCoverLetter?: (opportunity: Opportunity) => void;
   onOpenEmailDraft?: (opportunity: Opportunity) => void;
+  onSelfReportApplied?: (opportunity: Opportunity) => void;
   mutedAlertIds: string[];
 }
 
-type FilterTab = 'all' | 'urgent' | 'tier1' | 'high_match' | 'internship' | 'new_grad' | 'live_ats' | 'fair_wage';
+type FilterTab = 'all' | 'urgent' | 'tier1' | 'high_match' | 'internship' | 'new_grad' | 'live_ats' | 'fair_wage' | 'applied';
 
 export const RadarView: React.FC<RadarViewProps> = ({
   opportunities,
@@ -55,6 +56,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
   onOpenDossier,
   onOpenCoverLetter,
   onOpenEmailDraft,
+  onSelfReportApplied,
   mutedAlertIds,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -63,16 +65,18 @@ export const RadarView: React.FC<RadarViewProps> = ({
   const [selectedWorkMode, setSelectedWorkMode] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'fitment' | 'deadline' | 'compensation'>('fitment');
   const [blockUnpaidOnly, setBlockUnpaidOnly] = useState<boolean>(false);
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   const [isScanningAts, setIsScanningAts] = useState<boolean>(false);
   const [scanProgressMsg, setScanProgressMsg] = useState<string>('');
   const [lastScanResult, setLastScanResult] = useState<string | null>(null);
   // Progressive batch pagination (renders 18 cards initially, loads +18 on demand)
   const [visibleCount, setVisibleCount] = useState<number>(18);
+  const [showDevConsole, setShowDevConsole] = useState<boolean>(false);
 
   // Reset pagination when active filter, search, work mode, or sort order changes
   useEffect(() => {
     setVisibleCount(18);
-  }, [searchQuery, activeTab, selectedWorkMode, sortBy, blockUnpaidOnly]);
+  }, [searchQuery, activeTab, selectedWorkMode, sortBy, blockUnpaidOnly, selectedCompany]);
 
   const handleScanLiveAts = async () => {
     setIsScanningAts(true);
@@ -114,8 +118,9 @@ export const RadarView: React.FC<RadarViewProps> = ({
     const newGradCount = opportunities.filter(o => o.type === 'new-grad').length;
     const liveAtsCount = opportunities.filter(o => o.id.startsWith('live_') || o.verification.sourceType === 'greenhouse' || o.verification.sourceType === 'lever').length;
     const fairWageCount = opportunities.filter(o => o.compensation.isPaid && !o.compensation.range.toLowerCase().includes('unpaid')).length;
+    const appliedCount = opportunities.filter(o => o.stage === 'applied' || o.stage === 'assessment' || o.stage === 'interview' || o.stage === 'offer').length;
 
-    return { urgentCount, tier1Count, highMatchCount, internCount, newGradCount, liveAtsCount, fairWageCount };
+    return { urgentCount, tier1Count, highMatchCount, internCount, newGradCount, liveAtsCount, fairWageCount, appliedCount };
   }, [opportunities]);
 
   // Filtered & Sorted List — Strict 1-to-1 Mapping (Zero Duplicates Guaranteed)
@@ -133,6 +138,11 @@ export const RadarView: React.FC<RadarViewProps> = ({
 
       // Work mode filter
       if (selectedWorkMode !== 'all' && opp.workMode !== selectedWorkMode) {
+        return false;
+      }
+
+      // Company filter (Employer Hub isolation)
+      if (selectedCompany && opp.companyName.toLowerCase() !== selectedCompany.toLowerCase()) {
         return false;
       }
 
@@ -159,6 +169,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
           return opp.id.startsWith('live_') || opp.verification.sourceType === 'greenhouse' || opp.verification.sourceType === 'lever';
         case 'fair_wage':
           return opp.compensation.isPaid && !opp.compensation.range.toLowerCase().includes('unpaid');
+        case 'applied':
+          return opp.stage === 'applied' || opp.stage === 'assessment' || opp.stage === 'interview' || opp.stage === 'offer';
         default:
           return true;
       }
@@ -185,71 +197,6 @@ export const RadarView: React.FC<RadarViewProps> = ({
   return (
     <div id="radar-view-container" className="space-y-6">
       
-      {/* Autonomous Opportunity Radar Heartbeat & Auto-Sync Cron Cockpit (Phase 5 Point 4) */}
-      <AutonomousPulseBar
-        onPulseComplete={(_newCount) => {
-          setActiveTab('all');
-        }}
-      />
-
-      {/* Live ATS Ingestion Cockpit (Phase 5 Point 1: Direct Greenhouse & Lever Live Ingestion) */}
-      <div className="rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-950/20 via-slate-900/60 to-slate-950 p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-            <Globe2 className="w-5 h-5 text-amber-400" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
-                Live ATS Ingestion Engine (Free & Public Endpoints)
-              </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
-                Greenhouse + Lever
-              </span>
-            </div>
-            <p className="text-xs text-slate-300 mt-0.5">
-              {isScanningAts ? (
-                <span className="text-amber-300 font-mono animate-pulse flex items-center gap-1.5">
-                  <RefreshCw className="w-3 h-3 animate-spin" />
-                  {scanProgressMsg}
-                </span>
-              ) : lastScanResult ? (
-                <span className="text-emerald-400 font-mono flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  {lastScanResult}
-                </span>
-              ) : (
-                <span>Zero API-key required. Sub-second parallel scans across Cloudflare, GitLab, Palantir, Scale AI, Automattic.</span>
-              )}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={handleScanLiveAts}
-            disabled={isScanningAts}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all cursor-pointer ${
-              isScanningAts
-                ? 'bg-amber-950 text-amber-300 border border-amber-800/60 opacity-70 cursor-not-allowed'
-                : 'bg-amber-400 text-slate-950 hover:bg-amber-300 hover:shadow-lg hover:shadow-amber-500/20 active:scale-95'
-            }`}
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isScanningAts ? 'animate-spin' : ''}`} />
-            <span>{isScanningAts ? 'Scanning Boards...' : 'Scan Live ATS Boards'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Single-Action Universal Job URL Ingestion Pipeline (Phase 5 Point 3) */}
-      <UrlIngestionBar
-        onOpenDossier={onOpenDossier}
-        onOpportunityIngested={(_opp) => {
-          setActiveTab('all');
-          setSearchQuery('');
-        }}
-      />
-
       {/* Tactical Banner & Search Header */}
       <div className="rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900/90 via-slate-950 to-slate-900/90 p-5 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -386,6 +333,18 @@ export const RadarView: React.FC<RadarViewProps> = ({
               <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
               <span>Fair Wage ({stats.fairWageCount})</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('applied')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'applied'
+                  ? 'bg-blue-500 text-white font-bold shadow-sm'
+                  : 'bg-slate-900 text-blue-300 hover:bg-blue-950/40 border border-blue-950/80'
+              }`}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+              <span>Applied ({stats.appliedCount})</span>
+            </button>
           </div>
 
           {/* Sort and Work Mode Controls */}
@@ -433,6 +392,25 @@ export const RadarView: React.FC<RadarViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Active Company Filter Highlight Banner (when filtered by clicking company on an opportunity) */}
+      {selectedCompany && (
+        <div className="rounded-xl border border-cyan-500/40 bg-slate-900/90 p-3.5 flex items-center justify-between flex-wrap gap-2 text-xs shadow-md">
+          <div className="flex items-center gap-2 text-slate-200">
+            <span className="text-slate-400">Filtered by company:</span>
+            <span className="font-bold text-cyan-300 font-mono px-2 py-0.5 rounded bg-cyan-950 border border-cyan-800">
+              {selectedCompany} ({filteredList.length} Verified Roles)
+            </span>
+          </div>
+          <button
+            onClick={() => setSelectedCompany(null)}
+            className="text-xs px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+          >
+            <span>Show All Companies</span>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Internship Portal Session Switcher (Ongoing Applications vs Upcoming Seasonal Cycles) */}
       {activeTab === 'internship' && (
@@ -548,6 +526,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
                     onOpenDossier={onOpenDossier}
                     onOpenCoverLetter={onOpenCoverLetter}
                     onOpenEmailDraft={onOpenEmailDraft}
+                    onFilterByCompany={setSelectedCompany}
+                    onSelfReportApplied={onSelfReportApplied}
                     isAlertMuted={mutedAlertIds.includes(opp.id)}
                   />
                 ))}
@@ -604,6 +584,70 @@ export const RadarView: React.FC<RadarViewProps> = ({
           )}
         </div>
       )}
+
+      {/* Developer Ingestion & Telemetry Console (Hidden from students by default) */}
+      <div className="pt-8 border-t border-slate-800/60">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-mono text-slate-600">
+            TERRASYNX Core • Direct Requisition Engine
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowDevConsole(prev => !prev)}
+            className="text-[11px] font-mono text-slate-500 hover:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-800/80 hover:border-slate-700 transition-colors cursor-pointer"
+          >
+            {showDevConsole ? '✕ Close Developer Tools' : '🛠 Developer Ingestion Tools'}
+          </button>
+        </div>
+
+        {showDevConsole && (
+          <div className="mt-4 space-y-4 p-4 rounded-2xl bg-slate-950/80 border border-slate-800 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <span className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
+                Developer Ingestion & Telemetry Console
+              </span>
+              <span className="text-[10px] font-mono text-slate-500">
+                Internal testing & public ATS crawler
+              </span>
+            </div>
+
+            <AutonomousPulseBar
+              onPulseComplete={(_newCount) => {
+                setActiveTab('all');
+              }}
+            />
+
+            <div className="rounded-xl border border-amber-500/20 bg-gradient-to-r from-amber-950/20 via-slate-900/60 to-slate-950 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+              <div className="flex items-center gap-3">
+                <Globe2 className="w-5 h-5 text-amber-400 shrink-0" />
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400 font-mono">
+                    Live ATS Ingestion Engine (Greenhouse + Lever)
+                  </span>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {isScanningAts ? scanProgressMsg : lastScanResult || 'Direct scrape across verified enterprise ATS boards.'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleScanLiveAts}
+                disabled={isScanningAts}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono bg-amber-400 text-slate-950 hover:bg-amber-300 disabled:opacity-60 cursor-pointer"
+              >
+                {isScanningAts ? 'Scanning...' : 'Scan Boards'}
+              </button>
+            </div>
+
+            <UrlIngestionBar
+              onOpenDossier={onOpenDossier}
+              onOpportunityIngested={(_opp) => {
+                setActiveTab('all');
+                setSearchQuery('');
+              }}
+            />
+          </div>
+        )}
+      </div>
 
     </div>
   );

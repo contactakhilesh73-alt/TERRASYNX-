@@ -64,6 +64,14 @@ export const EmailDraftModal: React.FC<EmailDraftModalProps> = ({
   const bodyTextareaId = useId();
   const customPromptId = useId();
 
+  // Reset to default type/persona when opened
+  useEffect(() => {
+    if (isOpen) {
+      setActiveType(defaultType);
+      setActivePersona(defaultPersona);
+    }
+  }, [isOpen, defaultType, defaultPersona]);
+
   // Load draft when modal opens or type/persona changes
   useEffect(() => {
     if (isOpen && opportunity) {
@@ -292,6 +300,19 @@ export const EmailDraftModal: React.FC<EmailDraftModalProps> = ({
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>Cold Outreach Email</span>
+            </button>
+
+            <button
+              id="switch-tab-follow-up"
+              onClick={() => handleTypeSwitch('follow-up')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeType === 'follow-up'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-900/40'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Follow-Up (7-Day Check-in)</span>
             </button>
           </div>
 

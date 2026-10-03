@@ -6,6 +6,8 @@
 import React, { useState, useEffect } from 'react';
 import { Opportunity } from '../types';
 import { CompanyLogo } from './CompanyLogo';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { AppliedDossierService } from '../services/appliedDossierService';
 import { 
   ShieldCheck, 
   Clock, 
@@ -33,6 +35,8 @@ interface OpportunityCardProps {
   onOpenDossier?: (opportunity: Opportunity) => void;
   onOpenCoverLetter?: (opportunity: Opportunity) => void;
   onOpenEmailDraft?: (opportunity: Opportunity) => void;
+  onFilterByCompany?: (companyName: string) => void;
+  onSelfReportApplied?: (opportunity: Opportunity) => void;
   isAlertMuted: boolean;
 }
 
@@ -45,6 +49,8 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   onOpenDossier,
   onOpenCoverLetter,
   onOpenEmailDraft,
+  onFilterByCompany,
+  onSelfReportApplied,
   isAlertMuted,
 }) => {
   // Real-time ticking countdown calculation (Zero-Lag, Rule #3)
@@ -81,6 +87,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   }, [opportunity.deadlineAt]);
 
   const isApplied = opportunity.stage === 'applied' || opportunity.stage === 'assessment' || opportunity.stage === 'interview' || opportunity.stage === 'offer';
+  const appliedRecord = isApplied ? AppliedDossierService.getRecordByOpportunityId(opportunity.id) : undefined;
 
   return (
     <div 
@@ -103,23 +110,23 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
 
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-semibold text-sm text-slate-200 tracking-wide">
-                  {opportunity.companyName}
-                </span>
-
-                {/* Cryptographic Verification Proof Pill (Strict Rule #2 & Multi-Layer Audit) */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onInspectVerification) onInspectVerification(opportunity);
-                  }}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80 transition-all cursor-pointer shadow-sm shadow-emerald-950"
-                  title="Click to view official Multi-Layer Verification Certificate & Cryptographic Proof"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Verified (4 Layers)</span>
-                </button>
+                {onFilterByCompany ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFilterByCompany(opportunity.companyName);
+                    }}
+                    className="font-semibold text-sm text-slate-200 hover:text-cyan-400 tracking-wide transition-colors cursor-pointer text-left"
+                    title={`Click to filter opportunities at ${opportunity.companyName}`}
+                  >
+                    {opportunity.companyName}
+                  </button>
+                ) : (
+                  <span className="font-semibold text-sm text-slate-200 tracking-wide">
+                    {opportunity.companyName}
+                  </span>
+                )}
 
                 {isAlertMuted && (
                   <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-800 text-slate-400 border border-slate-700" title="Future apply alert muted (Req #7)">
@@ -212,6 +219,28 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         </div>
       </div>
 
+      {/* Applied Provenance Status Banner (Gmail Identity & Route Tracking) */}
+      {isApplied && (
+        <div className="mt-3 px-3 py-1.5 rounded-xl bg-emerald-950/50 border border-emerald-850 flex items-center justify-between text-[11px] font-mono gap-2">
+          <div className="flex items-center gap-1.5 text-emerald-300 min-w-0">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="font-bold shrink-0">Applied</span>
+            {appliedRecord?.applicantEmail && (
+              <span className="text-emerald-400/80 truncate" title={`Applied with Gmail: ${appliedRecord.applicantEmail}`}>
+                ({appliedRecord.applicantEmail})
+              </span>
+            )}
+          </div>
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+            appliedRecord?.submissionRoute === 'direct_official_ats' 
+              ? 'bg-blue-950 text-blue-300 border border-blue-800' 
+              : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+          }`}>
+            {appliedRecord?.submissionRoute === 'direct_official_ats' ? '🏢 Official ATS Portal' : '⚡ TERRASYNX Assistant'}
+          </span>
+        </div>
+      )}
+
       {/* Card Action Buttons (Req #1, #4, #7, #17) */}
       <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-1.5">
@@ -223,11 +252,11 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
 
-          {/* 8-Block Santiago Evaluation Dossier Trigger */}
+          {/* 8-Block TERRASYNX Evaluation Dossier Trigger */}
           <button
             onClick={() => onOpenDossier ? onOpenDossier(opportunity) : onOpenDetails(opportunity)}
             className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition-colors font-mono font-bold px-2 py-1 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 cursor-pointer"
-            title="Inspect Santiago 8-Block (A to H) Evaluation Dossier"
+            title="Inspect TERRASYNX 8-Block (A to H) Evaluation Dossier"
           >
             <Layers className="w-3 h-3" />
             <span>8-Block Dossier</span>
@@ -257,42 +286,49 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Mark as Applied (Quick Manual Toggle) */}
-          <button
-            onClick={() => onMarkApplied(opportunity.id)}
-            disabled={isApplied}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
-              isApplied
-                ? 'bg-emerald-950/70 text-emerald-300 border border-emerald-800/60 cursor-default'
-                : 'bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
-            }`}
-            title={isApplied ? 'Application registered' : 'Mark as applied to mute future alerts (Req #7)'}
+          {/* Direct Apply on Official ATS Portal (Req: apply link directly on every opportunity) */}
+          <a
+            href={resolveCanonicalApplyUrl(opportunity)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-cyan-300 hover:text-white bg-slate-900 border border-cyan-800/70 hover:bg-cyan-950/60 shadow-sm transition-all"
+            title="Open Official Direct Employer Application Form (Single Role)"
           >
-            <CheckCircle2 className={`w-3.5 h-3.5 ${isApplied ? 'text-emerald-400' : 'text-slate-400'}`} />
-            <span>{isApplied ? 'Applied' : 'Marked'}</span>
-          </button>
+            <span>{isApplied ? 'Portal' : 'Apply Direct'}</span>
+            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
+          </a>
 
-          {/* Smart Auto-Fill Assistant or Applied State */}
+          {/* Smart Auto-Fill Assistant or Details State */}
           {!isApplied ? (
-            <button
-              onClick={() => onFastApply ? onFastApply(opportunity) : onOpenDetails(opportunity)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-md shadow-cyan-950/50 hover:shadow-cyan-500/20 transition-all font-mono cursor-pointer"
-              title="Smart Auto-Fill Assistant: Form fields pre-filled for your manual review and submission"
-            >
-              <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
-              <span>Fast Apply</span>
-            </button>
+            <>
+              <button
+                onClick={() => onFastApply ? onFastApply(opportunity) : onOpenDetails(opportunity)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-md shadow-cyan-950/50 hover:shadow-cyan-500/20 transition-all font-mono cursor-pointer"
+                title="Smart Auto-Fill Assistant: Form fields pre-filled for your manual review and submission"
+              >
+                <Zap className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+                <span>Fast Apply</span>
+              </button>
+
+              {/* Direct ATS Self-Report Submission */}
+              <button
+                onClick={() => onSelfReportApplied ? onSelfReportApplied(opportunity) : onMarkApplied(opportunity.id)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-blue-300 hover:text-white bg-slate-900 hover:bg-blue-950/70 border border-blue-900/70 transition-colors cursor-pointer font-mono"
+                title="Log that you applied directly on the official employer ATS portal using your Gmail"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
+                <span>I Applied (ATS)</span>
+              </button>
+            </>
           ) : (
-            <a
-              href={opportunity.officialApplyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-mono text-slate-400 hover:text-slate-200 bg-slate-900 border border-slate-800 hover:bg-slate-800"
-              title="Open Official External Application Page"
+            <button
+              onClick={() => onOpenDetails(opportunity)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 hover:bg-emerald-900/60 transition-colors cursor-pointer"
+              title="View submission details and dossier"
             >
-              <span>Portal</span>
-              <ExternalLink className="w-3 h-3 text-slate-400" />
-            </a>
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Details</span>
+            </button>
           )}
         </div>
       </div>

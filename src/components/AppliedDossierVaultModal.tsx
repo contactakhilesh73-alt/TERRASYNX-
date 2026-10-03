@@ -27,6 +27,7 @@ import {
 import { AppliedDossierService, AppliedJobRecord } from '../services/appliedDossierService';
 import { DossierPdfService } from '../services/dossierPdfService';
 import { StudentProfile, Opportunity } from '../types';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 
 interface AppliedDossierVaultModalProps {
   isOpen: boolean;
@@ -300,7 +301,7 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                           <span className="font-bold text-white text-base">
                             {record.companyName}
                           </span>
@@ -308,12 +309,24 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                           <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                             {record.portalType}
                           </span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                            record.submissionRoute === 'direct_official_ats'
+                              ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                              : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                          }`}>
+                            {record.submissionRoute === 'direct_official_ats' ? '🏢 Official ATS Portal' : '⚡ TERRASYNX Assistant'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
                             {record.currentStage.replace('_', ' ')}
                           </span>
                         </div>
-                        <div className="text-xs text-slate-300 font-medium mt-0.5">
-                          {record.jobTitle}
+                        <div className="text-xs text-slate-300 font-medium mt-0.5 flex items-center gap-2 flex-wrap">
+                          <span>{record.jobTitle}</span>
+                          {record.applicantEmail && (
+                            <span className="text-[11px] text-emerald-400/90 font-mono">
+                              • Logged via {record.applicantEmail}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -349,12 +362,13 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                           <Download className="w-3 h-3 mr-1 text-amber-400" /> Cert
                         </button>
                         <a
-                          href={record.officialApplyUrl}
+                          href={resolveCanonicalApplyUrl(record)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition-colors flex items-center space-x-1"
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-700 hover:bg-slate-600 text-cyan-300 hover:text-white border border-slate-600 transition-colors flex items-center space-x-1"
+                          title="Open Verified Official Portal"
                         >
-                          <ExternalLink className="w-3 h-3 mr-1" /> Portal
+                          <ExternalLink className="w-3 h-3 mr-1 text-cyan-400" /> Portal
                         </a>
                       </div>
                     </div>

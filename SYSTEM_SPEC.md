@@ -58,7 +58,7 @@
 - **[Req 14: Compensation & Fair Wage Transparency]** Verified pay ranges, benchmark compensation data, and 1-click filter to block unpaid/exploitative internships.
 - **[Req 15: Insider & Referral Outreach Engine]** Identifies alumni and inside engineering presence with 1-click professional cold referral draft templates.
 - **[Req 16: Company OA Intelligence & Warm-up Vault]** Company-specific past assessment patterns, frequently tested algorithmic topics, and warm-up practice links.
-- **[Req 17: 6 Integrated Operational Modes (Santiago-Inspired & Upgraded)]**
+- **[Req 17: 6 Integrated Operational Modes (TERRASYNX Core Architecture)]**
   - 📡 *Live Radar Mode (Scan)*
   - 🧠 *Evaluation Studio (Oferta)*
   - 📄 *Truth-Anchored Resume Studio (PDF)*

@@ -1,6 +1,6 @@
 /**
  * TERRASYNX: 8-Block Deep Reasoning Dossier Modal (Phase 5 Point 2)
- * Renders full Santiago-grade evaluation (Blocks A to H) with strict source labeling and hard blockers.
+ * Renders full TERRASYNX-grade evaluation (Blocks A to H) with strict source labeling and hard blockers.
  */
 
 import React, { useMemo } from 'react';
@@ -91,7 +91,7 @@ export const DossierModal: React.FC<DossierModalProps> = ({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
-                  Santiago-Grade Evaluation Dossier
+                  TERRASYNX Comprehensive Evaluation Dossier
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
                   {opportunity.verification.requisitionId}

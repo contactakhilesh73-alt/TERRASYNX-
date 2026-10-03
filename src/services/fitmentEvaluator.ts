@@ -1,7 +1,7 @@
 /**
  * TERRASYNX: Dynamic 10-Dimensional Career Fitment & Evaluation Service
  * Fully configurable, modular weights, strictly zero-hardcoding
- * Conforming to Santiago's oferta-inspired model & SYSTEM_SPEC (Req #17)
+ * Conforming to TERRASYNX intelligence model & SYSTEM_SPEC (Req #17)
  */
 
 import { Opportunity, StudentProfile, FitmentEvaluation } from '../types';
@@ -122,7 +122,7 @@ export class FitmentEvaluator {
 
     const finalScore = Math.round(weightedTotal / totalWeights);
 
-    // Derive Santiago-inspired A-F Grade
+    // Derive TERRASYNX A-F Grade
     let grade: FitmentEvaluation['overallGrade'] = 'B';
     if (finalScore >= 93) grade = 'A+';
     else if (finalScore >= 87) grade = 'A';

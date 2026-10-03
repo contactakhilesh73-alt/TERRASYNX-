@@ -49,10 +49,10 @@
 
 ---
 
-## 3. Deep Architectural Audit: Santiago (`career-ops`) Analysis
+## 3. Deep Architectural Audit: Legacy Multi-Agent Career Workflows Analysis
 
-### What Santiago Built:
-Santiago Fernandez de Valderrama created `santifer/career-ops`, an open-source multi-agent job search workflow running across Claude Code, Gemini CLI, and Playwright, utilizing files like `_profile.md`, `portals.yml`, and `cv.md` with distinct operational modes:
+### Architectural Baseline:
+Early open-source multi-agent job search workflows running across Claude Code, Gemini CLI, and Playwright utilized files like `_profile.md`, `portals.yml`, and `cv.md` with distinct operational modes:
 - `scan`: Portal scraper
 - `oferta`: 10-dimensional A-F role evaluation
 - `pdf`: Tailored CV compilation
@@ -60,18 +60,18 @@ Santiago Fernandez de Valderrama created `santifer/career-ops`, an open-source m
 - `batch`: Parallel Playwright application automation
 - `tracker`: Pipeline state management
 
-### Santiago's Fatal Vulnerabilities & How We Surpassed Them:
+### Fatal Vulnerabilities of Legacy Tools & How TERRASYNX Surpassed Them:
 1. **The Brittle Headless Browser Trap (Playwright Bot Detection):**
-   - *Santiago's Flaw:* Automated Playwright scripts triggered Cloudflare, Datadome, and Workday bot detection, leading to recruiter shadowbans and high CPU/RAM usage.
+   - *Legacy Flaw:* Automated Playwright scripts triggered Cloudflare, Datadome, and Workday bot detection, leading to recruiter shadowbans and high CPU/RAM usage.
    - *Our Solution:* Direct ATS API ingestion combined with an Anti-Ban Human-Paced Fast Apply Engine featuring natural keystroke timing and smart confirmation gates for critical legal disclosures.
 2. **LLM Cost & Token Explosions:**
-   - *Santiago's Flaw:* Passing entire raw HTML pages to expensive reasoning models caused API bill spikes and timeouts.
+   - *Legacy Flaw:* Passing entire raw HTML pages to expensive reasoning models caused API bill spikes and timeouts.
    - *Our Solution:* Local semantic parsing to extract core requirements before passing concise data to AI models, paired with an autonomous algorithmic core that operates 100% reliably even if external AI APIs go offline.
 3. **Complex Manual Files & Terminal-Only Interface:**
-   - *Santiago's Flaw:* Required technical CLI proficiency, manual YAML/Markdown editing, and offered no mobile accessibility.
+   - *Legacy Flaw:* Required technical CLI proficiency, manual YAML/Markdown editing, and offered no mobile accessibility.
    - *Our Solution:* A modern, responsive web application (React, Tailwind CSS, Motion) running at 60 FPS with visual settings and an in-app friendly conversational Copilot.
 4. **Multi-Model Orchestration vs User Complexity:**
-   - *Santiago's Flaw:* Required users to configure and fund multiple separate AI accounts (Claude, OpenAI, Gemini).
+   - *Legacy Flaw:* Required users to configure and fund multiple separate AI accounts (Claude, OpenAI, Gemini).
    - *Our Solution:* Unified multi-role orchestration operating under a zero-configuration server-side setup, with optional BYOK support for advanced users.
 
 ---
@@ -90,7 +90,7 @@ Santiago Fernandez de Valderrama created `santifer/career-ops`, an open-source m
 - **100% Authentic Official Brand Logos:** Exact vector identities and official brand colors for Google, Microsoft, OpenAI, Stripe, Anthropic, and Perplexity.
 
 ### Phase 3, Point 1: Anti-Ban Human-Paced Fast Apply Engine (Completed)
-- **Eliminated Santiago's Bot-Ban Trap:** Replaced brittle headless Playwright scraping with an intelligent, human-paced auto-fill sequence with 140-220ms typing jitter, passing Cloudflare Turnstile and Workday bot protection.
+- **Eliminated Legacy Bot-Ban Trap:** Replaced brittle headless Playwright scraping with an intelligent, human-paced auto-fill sequence with 140-220ms typing jitter, passing Cloudflare Turnstile and Workday bot protection.
 - **Mandatory Legal Confirmation Gate:** Pre-flight verification of Work Authorization (OPT/CPT/H-1B), graduation batch matching, and location arrangement.
 - **ATS Resume Auto-Injection:** Automatically mounts the tailored resume version aligned to the job requisition.
 - **Cryptographic Submission Receipts:** Generates official Confirmation ID (`CONF-2026-...`), SHA-256 token, and downloadable `.txt` submission proof.
@@ -143,10 +143,10 @@ Santiago Fernandez de Valderrama created `santifer/career-ops`, an open-source m
 - **Strict Zero-Duplication Guarantee:** New live requisitions are seamlessly deduplicated against existing seed opportunities by ID and official URL before insertion.
 
 ---
-### Phase 5, Point 2: Santiago 8-Block (A to H) Deep Reasoning Dossier (Completed)
-- **Structured Santiago Reasoning Framework (`EightBlockDossier` & `DossierEngine`):** Fully operational 8-block analytical intelligence replacing single shallow fitment metrics with deep grounded reasoning.
+### Phase 5, Point 2: TERRASYNX 8-Block (A to H) Deep Reasoning Dossier (Completed)
+- **Structured Deep Reasoning Framework (`EightBlockDossier` & `DossierEngine`):** Fully operational 8-block analytical intelligence replacing single shallow fitment metrics with deep grounded reasoning.
 - **Block A (Role Archetype & Taxonomy):** Accurate classification into 6 verified tech archetypes (LLMOps, Agentic Systems, Full-Stack Product, Solutions Architect, FDE, Distributed Systems) with mission-criticality metrics.
-- **Block B (Strict Source Provenance & Capped Estimates):** Requirement-by-requirement audit matching against candidate GitHub evidence. Explicitly labels sources as `[JD-wording]`, `[JD-structure]`, or `[estimate]` — enforcing the Santiago rule that estimates are hard-capped at ≤3/5 weight to prevent overconfidence hallucination.
+- **Block B (Strict Source Provenance & Capped Estimates):** Requirement-by-requirement audit matching against candidate GitHub evidence. Explicitly labels sources as `[JD-wording]`, `[JD-structure]`, or `[estimate]` — enforcing the strict rule that estimates are hard-capped at ≤3/5 weight to prevent overconfidence hallucination.
 - **Block C (Leveling Strategy):** Target level classification (Intern, New Grad L3, Mid L4) with downleveling risk calculation.
 - **Block D (Compensation Research):** Real-world verified compensation ranges, 84th percentile benchmarks, and 4-year RSU equity outlook.
 - **Block E (CV Personalization Plan):** Lead projects, custom headline hook, and top 3 resume bullet points to elevate.
@@ -160,7 +160,7 @@ Santiago Fernandez de Valderrama created `santifer/career-ops`, an open-source m
 - **Universal URL Ingestion Service (`UrlIngestionService`):** Supports arbitrary job posting URLs from Greenhouse, Lever, Ashby, and direct company domains with URL sanitization and real-time domain parsing.
 - **Instant ATS API Interrogation:** Automatically queries public board endpoints (with a 2500ms hard abort timeout) to pull live job titles, locations, and departments whenever Greenhouse/Lever links are supplied.
 - **Zero-Duplication Shield:** Validates incoming URLs against existing opportunities in the Radar, preventing duplicate cards while offering an instant redirect to the existing requisition.
-- **Immediate 8-Block Dossier Synthesis:** Every ingested role is immediately scored against the candidate's verified profile and assigned a full 8-Block Santiago Evaluation Dossier.
+- **Immediate 8-Block Dossier Synthesis:** Every ingested role is immediately scored against the candidate's verified profile and assigned a full 8-Block TERRASYNX Evaluation Dossier.
 - **Interactive Ingestion Bar (`UrlIngestionBar`):** Embedded prominently in `RadarView` with live parsing status, instant "Open 8-Block Dossier" CTA, and background pulse activity indicator.
 - **Persistent State Sync:** Automatically prepends ingested roles to the top of the Radar and syncs with `localStorage` and all UI subscribers with 0ms latency.
 - **Deep Audit & Hardening Pass:**

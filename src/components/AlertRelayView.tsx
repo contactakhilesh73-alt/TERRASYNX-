@@ -10,6 +10,9 @@ import { NoReplyAlertService, JanchAlertCategory } from '../services/noReplyAler
 import { CompanyLogo } from './CompanyLogo';
 import { AtsInboundStudio } from './AtsInboundStudio';
 import { DailyDigestStudio } from './DailyDigestStudio';
+import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { FollowUpCadenceService } from '../services/followUpCadenceService';
+import { EmailDraftType } from '../services/emailDraftService';
 import { 
   BellRing, 
   Mail, 
@@ -42,6 +45,7 @@ interface AlertRelayViewProps {
   onOpenDetails: (opportunity: Opportunity) => void;
   onMarkApplied: (jobId: string) => void;
   onInspectVerification?: (opportunity: Opportunity) => void;
+  onOpenEmailDraft?: (opportunity: Opportunity, type?: EmailDraftType) => void;
 }
 
 export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
@@ -52,19 +56,40 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
   onOpenDetails,
   onMarkApplied,
   onInspectVerification,
+  onOpenEmailDraft,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'inbox' | 'inbound_webhooks' | 'daily_digest'>('inbox');
   const [selectedEmailId, setSelectedEmailId] = useState<string>(simulatedEmails[0]?.id || '');
-  const [activeTierFilter, setActiveTierFilter] = useState<'all' | 'gold' | 'slate' | 'neon' | 'royal'>('all');
+  const [activeTierFilter, setActiveTierFilter] = useState<'all' | 'gold' | 'slate' | 'neon' | 'royal' | 'followup'>('all');
   const [sendSuccessToast, setSendSuccessToast] = useState<string | null>(null);
 
+  // Dynamic 7-day Follow-Up Cadence alerts (Prompt 21)
+  const followUpAlerts = React.useMemo(() => {
+    return FollowUpCadenceService.generateFollowUpAlerts(opportunities);
+  }, [opportunities]);
+
+  // Combined emails (follow-up reminders at top, followed by simulated digests)
+  const combinedEmails = React.useMemo(() => {
+    const map = new Map<string, AlertEmailSimulation>();
+    for (const a of followUpAlerts) {
+      map.set(a.id, a);
+    }
+    for (const e of simulatedEmails) {
+      if (!map.has(e.id)) {
+        map.set(e.id, e);
+      }
+    }
+    return Array.from(map.values());
+  }, [followUpAlerts, simulatedEmails]);
+
   // Filtered emails
-  const filteredEmails = simulatedEmails.filter(email => {
+  const filteredEmails = combinedEmails.filter(email => {
     if (activeTierFilter === 'all') return true;
+    if (activeTierFilter === 'followup') return email.type === 'followup_reminder';
     return email.tier === activeTierFilter;
   });
 
-  const selectedEmail = simulatedEmails.find(e => e.id === selectedEmailId) || simulatedEmails[0];
+  const selectedEmail = combinedEmails.find(e => e.id === selectedEmailId) || combinedEmails[0];
 
   // Manual Trigger for a live flash alert simulation (Req #5)
   const handleTriggerTestFlash = (tier: 'gold' | 'slate' | 'neon' | 'royal') => {
@@ -436,12 +461,18 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
               <span>Relay Inbox ({filteredEmails.length})</span>
             </span>
 
-            <div className="flex gap-1">
+            <div className="flex gap-1 flex-wrap">
               <button
                 onClick={() => setActiveTierFilter('all')}
                 className={`px-2 py-0.5 rounded ${activeTierFilter === 'all' ? 'bg-purple-400 text-slate-950 font-bold' : 'text-slate-500 hover:text-slate-300'}`}
               >
                 All
+              </button>
+              <button
+                onClick={() => setActiveTierFilter('followup')}
+                className={`px-2 py-0.5 rounded ${activeTierFilter === 'followup' ? 'bg-amber-400 text-slate-950 font-bold' : 'text-amber-400/80 hover:text-amber-300'}`}
+              >
+                Follow-Up ({followUpAlerts.length})
               </button>
               <button
                 onClick={() => setActiveTierFilter('gold')}
@@ -467,7 +498,9 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
             ) : (
               filteredEmails.map(email => {
                 const isSelected = email.id === selectedEmailId;
+                const isFollowUp = email.type === 'followup_reminder';
                 const tierBadge = 
+                  isFollowUp ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse' :
                   email.tier === 'gold' ? 'bg-amber-950 text-amber-300 border-amber-800' :
                   email.tier === 'neon' ? 'bg-cyan-950 text-cyan-300 border-cyan-800' :
                   email.tier === 'royal' ? 'bg-purple-950 text-purple-300 border-purple-800' :
@@ -480,12 +513,14 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                     className={`p-3 rounded-xl border transition-all cursor-pointer ${
                       isSelected
                         ? 'border-purple-500 bg-purple-950/30'
+                        : isFollowUp
+                        ? 'border-amber-900/50 bg-amber-950/20 hover:border-amber-700'
                         : 'border-slate-800/80 bg-slate-950/60 hover:border-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between gap-1 mb-1">
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase font-bold border ${tierBadge}`}>
-                        {email.tier.toUpperCase()} TIER
+                        {isFollowUp ? '⏰ FOLLOW-UP (7D)' : `${email.tier.toUpperCase()} TIER`}
                       </span>
                       <span className="text-[10px] text-slate-500 font-mono">
                         {new Date(email.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -577,6 +612,32 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                   </div>
                 )}
 
+                {/* Direct Action for Follow-Up Reminder */}
+                {selectedEmail.type === 'followup_reminder' && onOpenEmailDraft && (
+                  <div className="p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span className="text-xs text-amber-200">
+                        Aapne 7 din pehle apply kiya tha — ek polite follow-up email bhejne ka samay hai!
+                      </span>
+                    </div>
+                    {(() => {
+                      const opp = opportunities.find(o => o.id === selectedEmail.jobId);
+                      if (!opp) return null;
+                      return (
+                        <button
+                          onClick={() => onOpenEmailDraft(opp, 'follow-up')}
+                          className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold font-mono text-xs shadow-md shadow-amber-950/50 cursor-pointer flex items-center gap-1.5"
+                          title="Open EmailDraftModal with 7-day follow-up draft"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Draft Follow-Up Email</span>
+                        </button>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 <div className="pt-2 text-[11px] text-slate-500">
                   This cryptographic relay message was generated in conformance with RFC-822 header standards and strict zero-spam protocols.
                 </div>
@@ -618,7 +679,19 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                   const isApplied = opp.stage !== 'discovered' && opp.stage !== 'archived';
 
                   return (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {onOpenEmailDraft && (
+                        <button
+                          type="button"
+                          onClick={() => onOpenEmailDraft(opp)}
+                          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold font-mono text-xs shadow-md shadow-amber-950/40 transition-colors cursor-pointer"
+                          title="Draft polite 7-day follow-up email with Gemini AI"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-slate-950" />
+                          <span>Draft Follow-Up Email</span>
+                        </button>
+                      )}
+
                       <button
                         onClick={() => onMarkApplied(opp.id)}
                         disabled={isApplied}
@@ -633,7 +706,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                       </button>
 
                       <a
-                        href={opp.officialApplyUrl}
+                        href={resolveCanonicalApplyUrl(opp)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold font-mono"

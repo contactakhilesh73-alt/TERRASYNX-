@@ -1,6 +1,6 @@
 /**
  * TERRASYNX: Interactive 10-Dimensional Fitment Studio & ATS Gap Optimizer
- * Santiago's oferta-inspired comparative evaluation with customizable weights
+ * TERRASYNX comparative evaluation with customizable weights
  * Conforming strictly to SYSTEM_SPEC (Req #17 & Rules #1-#5)
  */
 
@@ -159,7 +159,7 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
                   10-Dimensional Fitment Studio
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-amber-950 text-amber-300 border border-amber-800">
-                  Santiago oferta-grade
+                  TERRASYNX Enterprise-Grade
                 </span>
                 {isLoadingAi ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800 animate-pulse">

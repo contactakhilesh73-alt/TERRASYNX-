@@ -39,7 +39,7 @@ export interface EligibilityCriteria {
   locationsAllowed: string[];         // Allowed regions / countries
 }
 
-// 10-Dimensional Fitment Assessment (Req #17 & Santiago-inspired A-F Evaluation)
+// 10-Dimensional Fitment Assessment (Req #17 & TERRASYNX A-F Evaluation)
 export interface FitmentEvaluation {
   overallScore: number;               // 0 - 100%
   overallGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
@@ -73,6 +73,7 @@ export interface CompensationDetails {
   period: 'hourly' | 'monthly' | 'annual';
   isPaid: boolean;
   transparentBenchmark: string;       // Levels.fyi / verified benchmark
+  rawMonthlyUsd?: number;
 }
 
 // Core Verified Opportunity Model (Strict Rule #1 & #4)
@@ -216,7 +217,7 @@ export interface AuthUserSession {
 // Email Digest & Alert Payload Interface (Req #5, #6, #10)
 export interface AlertEmailSimulation {
   id: string;
-  type: 'discovery_alert' | 'submission_receipt' | 'oa_action_required' | 'offer_milestone' | 'otp_verification' | 'janch_pass_audit' | 'action_roadmap';
+  type: 'discovery_alert' | 'submission_receipt' | 'oa_action_required' | 'offer_milestone' | 'otp_verification' | 'janch_pass_audit' | 'action_roadmap' | 'followup_reminder';
   tier: 'gold' | 'slate' | 'neon' | 'royal';
   subject: string;
   recipientEmail: string;
@@ -329,7 +330,7 @@ export interface CalendarEvent {
 }
 
 // ==========================================
-// Santiago 8-Block (A-H) Deep Reasoning Dossier (Phase 5 Point 2)
+// TERRASYNX 8-Block (A-H) Deep Reasoning Dossier (Phase 5 Point 2)
 // ==========================================
 export type RoleArchetype = 
   | 'LLMOps & Infra' 
@@ -975,6 +976,45 @@ export interface CompanyResearchDossier {
   candidateAngle: CompanyCandidateAngleAxis;
   summaryVerdict: string;
   interviewAdvantageScore: number;
+}
+
+// ============================================================================
+// PROMPT 20: INTERVIEW & COMPANY RED-FLAG DETECTOR
+// ============================================================================
+
+export type RedFlagCategory = 
+  | 'attrition_layoff'
+  | 'toxic_culture'
+  | 'unpaid_overtime'
+  | 'desperation_hiring'
+  | 'leadership_controversy';
+
+export type RedFlagSeverity = 'high' | 'medium' | 'low';
+
+export interface CompanyRedFlag {
+  id: string;
+  category: RedFlagCategory;
+  categoryLabel: string;
+  title: string;
+  severity: RedFlagSeverity;
+  description: string;
+  whyThisMatters: string; // Exactly one line
+  confidence: 'verified' | 'unverified';
+  unverifiedNote?: string; // "Unverified signal — apna khud research bhi karein"
+}
+
+export interface CompanyRedFlagReport {
+  id: string;
+  companyName: string;
+  companyDomain: string;
+  generatedAt: number;
+  source: 'gemini-3.8-flash' | 'algorithmic_fallback' | 'cached';
+  riskLevel: 'clean' | 'low' | 'moderate' | 'elevated' | 'high';
+  overallScore: number; // 0 - 100 (100 = completely clean/safe, lower = higher risk)
+  summaryVerdict: string;
+  redFlags: CompanyRedFlag[]; // 0 to 5 red flags
+  interviewVettingQuestions: string[]; // 2-3 diplomatic questions to ask in interview
+  totalFlagsCount: number;
 }
 
 
