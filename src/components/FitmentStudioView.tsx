@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Opportunity, StudentProfile, FitmentEvaluation } from '../types';
+import { Opportunity, StudentProfile, FitmentEvaluation, EvidenceTier } from '../types';
 import { 
   FitmentEvaluator, 
   DimensionWeightConfig, 
@@ -28,7 +28,9 @@ import {
   DollarSign,
   Building2,
   X,
-  Loader2
+  Loader2,
+  ShieldCheck,
+  Info
 } from 'lucide-react';
 
 interface FitmentStudioViewProps {
@@ -46,7 +48,7 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
 }) => {
   const [weights, setWeights] = useState<DimensionWeightConfig>(DEFAULT_FITMENT_WEIGHTS);
   const [showWeightSliders, setShowWeightSliders] = useState<boolean>(false);
-  const [activeSkillModal, setActiveSkillModal] = useState<{ skill: string; oppTitle: string; company: string } | null>(null);
+  const [activeSkillModal, setActiveSkillModal] = useState<{ skill: string; oppTitle: string; company: string; tier?: EvidenceTier } | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<'balanced' | 'prestige' | 'skills' | 'compensation'>('balanced');
   const [evaluatedOpportunities, setEvaluatedOpportunities] = useState<(Opportunity & { dynamicFitment: FitmentEvaluation })[]>([]);
   const [isLoadingAi, setIsLoadingAi] = useState<boolean>(true);
@@ -322,6 +324,30 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
         )}
       </div>
 
+      {/* Ground-Truth Evidence-Tiered Methodology Banner (Prompt 25) */}
+      <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3.5 sm:p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3 text-xs shadow-inner">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="font-semibold text-slate-200">
+            Ground-Truth Evidence-Tiered Calibration (Prompt 25):
+          </span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-950/60 text-emerald-300 border border-emerald-800/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <strong>EXPLICIT (1.0x Weight)</strong>: Directly stated in Job Description text
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/80">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <strong>IMPLIED (0.70x Weight)</strong>: Required by system/stack context
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-900 text-slate-300 border border-slate-750">
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+            <strong>INFERRED (0.35x Weight)</strong>: Disciplined general role guess
+          </span>
+        </div>
+      </div>
+
       {/* Dynamic Fitment Grid & AI Loading State */}
       {isLoadingAi ? (
         <div className="rounded-2xl border border-cyan-900/50 bg-slate-900/90 p-12 text-center flex flex-col items-center justify-center space-y-4 shadow-xl">
@@ -398,7 +424,7 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
 
                   <div className="space-y-1">
                     <div className="flex justify-between text-[10px]">
-                      <span className="text-slate-400">Skills Alignment</span>
+                      <span className="text-slate-400">Skills Alignment (Evidence-Tiered)</span>
                       <span className="font-mono text-amber-300 font-bold">{fit.dimensions.skillsAlignment}%</span>
                     </div>
                     <div className="w-full h-1 bg-slate-950 rounded-full">
@@ -417,11 +443,85 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
                   </div>
                 </div>
 
-                {/* 1-Click Actionable ATS Gap Optimizer (Req #17) */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80">
-                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block mb-1.5">
-                    ATS Skill Gap (Click to view 2-Day Prep Plan):
-                  </span>
+                {/* Ground-Truth Evidence Certainty Gauge (Prompt 25) */}
+                {fit.evidenceBreakdown && (
+                  <div className="mt-3 p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-[10px] font-mono flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-slate-300">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>Certainty:</span>
+                      <strong className="text-emerald-300">
+                        {fit.evidenceBreakdown.groundTruthCertaintyPercent}% Ground-Truth
+                      </strong>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[9px] text-slate-400">
+                      <span className="text-emerald-400 font-bold" title="Explicitly in Job Description">
+                        {fit.evidenceBreakdown.explicitCount} Exp
+                      </span>
+                      <span>•</span>
+                      <span className="text-cyan-400 font-bold" title="Implied by tech context">
+                        {fit.evidenceBreakdown.impliedCount} Imp
+                      </span>
+                      <span>•</span>
+                      <span className="text-slate-400 font-bold" title="Inferred role-type assumption">
+                        {fit.evidenceBreakdown.inferredCount} Inf
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Verified Matched Skills with Evidence-Tier Badges (Prompt 25) */}
+                <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-wider font-semibold">
+                      Matched Skills ({fit.matchedSkills.length}):
+                    </span>
+                    <span className="text-[9px] font-mono text-slate-500">
+                      Weighted by Ground-Truth
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {fit.tieredMatchedSkills && fit.tieredMatchedSkills.length > 0 ? (
+                      fit.tieredMatchedSkills.map(item => (
+                        <span
+                          key={item.skill}
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-[10px] font-mono"
+                          title={`${item.skill}: ${item.tier} Evidence (${item.tier === 'EXPLICIT' ? '1.0x Weight directly from JD' : item.tier === 'IMPLIED' ? '0.70x Weight from context' : '0.35x Weight role guess'})`}
+                        >
+                          <span>{item.skill}</span>
+                          <span className={`text-[8px] font-bold px-1 py-0.2 rounded uppercase ${
+                            item.tier === 'EXPLICIT'
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              : item.tier === 'IMPLIED'
+                              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                              : 'bg-slate-800 text-slate-400 border border-slate-700'
+                          }`}>
+                            {item.tier}
+                          </span>
+                        </span>
+                      ))
+                    ) : (
+                      fit.matchedSkills.map(skill => (
+                        <span
+                          key={skill}
+                          className="px-2 py-0.5 rounded-lg bg-emerald-950/40 border border-emerald-800/60 text-emerald-300 text-[10px] font-mono"
+                        >
+                          {skill}
+                        </span>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                {/* 1-Click Actionable ATS Gap Optimizer with Evidence-Tier Badges (Prompt 25) */}
+                <div className="mt-3 pt-2.5 border-t border-slate-800/80">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-mono text-amber-400 uppercase tracking-wider font-semibold">
+                      ATS Skill Gap ({fit.missingSkills.length}):
+                    </span>
+                    <span className="text-[9px] font-mono text-slate-500">
+                      Click for 2-Day Prep Plan
+                    </span>
+                  </div>
                   
                   {fit.missingSkills.length === 0 ? (
                     <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] font-mono">
@@ -430,17 +530,40 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-1.5">
-                      {fit.missingSkills.map(skill => (
-                        <button
-                          key={skill}
-                          onClick={() => setActiveSkillModal({ skill, oppTitle: opp.title, company: opp.companyName })}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-950/60 hover:bg-amber-900 border border-amber-800/80 text-amber-300 text-[10px] font-mono font-medium transition-colors cursor-pointer"
-                          title="Click to open Actionable Sprint Preparation Guide"
-                        >
-                          <BookOpen className="w-3 h-3 text-amber-400" />
-                          <span>{skill}</span>
-                        </button>
-                      ))}
+                      {fit.tieredMissingSkills && fit.tieredMissingSkills.length > 0 ? (
+                        fit.tieredMissingSkills.map(item => (
+                          <button
+                            key={item.skill}
+                            onClick={() => setActiveSkillModal({ skill: item.skill, oppTitle: opp.title, company: opp.companyName, tier: item.tier })}
+                            className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-950/60 hover:bg-amber-900 border border-amber-800/80 text-amber-300 text-[10px] font-mono font-medium transition-colors cursor-pointer"
+                            title={`Click to open Actionable Sprint Preparation Guide (${item.tier} Evidence)`}
+                          >
+                            <BookOpen className="w-3 h-3 text-amber-400" />
+                            <span>{item.skill}</span>
+                            <span className={`text-[8px] font-bold px-1 py-0.2 rounded uppercase ${
+                              item.tier === 'EXPLICIT'
+                                ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                : item.tier === 'IMPLIED'
+                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                : 'bg-slate-800 text-slate-400 border border-slate-700'
+                            }`}>
+                              {item.tier}
+                            </span>
+                          </button>
+                        ))
+                      ) : (
+                        fit.missingSkills.map(skill => (
+                          <button
+                            key={skill}
+                            onClick={() => setActiveSkillModal({ skill, oppTitle: opp.title, company: opp.companyName })}
+                            className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-950/60 hover:bg-amber-900 border border-amber-800/80 text-amber-300 text-[10px] font-mono font-medium transition-colors cursor-pointer"
+                            title="Click to open Actionable Sprint Preparation Guide"
+                          >
+                            <BookOpen className="w-3 h-3 text-amber-400" />
+                            <span>{skill}</span>
+                          </button>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
@@ -498,14 +621,28 @@ export const FitmentStudioView: React.FC<FitmentStudioViewProps> = ({
                       <Zap className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-bold text-slate-100 text-sm">{plan.label}</h3>
                         <span className="px-2 py-0.2 rounded-full bg-amber-950 text-amber-300 border border-amber-800 font-mono text-[10px]">
                           {plan.prepTime}
                         </span>
+                        {activeSkillModal.tier && (
+                          <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase ${
+                            activeSkillModal.tier === 'EXPLICIT'
+                              ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                              : activeSkillModal.tier === 'IMPLIED'
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              : 'bg-slate-800 text-slate-400 border border-slate-700'
+                          }`}>
+                            Evidence: {activeSkillModal.tier}
+                          </span>
+                        )}
                       </div>
-                      <p className="text-slate-400 text-[11px]">
+                      <p className="text-slate-400 text-[11px] mt-0.5">
                         Targeting {activeSkillModal.company} ({activeSkillModal.oppTitle})
+                        {activeSkillModal.tier === 'EXPLICIT' && ' • ⚠️ Stated in Job Description (Top OA Priority)'}
+                        {activeSkillModal.tier === 'IMPLIED' && ' • ℹ️ Strongly implied by tech architecture'}
+                        {activeSkillModal.tier === 'INFERRED' && ' • 💡 Inferred industry standard'}
                       </p>
                     </div>
                   </div>

@@ -5,6 +5,7 @@
  */
 
 import { Opportunity } from '../types';
+import { UrlHealthResolver } from '../services/urlHealthResolver';
 
 // Canonical mapping of companies to verified ATS slugs and providers
 export const COMPANY_ATS_REGISTRY: Record<string, { provider: 'greenhouse' | 'lever'; slug: string }> = {
@@ -73,6 +74,20 @@ export function resolveCanonicalApplyUrl(opp: Partial<Opportunity> | null | unde
   if (leverIdMatch) {
     const [, slug, jobId] = leverIdMatch;
     return `https://jobs.lever.co/${slug}/${jobId}`;
+  }
+
+  // 3. Check if opportunity ID matches pattern: live_sr_{slug}_{jobId}
+  const srIdMatch = oppId.match(/^live_sr_([a-zA-Z0-9_-]+)_(.+)$/);
+  if (srIdMatch) {
+    const [, slug, jobId] = srIdMatch;
+    return `https://jobs.smartrecruiters.com/${slug}/${jobId}`;
+  }
+
+  // 4. Check if opportunity ID matches pattern: live_wk_{slug}_{jobId}
+  const wkIdMatch = oppId.match(/^live_wk_([a-zA-Z0-9_-]+)_(.+)$/);
+  if (wkIdMatch) {
+    const [, slug, jobId] = wkIdMatch;
+    return `https://apply.workable.com/${slug}/j/${jobId}`;
   }
 
   // 3. Extract from rawUrl if it contains gh_jid query param
@@ -151,12 +166,13 @@ export function resolveCanonicalApplyUrl(opp: Partial<Opportunity> | null | unde
     return `https://jobs.lever.co/${slug.toLowerCase()}/${jobId}`;
   }
 
-  // 5. If rawUrl exists and starts with http, upgrade to https
-  if (rawUrl.startsWith('http://')) {
-    return rawUrl.replace('http://', 'https://');
+  // 5. If rawUrl exists and starts with http, upgrade to https and verify safety
+  const resolved = rawUrl.startsWith('http://') ? rawUrl.replace('http://', 'https://') : rawUrl;
+  if (resolved) {
+    return UrlHealthResolver.resolveSafePortalUrl(resolved, opp.companyDomain, opp.companyName);
   }
 
-  return rawUrl || `https://${opp.companyDomain || 'careers.google.com'}`;
+  return UrlHealthResolver.getFallbackForDomain(opp.companyDomain || '', opp.companyName);
 }
 
 /**

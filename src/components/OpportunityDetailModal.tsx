@@ -124,7 +124,20 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             <h1 className="text-xl font-black text-cyan-300 mt-1">
               {opportunity.title}
             </h1>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">
+
+            {opportunity.isNewlyFunded && (
+              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-300 border border-amber-500/50 text-xs font-mono font-bold shadow-sm">
+                <span className="text-sm">🔥</span>
+                <span>Newly Funded — Actively Hiring</span>
+                {opportunity.fundingRoundDetails?.amountRaised && (
+                  <span className="px-2 py-0.5 rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 font-extrabold">
+                    {opportunity.fundingRoundDetails.amountRaised} {opportunity.fundingRoundDetails.roundName}
+                  </span>
+                )}
+              </div>
+            )}
+
+            <p className="text-xs text-slate-400 font-mono mt-1">
               Requisition ID: {opportunity.verification.requisitionId} • Root Domain: {opportunity.verification.rootDomain}
             </p>
           </div>

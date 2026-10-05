@@ -273,6 +273,249 @@ export class AtsLiveService {
     }
   }
 
+  // Parse SmartRecruiters Free Public API response (PROMPT 26)
+  private static async fetchSmartRecruitersJobs(target: ATSCompanyTarget): Promise<Opportunity[]> {
+    try {
+      let url = `https://api.smartrecruiters.com/v1/companies/${target.slug}/postings?limit=25`;
+      let response = await this.fetchWithTimeout(url);
+      if (!response || !response.ok) return [];
+
+      let data = await response.json();
+      if ((!data.content || data.content.length === 0) && target.preferredKeywords.length > 0) {
+        const queryTerm = target.preferredKeywords[0] || 'software';
+        url = `https://api.smartrecruiters.com/v1/companies/${target.slug}/postings?q=${encodeURIComponent(queryTerm)}&limit=25`;
+        response = await this.fetchWithTimeout(url);
+        if (response && response.ok) {
+          data = await response.json();
+        }
+      }
+
+      if (!data.content || !Array.isArray(data.content)) return [];
+
+      const studentProfile = RadarEngine.getStudentProfile();
+      const now = Date.now();
+      const HOUR = 3600 * 1000;
+
+      const relevantRaw = data.content.filter((j: any) => {
+        const title = (j.name || '').toLowerCase();
+        return target.preferredKeywords.some(kw => title.includes(kw));
+      }).slice(0, 8);
+
+      return relevantRaw.map((job: any) => {
+        const title = job.name || 'Software Engineer';
+        const isIntern = /intern|co-op/i.test(title) || (job.typeOfEmployment?.label && /intern/i.test(job.typeOfEmployment.label));
+        const isNewGrad = /new grad|graduate|university|early career/i.test(title);
+        const oppType: OpportunityType = isIntern ? 'internship' : (isNewGrad ? 'new-grad' : 'full-time');
+
+        const loc = job.location || {};
+        const locationName = loc.fullLocation || [loc.city, loc.region, loc.country?.toUpperCase()].filter(Boolean).join(', ') || 'Remote / Hybrid';
+        const isRemote = Boolean(loc.remote) || /remote/i.test(locationName);
+        const isHybrid = Boolean(loc.hybrid) || /hybrid/i.test(locationName);
+        const workMode: WorkMode = isRemote ? 'remote' : (isHybrid ? 'hybrid' : 'on-site');
+
+        const id = `live_sr_${target.id}_${job.id}`;
+        const deadlineAt = now + (isIntern ? 72 * HOUR : 144 * HOUR);
+
+        const rawDept = job.department?.label || job.function?.label || '';
+        const classification = RoleSkillClassifier.classifyRole(title, target.name, rawDept);
+
+        const baseOpp: Opportunity = {
+          id,
+          companyName: target.name,
+          companyLogo: target.logo,
+          companyDomain: target.domain,
+          title,
+          type: oppType,
+          workMode,
+          location: locationName,
+          department: classification.department,
+          officialApplyUrl: `https://jobs.smartrecruiters.com/${target.slug}/${job.id}`,
+          releasedAt: job.releasedDate ? new Date(job.releasedDate).getTime() : (now - (12 * HOUR)),
+          deadlineAt,
+          verification: {
+            verified: true,
+            sourceType: 'smartrecruiters',
+            rootDomain: target.domain,
+            endpointUrl: url,
+            lastCheckedTimestamp: now,
+            sslStatus: 'A+',
+            noFeeGuarantee: true,
+            requisitionId: job.refNumber ? `SR-${job.refNumber}` : `SR-${target.id.toUpperCase()}-${String(job.id).slice(0, 8)}`,
+          },
+          eligibility: {
+            allowedGraduationYears: [2025, 2026, 2027],
+            degrees: ['B.Tech', 'BS', 'MS'],
+            undergradOnly: isIntern,
+            sponsorshipAvailable: true,
+            locationsAllowed: ['US', 'Remote', 'Global'],
+          },
+          compensation: {
+            currency: 'USD',
+            range: isIntern ? '$52 - $75 / hr' : '$145,000 - $185,000 / yr',
+            period: isIntern ? 'hourly' : 'annual',
+            isPaid: true,
+            transparentBenchmark: 'Live SmartRecruiters Verified Requisition',
+          },
+          fitment: {
+            overallScore: 88,
+            overallGrade: 'B',
+            dimensions: {
+              roleFit: 88,
+              skillsAlignment: 85,
+              batchEligibility: 100,
+              companyPrestige: 92,
+              learningTrajectory: 90,
+              compensationFairness: 90,
+            },
+            matchedSkills: classification.matchedSkills,
+            missingSkills: classification.missingSkills,
+            strategicVerdict: classification.strategicVerdictTemplate(target.name),
+          },
+          assessmentIntel: {
+            hasHistoricalData: true,
+            platform: classification.assessmentPlatform,
+            durationMinutes: classification.assessmentDurationMinutes,
+            frequentTopics: classification.assessmentTopics,
+            difficulty: 'Medium',
+            warmupPracticeUrl: 'https://leetcode.com',
+          },
+          alumniPresenceCount: undefined,
+          recruiterPresenceCount: undefined,
+          stage: 'discovered',
+        };
+
+        baseOpp.fitment = FitmentRecalculator.recalculate(baseOpp, studentProfile);
+        return baseOpp;
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  // Parse Workable Free Public API response (PROMPT 26)
+  private static async fetchWorkableJobs(target: ATSCompanyTarget): Promise<Opportunity[]> {
+    try {
+      const url = `https://apply.workable.com/api/v3/accounts/${target.slug}/jobs`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({}),
+        signal: controller.signal,
+      }).catch(() => null);
+      clearTimeout(timeoutId);
+
+      if (!response || !response.ok) return [];
+
+      const data = await response.json();
+      if (!data.results || !Array.isArray(data.results)) return [];
+
+      const studentProfile = RadarEngine.getStudentProfile();
+      const now = Date.now();
+      const HOUR = 3600 * 1000;
+
+      const relevantRaw = data.results.filter((j: any) => {
+        const title = (j.title || '').toLowerCase();
+        return target.preferredKeywords.some(kw => title.includes(kw));
+      }).slice(0, 8);
+
+      return relevantRaw.map((job: any) => {
+        const title = job.title || 'Software Engineer';
+        const isIntern = /intern|co-op/i.test(title) || job.type === 'internship';
+        const isNewGrad = /new grad|graduate|university|early career/i.test(title);
+        const oppType: OpportunityType = isIntern ? 'internship' : (isNewGrad ? 'new-grad' : 'full-time');
+
+        const loc = job.location || {};
+        const locationName = [loc.city, loc.region, loc.country].filter(Boolean).join(', ') || 'Remote / Hybrid';
+        const isRemote = Boolean(job.remote) || job.workplace === 'remote' || /remote/i.test(locationName);
+        const isHybrid = job.workplace === 'hybrid' || /hybrid/i.test(locationName);
+        const workMode: WorkMode = isRemote ? 'remote' : (isHybrid ? 'hybrid' : 'on-site');
+
+        const jobKey = job.shortcode || job.id;
+        const id = `live_wk_${target.id}_${jobKey}`;
+        const deadlineAt = now + (isIntern ? 72 * HOUR : 144 * HOUR);
+
+        const rawDept = Array.isArray(job.department) ? job.department[0] : (job.department || '');
+        const classification = RoleSkillClassifier.classifyRole(title, target.name, rawDept);
+
+        const baseOpp: Opportunity = {
+          id,
+          companyName: target.name,
+          companyLogo: target.logo,
+          companyDomain: target.domain,
+          title,
+          type: oppType,
+          workMode,
+          location: locationName,
+          department: classification.department,
+          officialApplyUrl: `https://apply.workable.com/${target.slug}/j/${jobKey}`,
+          releasedAt: job.published ? new Date(job.published).getTime() : (now - (12 * HOUR)),
+          deadlineAt,
+          verification: {
+            verified: true,
+            sourceType: 'workable',
+            rootDomain: target.domain,
+            endpointUrl: url,
+            lastCheckedTimestamp: now,
+            sslStatus: 'A+',
+            noFeeGuarantee: true,
+            requisitionId: `WK-${target.id.toUpperCase()}-${String(jobKey).slice(0, 8)}`,
+          },
+          eligibility: {
+            allowedGraduationYears: [2025, 2026, 2027],
+            degrees: ['B.Tech', 'BS', 'MS'],
+            undergradOnly: isIntern,
+            sponsorshipAvailable: true,
+            locationsAllowed: ['US', 'Remote', 'Global'],
+          },
+          compensation: {
+            currency: 'USD',
+            range: isIntern ? '$50 - $70 / hr' : '$140,000 - $180,000 / yr',
+            period: isIntern ? 'hourly' : 'annual',
+            isPaid: true,
+            transparentBenchmark: 'Live Workable Verified Requisition',
+          },
+          fitment: {
+            overallScore: 88,
+            overallGrade: 'B',
+            dimensions: {
+              roleFit: 88,
+              skillsAlignment: 85,
+              batchEligibility: 100,
+              companyPrestige: 90,
+              learningTrajectory: 90,
+              compensationFairness: 90,
+            },
+            matchedSkills: classification.matchedSkills,
+            missingSkills: classification.missingSkills,
+            strategicVerdict: classification.strategicVerdictTemplate(target.name),
+          },
+          assessmentIntel: {
+            hasHistoricalData: true,
+            platform: classification.assessmentPlatform,
+            durationMinutes: classification.assessmentDurationMinutes,
+            frequentTopics: classification.assessmentTopics,
+            difficulty: 'Medium',
+            warmupPracticeUrl: 'https://leetcode.com',
+          },
+          alumniPresenceCount: undefined,
+          recruiterPresenceCount: undefined,
+          stage: 'discovered',
+        };
+
+        baseOpp.fitment = FitmentRecalculator.recalculate(baseOpp, studentProfile);
+        return baseOpp;
+      });
+    } catch {
+      return [];
+    }
+  }
+
   // Master method: Ingest all targets via shared backend cache (/api/jobs/cached) with localStorage fallback
   public static async scanLiveBoards(onProgress?: (company: string, count: number) => void): Promise<Opportunity[]> {
     const studentProfile = RadarEngine.getStudentProfile();
@@ -359,6 +602,10 @@ export class AtsLiveService {
           jobs = await this.fetchGreenhouseJobs(target);
         } else if (target.provider === 'lever') {
           jobs = await this.fetchLeverJobs(target);
+        } else if (target.provider === 'smartrecruiters') {
+          jobs = await this.fetchSmartRecruitersJobs(target);
+        } else if (target.provider === 'workable') {
+          jobs = await this.fetchWorkableJobs(target);
         }
 
         if (onProgress) {

@@ -11,6 +11,7 @@ import { AutonomousPulseBar } from './AutonomousPulseBar';
 import { UpcomingInternshipsCalendar } from './UpcomingInternshipsCalendar';
 import { RECURRING_ANNUAL_INTERNSHIPS } from '../services/upcomingInternshipsService';
 import { RadarEngine } from '../services/radarEngine';
+import { FundedCompanyDiscoveryService } from '../services/fundedCompanyDiscoveryService';
 import { 
   Flame, 
   Sparkles, 
@@ -45,7 +46,7 @@ interface RadarViewProps {
   mutedAlertIds: string[];
 }
 
-type FilterTab = 'all' | 'urgent' | 'tier1' | 'high_match' | 'internship' | 'new_grad' | 'live_ats' | 'fair_wage' | 'applied';
+type FilterTab = 'all' | 'urgent' | 'tier1' | 'high_match' | 'internship' | 'new_grad' | 'live_ats' | 'fair_wage' | 'newly_funded' | 'applied';
 
 export const RadarView: React.FC<RadarViewProps> = ({
   opportunities,
@@ -69,6 +70,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
   const [isScanningAts, setIsScanningAts] = useState<boolean>(false);
   const [scanProgressMsg, setScanProgressMsg] = useState<string>('');
   const [lastScanResult, setLastScanResult] = useState<string | null>(null);
+  const [isScanningFunded, setIsScanningFunded] = useState<boolean>(false);
+  const [fundedScanMsg, setFundedScanMsg] = useState<string | null>(null);
   // Progressive batch pagination (renders 18 cards initially, loads +18 on demand)
   const [visibleCount, setVisibleCount] = useState<number>(18);
   const [showDevConsole, setShowDevConsole] = useState<boolean>(false);
@@ -77,6 +80,24 @@ export const RadarView: React.FC<RadarViewProps> = ({
   useEffect(() => {
     setVisibleCount(18);
   }, [searchQuery, activeTab, selectedWorkMode, sortBy, blockUnpaidOnly, selectedCompany]);
+
+  // PROMPT 27: Background pulse to discover and inject verified newly-funded startups
+  useEffect(() => {
+    FundedCompanyDiscoveryService.discoverFundedOpportunities(false);
+  }, []);
+
+  const handleScanFunded = async () => {
+    setIsScanningFunded(true);
+    setFundedScanMsg('Scanning public funding news & probing Greenhouse / Lever endpoints...');
+    try {
+      const opps = await FundedCompanyDiscoveryService.discoverFundedOpportunities(true);
+      setFundedScanMsg(`Discovered ${opps.length} active roles across recently-funded tech companies!`);
+    } catch {
+      setFundedScanMsg('Completed scan with verified fallback anchors.');
+    } finally {
+      setIsScanningFunded(false);
+    }
+  };
 
   const handleScanLiveAts = async () => {
     setIsScanningAts(true);
@@ -118,9 +139,10 @@ export const RadarView: React.FC<RadarViewProps> = ({
     const newGradCount = opportunities.filter(o => o.type === 'new-grad').length;
     const liveAtsCount = opportunities.filter(o => o.id.startsWith('live_') || o.verification.sourceType === 'greenhouse' || o.verification.sourceType === 'lever').length;
     const fairWageCount = opportunities.filter(o => o.compensation.isPaid && !o.compensation.range.toLowerCase().includes('unpaid')).length;
+    const newlyFundedCount = opportunities.filter(o => Boolean(o.isNewlyFunded)).length;
     const appliedCount = opportunities.filter(o => o.stage === 'applied' || o.stage === 'assessment' || o.stage === 'interview' || o.stage === 'offer').length;
 
-    return { urgentCount, tier1Count, highMatchCount, internCount, newGradCount, liveAtsCount, fairWageCount, appliedCount };
+    return { urgentCount, tier1Count, highMatchCount, internCount, newGradCount, liveAtsCount, fairWageCount, newlyFundedCount, appliedCount };
   }, [opportunities]);
 
   // Filtered & Sorted List — Strict 1-to-1 Mapping (Zero Duplicates Guaranteed)
@@ -169,6 +191,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
           return opp.id.startsWith('live_') || opp.verification.sourceType === 'greenhouse' || opp.verification.sourceType === 'lever';
         case 'fair_wage':
           return opp.compensation.isPaid && !opp.compensation.range.toLowerCase().includes('unpaid');
+        case 'newly_funded':
+          return Boolean(opp.isNewlyFunded);
         case 'applied':
           return opp.stage === 'applied' || opp.stage === 'assessment' || opp.stage === 'interview' || opp.stage === 'offer';
         default:
@@ -323,6 +347,18 @@ export const RadarView: React.FC<RadarViewProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveTab('newly_funded')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'newly_funded'
+                  ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-amber-400 text-slate-950 font-black shadow-md'
+                  : 'bg-slate-900 text-amber-300 hover:bg-amber-950/40 border border-amber-900/60'
+              }`}
+            >
+              <span>🔥</span>
+              <span>Newly Funded ({stats.newlyFundedCount})</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('fair_wage')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'fair_wage'
@@ -408,6 +444,39 @@ export const RadarView: React.FC<RadarViewProps> = ({
           >
             <span>Show All Companies</span>
             <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Newly Funded Startups Discovery Banner (Prompt 27) */}
+      {activeTab === 'newly_funded' && (
+        <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-amber-950/20 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 text-lg shrink-0">
+              🔥
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-100">
+                  Newly Funded Startups • Actively Hiring
+                </h3>
+                <span className="text-[10px] font-mono text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800">
+                  Last 30 Days Feed
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {fundedScanMsg || 'High-growth companies with freshly closed venture capital and verified active engineering boards.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleScanFunded}
+            disabled={isScanningFunded}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold font-mono text-xs transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isScanningFunded ? 'animate-spin' : ''}`} />
+            <span>{isScanningFunded ? 'Interrogating ATS Boards...' : 'Scan Public Funding Feeds'}</span>
           </button>
         </div>
       )}

@@ -1,8 +1,10 @@
+export type AtsProvider = 'greenhouse' | 'lever' | 'smartrecruiters' | 'workable';
+
 export interface ATSCompanyTarget {
   id: string;
   name: string;
   domain: string;
-  provider: 'greenhouse' | 'lever';
+  provider: AtsProvider;
   slug: string;
   logo: string;
   preferredKeywords: string[];
@@ -467,5 +469,295 @@ export const VERIFIED_ATS_TARGETS: ATSCompanyTarget[] = [
     slug: 'classpass',
     logo: 'https://logo.clearbit.com/classpass.com',
     preferredKeywords: ['software engineer', 'intern', 'backend', 'mobile', 'full stack', 'cloud'],
+  },
+  // PROMPT 26: SmartRecruiters Free Public API Targets
+  {
+    id: 'wework',
+    name: 'WeWork',
+    domain: 'wework.com',
+    provider: 'smartrecruiters',
+    slug: 'wework',
+    logo: 'https://logo.clearbit.com/wework.com',
+    preferredKeywords: ['software', 'engineer', 'developer', 'intern', 'cloud', 'systems', 'data'],
+  },
+  {
+    id: 'avaloq',
+    name: 'Avaloq',
+    domain: 'avaloq.com',
+    provider: 'smartrecruiters',
+    slug: 'avaloq',
+    logo: 'https://logo.clearbit.com/avaloq.com',
+    preferredKeywords: ['software engineer', 'developer', 'banking', 'fintech', 'intern', 'backend'],
+  },
+  {
+    id: 'softwareone',
+    name: 'SoftwareONE',
+    domain: 'softwareone.com',
+    provider: 'smartrecruiters',
+    slug: 'softwareone',
+    logo: 'https://logo.clearbit.com/softwareone.com',
+    preferredKeywords: ['cloud', 'software', 'engineer', 'developer', 'architect', 'intern'],
+  },
+  {
+    id: 'criteo',
+    name: 'Criteo',
+    domain: 'criteo.com',
+    provider: 'smartrecruiters',
+    slug: 'criteo',
+    logo: 'https://logo.clearbit.com/criteo.com',
+    preferredKeywords: ['software engineer', 'data', 'ml', 'machine learning', 'infrastructure', 'intern'],
+  },
+  {
+    id: 'colt',
+    name: 'Colt Technology Services',
+    domain: 'colt.net',
+    provider: 'smartrecruiters',
+    slug: 'colt',
+    logo: 'https://logo.clearbit.com/colt.net',
+    preferredKeywords: ['software', 'engineer', 'network', 'cloud', 'developer', 'systems'],
+  },
+  {
+    id: 'dayforce',
+    name: 'Dayforce (Ceridian)',
+    domain: 'dayforce.com',
+    provider: 'smartrecruiters',
+    slug: 'ceridian',
+    logo: 'https://logo.clearbit.com/dayforce.com',
+    preferredKeywords: ['software engineer', 'developer', 'cloud', 'saas', 'intern', 'backend'],
+  },
+  {
+    id: 'visa',
+    name: 'Visa Inc.',
+    domain: 'visa.com',
+    provider: 'smartrecruiters',
+    slug: 'visa',
+    logo: 'https://logo.clearbit.com/visa.com',
+    preferredKeywords: ['software engineer', 'intern', 'payments', 'systems', 'cybersecurity', 'backend'],
+  },
+  {
+    id: 'bosch',
+    name: 'Bosch Global',
+    domain: 'bosch.com',
+    provider: 'smartrecruiters',
+    slug: 'BoschGroup',
+    logo: 'https://logo.clearbit.com/bosch.com',
+    preferredKeywords: ['software', 'developer', 'iot', 'embedded', 'ai', 'intern', 'systems', 'cloud'],
+  },
+  {
+    id: 'ubisoft',
+    name: 'Ubisoft',
+    domain: 'ubisoft.com',
+    provider: 'smartrecruiters',
+    slug: 'Ubisoft2',
+    logo: 'https://logo.clearbit.com/ubisoft.com',
+    preferredKeywords: ['software', 'developer', 'gameplay', 'c++', 'engine', 'intern', 'online', 'mentorat'],
+  },
+  {
+    id: 'sgs',
+    name: 'SGS Global',
+    domain: 'sgs.com',
+    provider: 'smartrecruiters',
+    slug: 'SGS',
+    logo: 'https://logo.clearbit.com/sgs.com',
+    preferredKeywords: ['software', 'developer', 'engineer', 'it', 'cloud', 'systems', 'intern'],
+  },
+  {
+    id: 'deliveryhero',
+    name: 'Delivery Hero',
+    domain: 'deliveryhero.com',
+    provider: 'smartrecruiters',
+    slug: 'deliveryhero',
+    logo: 'https://logo.clearbit.com/deliveryhero.com',
+    preferredKeywords: ['software', 'engineer', 'backend', 'data', 'intern', 'infrastructure', 'cloud'],
+  },
+  {
+    id: 'smartrecruiters',
+    name: 'SmartRecruiters Inc.',
+    domain: 'smartrecruiters.com',
+    provider: 'smartrecruiters',
+    slug: 'smartrecruiters',
+    logo: 'https://logo.clearbit.com/smartrecruiters.com',
+    preferredKeywords: ['software', 'engineer', 'data', 'developer', 'consultant', 'cloud'],
+  },
+  // PROMPT 26: Workable Free Public API Targets
+  {
+    id: 'epignosis',
+    name: 'Epignosis',
+    domain: 'epignosishq.com',
+    provider: 'workable',
+    slug: 'epignosis',
+    logo: 'https://logo.clearbit.com/epignosishq.com',
+    preferredKeywords: ['software engineer', 'developer', 'edtech', 'backend', 'full stack', 'intern'],
+  },
+  {
+    id: 'omadahealth',
+    name: 'Omada Health',
+    domain: 'omadahealth.com',
+    provider: 'workable',
+    slug: 'omada-health',
+    logo: 'https://logo.clearbit.com/omadahealth.com',
+    preferredKeywords: ['software engineer', 'backend', 'full stack', 'data', 'intern', 'healthtech'],
+  },
+  {
+    id: 'typeform',
+    name: 'Typeform',
+    domain: 'typeform.com',
+    provider: 'workable',
+    slug: 'typeform',
+    logo: 'https://logo.clearbit.com/typeform.com',
+    preferredKeywords: ['software engineer', 'frontend', 'backend', 'full stack', 'cloud', 'intern'],
+  },
+  {
+    id: 'blueground',
+    name: 'Blueground',
+    domain: 'theblueground.com',
+    provider: 'workable',
+    slug: 'blueground',
+    logo: 'https://logo.clearbit.com/theblueground.com',
+    preferredKeywords: ['software engineer', 'full stack', 'backend', 'mobile', 'react', 'intern'],
+  },
+  {
+    id: 'pollfish',
+    name: 'Pollfish',
+    domain: 'pollfish.com',
+    provider: 'workable',
+    slug: 'pollfish',
+    logo: 'https://logo.clearbit.com/pollfish.com',
+    preferredKeywords: ['software engineer', 'mobile', 'backend', 'full stack', 'systems', 'intern'],
+  },
+  {
+    id: 'marinetraffic',
+    name: 'MarineTraffic',
+    domain: 'marinetraffic.com',
+    provider: 'workable',
+    slug: 'marinetraffic',
+    logo: 'https://logo.clearbit.com/marinetraffic.com',
+    preferredKeywords: ['software engineer', 'data engineer', 'backend', 'geospatial', 'intern', 'cloud'],
+  },
+  {
+    id: 'instabug',
+    name: 'Instabug',
+    domain: 'instabug.com',
+    provider: 'workable',
+    slug: 'instabug',
+    logo: 'https://logo.clearbit.com/instabug.com',
+    preferredKeywords: ['software engineer', 'sdk', 'mobile', 'backend', 'cloud', 'intern'],
+  },
+  {
+    id: 'beat',
+    name: 'Beat (Free Now)',
+    domain: 'thebeat.co',
+    provider: 'workable',
+    slug: 'beat',
+    logo: 'https://logo.clearbit.com/thebeat.co',
+    preferredKeywords: ['software engineer', 'distributed systems', 'backend', 'data', 'intern'],
+  },
+  {
+    id: 'flexcar',
+    name: 'FlexCar',
+    domain: 'flexcar.com',
+    provider: 'workable',
+    slug: 'flexcar',
+    logo: 'https://logo.clearbit.com/flexcar.com',
+    preferredKeywords: ['software engineer', 'full stack', 'backend', 'frontend', 'cloud', 'intern'],
+  },
+  {
+    id: 'skroutz',
+    name: 'Skroutz',
+    domain: 'skroutz.gr',
+    provider: 'workable',
+    slug: 'skroutz',
+    logo: 'https://logo.clearbit.com/skroutz.gr',
+    preferredKeywords: ['software engineer', 'backend', 'infrastructure', 'ecommerce', 'intern'],
+  },
+  // Additional High-Demand Greenhouse & Lever Tech Leaders
+  {
+    id: 'brex',
+    name: 'Brex',
+    domain: 'brex.com',
+    provider: 'greenhouse',
+    slug: 'brex',
+    logo: 'https://logo.clearbit.com/brex.com',
+    preferredKeywords: ['software engineer', 'intern', 'fintech', 'backend', 'infrastructure', 'security'],
+  },
+  {
+    id: 'gusto',
+    name: 'Gusto',
+    domain: 'gusto.com',
+    provider: 'greenhouse',
+    slug: 'gusto',
+    logo: 'https://logo.clearbit.com/gusto.com',
+    preferredKeywords: ['software engineer', 'intern', 'payroll', 'fintech', 'backend', 'systems'],
+  },
+  {
+    id: 'mongodb',
+    name: 'MongoDB',
+    domain: 'mongodb.com',
+    provider: 'greenhouse',
+    slug: 'mongodb',
+    logo: 'https://logo.clearbit.com/mongodb.com',
+    preferredKeywords: ['software engineer', 'intern', 'database', 'distributed systems', 'cloud', 'c++'],
+  },
+  {
+    id: 'affirm',
+    name: 'Affirm',
+    domain: 'affirm.com',
+    provider: 'greenhouse',
+    slug: 'affirm',
+    logo: 'https://logo.clearbit.com/affirm.com',
+    preferredKeywords: ['software engineer', 'intern', 'fintech', 'backend', 'distributed systems', 'python'],
+  },
+  {
+    id: 'coupa',
+    name: 'Coupa Software',
+    domain: 'coupa.com',
+    provider: 'lever',
+    slug: 'coupa',
+    logo: 'https://logo.clearbit.com/coupa.com',
+    preferredKeywords: ['software engineer', 'intern', 'cloud', 'saas', 'enterprise', 'backend'],
   }
 ];
+
+const DYNAMIC_TARGETS_KEY = 'terrasynx_custom_ats_targets_v1';
+
+export function getDynamicAtsTargets(): ATSCompanyTarget[] {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return [];
+    const raw = localStorage.getItem(DYNAMIC_TARGETS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveDynamicAtsTarget(target: ATSCompanyTarget): boolean {
+  try {
+    // Add to in-memory VERIFIED_ATS_TARGETS list immediately
+    if (!VERIFIED_ATS_TARGETS.some(t => t.slug.toLowerCase() === target.slug.toLowerCase() && t.provider === target.provider)) {
+      VERIFIED_ATS_TARGETS.push(target);
+    }
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const current = getDynamicAtsTargets();
+      if (!current.some(t => t.slug.toLowerCase() === target.slug.toLowerCase() && t.provider === target.provider)) {
+        current.push(target);
+        localStorage.setItem(DYNAMIC_TARGETS_KEY, JSON.stringify(current));
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function getAllAtsTargets(): ATSCompanyTarget[] {
+  const dynamic = getDynamicAtsTargets();
+  const map = new Map<string, ATSCompanyTarget>();
+  for (const t of VERIFIED_ATS_TARGETS) {
+    map.set(`${t.provider}:${t.slug.toLowerCase()}`, t);
+  }
+  for (const t of dynamic) {
+    map.set(`${t.provider}:${t.slug.toLowerCase()}`, t);
+  }
+  return Array.from(map.values());
+}

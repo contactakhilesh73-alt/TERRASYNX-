@@ -4,7 +4,7 @@
  * Conforming to TERRASYNX intelligence model & SYSTEM_SPEC (Req #17)
  */
 
-import { Opportunity, StudentProfile, FitmentEvaluation } from '../types';
+import { Opportunity, StudentProfile, FitmentEvaluation, EvidenceTier, TieredSkillItem } from '../types';
 
 export interface DimensionWeightConfig {
   roleFit: number;             // Default: 25%
@@ -14,6 +14,15 @@ export interface DimensionWeightConfig {
   learningTrajectory: number;  // Default: 10%
   compensationFairness: number;// Default: 10%
 }
+
+// PROMPT 25: Evidence Tier Weights (Discipline against Santiago's hallucination trap)
+// EXPLICIT ground-truth requirements carry maximum weight (1.0).
+// INFERRED general assumptions are hard-capped at 0.35 to avoid artificial score distortion.
+export const EVIDENCE_TIER_WEIGHTS: Record<EvidenceTier, number> = {
+  EXPLICIT: 1.0,  // Directly stated in the JD text
+  IMPLIED: 0.70,  // Required by architectural stack/context
+  INFERRED: 0.35, // Educated guess based on generic role-type
+};
 
 // Default Global Configurable Evaluation Weights (Easily customizable on the fly)
 export const DEFAULT_FITMENT_WEIGHTS: DimensionWeightConfig = {
@@ -79,8 +88,35 @@ export const ACTIONABLE_SKILL_RESOURCES: Record<string, { label: string; prepTim
 
 export class FitmentEvaluator {
   /**
+   * Helper to classify skill evidence into EXPLICIT, IMPLIED, or INFERRED
+   * Ensures ground-truth certainty even in offline/fallback modes.
+   */
+  public static classifySkillEvidence(
+    skill: string,
+    jdDescription?: string,
+    roleContext?: string
+  ): EvidenceTier {
+    const s = skill.toLowerCase().trim();
+    const desc = (jdDescription || '').toLowerCase();
+    const context = (roleContext || '').toLowerCase();
+
+    // EXPLICIT: directly stated in the Job Description text
+    if (desc && (desc.includes(s) || s.split(' ').every(w => w.length > 2 && desc.includes(w)))) {
+      return 'EXPLICIT';
+    }
+
+    // IMPLIED: strongly implied by role title or department context
+    if (context && (context.includes(s) || s.split(' ').some(w => w.length > 3 && context.includes(w)))) {
+      return 'IMPLIED';
+    }
+
+    // INFERRED: general guess based on standard tech stacks
+    return 'INFERRED';
+  }
+
+  /**
    * Dynamically evaluate a candidate opportunity against a student profile
-   * using configurable custom weights
+   * using configurable custom weights and evidence-tiered skill scoring (Prompt 25)
    */
   public static calculateFitment(
     opp: Opportunity,
@@ -93,13 +129,61 @@ export class FitmentEvaluator {
     const isEligibleBatch = opp.eligibility.allowedGraduationYears.includes(profile.graduationYear);
     const batchScore = isEligibleBatch ? 100 : 40;
 
-    // 2. Skills Alignment Calculation
+    // 2. Skills Alignment Calculation with Evidence-Tiered Weighting (Prompt 25)
     const allStudentSkills = [...profile.primarySkills, ...profile.secondarySkills].map(s => s.toLowerCase());
-    const matched = opp.fitment.matchedSkills.filter(s => 
+    const matchedStrings = opp.fitment.matchedSkills.filter(s => 
       allStudentSkills.some(st => st.includes(s.toLowerCase()) || s.toLowerCase().includes(st))
     );
-    const missing = opp.fitment.missingSkills;
-    const skillsScore = Math.min(100, Math.round((matched.length / Math.max(1, matched.length + missing.length)) * 100));
+    const missingStrings = opp.fitment.missingSkills;
+
+    // Synthesize or reuse tiered collections
+    const tieredMatchedSkills: TieredSkillItem[] = opp.fitment.tieredMatchedSkills && opp.fitment.tieredMatchedSkills.length > 0
+      ? opp.fitment.tieredMatchedSkills
+      : matchedStrings.map(skill => ({
+          skill,
+          tier: this.classifySkillEvidence(skill, opp.description, `${opp.title} ${opp.department}`),
+          context: 'Verified match against student profile projects & primary skills'
+        }));
+
+    const tieredMissingSkills: TieredSkillItem[] = opp.fitment.tieredMissingSkills && opp.fitment.tieredMissingSkills.length > 0
+      ? opp.fitment.tieredMissingSkills
+      : missingStrings.map(skill => ({
+          skill,
+          tier: this.classifySkillEvidence(skill, opp.description, `${opp.title} ${opp.department}`),
+          context: 'Critical ATS requirement gap'
+        }));
+
+    // Evidence Tiered Scoring Formula:
+    // EXPLICIT requirements carry maximum 1.0 weight.
+    // INFERRED general assumptions are disciplined with 0.35 weight to prevent hallucinated score swings.
+    const matchedPoints = tieredMatchedSkills.reduce(
+      (acc, item) => acc + (EVIDENCE_TIER_WEIGHTS[item.tier] || 0.70),
+      0
+    );
+    const missingPoints = tieredMissingSkills.reduce(
+      (acc, item) => acc + (EVIDENCE_TIER_WEIGHTS[item.tier] || 0.70),
+      0
+    );
+    const totalRequirementPoints = matchedPoints + missingPoints;
+
+    const skillsScore = totalRequirementPoints > 0
+      ? Math.min(100, Math.round((matchedPoints / totalRequirementPoints) * 100))
+      : 80;
+
+    // Calculate Evidence Breakdown Metrics (How "pakka" the score is)
+    const allTiered = [...tieredMatchedSkills, ...tieredMissingSkills];
+    const explicitCount = allTiered.filter(t => t.tier === 'EXPLICIT').length;
+    const impliedCount = allTiered.filter(t => t.tier === 'IMPLIED').length;
+    const inferredCount = allTiered.filter(t => t.tier === 'INFERRED').length;
+    const totalSkills = Math.max(1, allTiered.length);
+    const groundTruthCertaintyPercent = Math.round(((explicitCount + (impliedCount * 0.5)) / totalSkills) * 100);
+
+    const evidenceBreakdown = {
+      explicitCount,
+      impliedCount,
+      inferredCount,
+      groundTruthCertaintyPercent
+    };
 
     // 3. Normalized dimension scores
     const dimensions = {
@@ -132,8 +216,9 @@ export class FitmentEvaluator {
     else grade = 'F';
 
     let verdict = opp.fitment.strategicVerdict;
-    if (missing.length > 0) {
-      verdict = `High potential match (${finalScore}%). Address ${missing[0]} via 1-click prep plan to maximize OA selection odds.`;
+    if (missingStrings.length > 0) {
+      const topMissing = tieredMissingSkills.find(s => s.tier === 'EXPLICIT') || tieredMissingSkills[0];
+      verdict = `High potential match (${finalScore}% • ${groundTruthCertaintyPercent}% Ground-Truth Certainty). Address ${topMissing?.skill || missingStrings[0]} via 1-click prep plan to maximize OA selection odds.`;
     }
 
     return {
@@ -141,13 +226,17 @@ export class FitmentEvaluator {
       overallGrade: grade,
       dimensions,
       matchedSkills: opp.fitment.matchedSkills,
-      missingSkills: missing,
+      missingSkills: missingStrings,
       strategicVerdict: verdict,
+      evidenceBreakdown,
+      tieredMatchedSkills,
+      tieredMissingSkills,
     };
   }
 
   /**
    * Real AI Fitment Scoring via Gemini Server Endpoint (Fix 4)
+   * Enforces Evidence-Tiered requirements parsing (Prompt 25)
    */
   public static async evaluateWithAi(
     opp: Opportunity,
@@ -164,6 +253,51 @@ export class FitmentEvaluator {
         const data = await response.json();
         if (data.success && data.evaluation) {
           const evalRes = data.evaluation;
+
+          const rawTieredMatched: any[] = Array.isArray(evalRes.tieredMatchedSkills) ? evalRes.tieredMatchedSkills : [];
+          const rawTieredMissing: any[] = Array.isArray(evalRes.tieredMissingSkills) ? evalRes.tieredMissingSkills : [];
+          const matchedSkills: string[] = Array.isArray(evalRes.matchedSkills) ? evalRes.matchedSkills : opp.fitment.matchedSkills;
+          const missingSkills: string[] = Array.isArray(evalRes.missingSkills) ? evalRes.missingSkills : opp.fitment.missingSkills;
+
+          const tieredMatchedSkills: TieredSkillItem[] = rawTieredMatched.length > 0
+            ? rawTieredMatched.map(item => ({
+                skill: item.skill || String(item),
+                tier: (['EXPLICIT', 'IMPLIED', 'INFERRED'].includes(item.tier) ? item.tier : 'EXPLICIT') as EvidenceTier,
+                context: item.context || 'Verified match'
+              }))
+            : matchedSkills.map(skill => ({
+                skill,
+                tier: this.classifySkillEvidence(skill, opp.description, `${opp.title} ${opp.department}`),
+                context: 'Verified match'
+              }));
+
+          const tieredMissingSkills: TieredSkillItem[] = rawTieredMissing.length > 0
+            ? rawTieredMissing.map(item => ({
+                skill: item.skill || String(item),
+                tier: (['EXPLICIT', 'IMPLIED', 'INFERRED'].includes(item.tier) ? item.tier : 'IMPLIED') as EvidenceTier,
+                context: item.context || 'Candidate gap'
+              }))
+            : missingSkills.map(skill => ({
+                skill,
+                tier: this.classifySkillEvidence(skill, opp.description, `${opp.title} ${opp.department}`),
+                context: 'Candidate gap'
+              }));
+
+          // Calculate Evidence Breakdown
+          const allTiered = [...tieredMatchedSkills, ...tieredMissingSkills];
+          const explicitCount = allTiered.filter(t => t.tier === 'EXPLICIT').length;
+          const impliedCount = allTiered.filter(t => t.tier === 'IMPLIED').length;
+          const inferredCount = allTiered.filter(t => t.tier === 'INFERRED').length;
+          const totalSkills = Math.max(1, allTiered.length);
+          const groundTruthCertaintyPercent = Math.round(((explicitCount + (impliedCount * 0.5)) / totalSkills) * 100);
+
+          const evidenceBreakdown = evalRes.evidenceBreakdown || {
+            explicitCount,
+            impliedCount,
+            inferredCount,
+            groundTruthCertaintyPercent
+          };
+
           return {
             overallScore: Number(evalRes.overallScore) || 85,
             overallGrade: evalRes.overallGrade || 'B',
@@ -175,9 +309,12 @@ export class FitmentEvaluator {
               learningTrajectory: Number(evalRes.dimensions?.learningTrajectory) || 85,
               compensationFairness: Number(evalRes.dimensions?.compensationFairness) || 85,
             },
-            matchedSkills: Array.isArray(evalRes.matchedSkills) ? evalRes.matchedSkills : opp.fitment.matchedSkills,
-            missingSkills: Array.isArray(evalRes.missingSkills) ? evalRes.missingSkills : opp.fitment.missingSkills,
+            matchedSkills,
+            missingSkills,
             strategicVerdict: evalRes.strategicVerdict || opp.fitment.strategicVerdict,
+            evidenceBreakdown,
+            tieredMatchedSkills,
+            tieredMissingSkills,
           };
         }
       }

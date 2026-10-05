@@ -21,7 +21,7 @@ export type WorkMode = 'remote' | 'hybrid' | 'on-site';
 // Cryptographic & Origin Verification Proof (Strict Rule #2 & Req #2)
 export interface VerificationProof {
   verified: boolean;
-  sourceType: 'greenhouse' | 'lever' | 'ashby' | 'workday' | 'smartrecruiters' | 'direct_careers_domain';
+  sourceType: 'greenhouse' | 'lever' | 'ashby' | 'workday' | 'smartrecruiters' | 'workable' | 'direct_careers_domain';
   rootDomain: string;             // e.g. "openai.com", "google.com"
   endpointUrl: string;           // Direct API or careers portal URL
   lastCheckedTimestamp: number;   // Epoch ms of latest pulse check
@@ -40,6 +40,14 @@ export interface EligibilityCriteria {
 }
 
 // 10-Dimensional Fitment Assessment (Req #17 & TERRASYNX A-F Evaluation)
+export type EvidenceTier = 'EXPLICIT' | 'IMPLIED' | 'INFERRED';
+
+export interface TieredSkillItem {
+  skill: string;
+  tier: EvidenceTier;
+  context?: string;
+}
+
 export interface FitmentEvaluation {
   overallScore: number;               // 0 - 100%
   overallGrade: 'A+' | 'A' | 'B' | 'C' | 'D' | 'F';
@@ -54,6 +62,16 @@ export interface FitmentEvaluation {
   missingSkills: string[];            // Critical ATS gaps to address (Req #13)
   matchedSkills: string[];            // Confirmed matching skills
   strategicVerdict: string;           // 1-2 sentence actionable executive advice
+
+  // PROMPT 25: Evidence-Tiered Requirements Breakdown
+  evidenceBreakdown?: {
+    explicitCount: number;
+    impliedCount: number;
+    inferredCount: number;
+    groundTruthCertaintyPercent: number; // e.g. 85%
+  };
+  tieredMatchedSkills?: TieredSkillItem[];
+  tieredMissingSkills?: TieredSkillItem[];
 }
 
 // Company Assessment Intelligence (Req #16)
@@ -111,6 +129,15 @@ export interface Opportunity {
   appliedAt?: number;
   customNotes?: string;
   followUpDeadlineAt?: number;        // 7-day follow-up reminder date (Req #3)
+
+  // Funded Company Discovery Signals (Prompt 27)
+  isNewlyFunded?: boolean;
+  fundingRoundDetails?: {
+    roundName?: string;     // e.g. "Series B", "Series F", "Seed"
+    amountRaised?: string;  // e.g. "$600M", "$1.1B", "$260M"
+    announcedDate?: string; // Formatted date string
+    sourceUrl?: string;     // TechCrunch / Crunchbase announcement link
+  };
 }
 
 // Verified Student Project Interface (Truth-Anchored, Fix 1)

@@ -113,7 +113,7 @@ export class RadarEngine {
     if (domain.includes('amazon')) return 'https://amazon.jobs/en/applicant';
     if (domain.includes('apple')) return 'https://jobs.apple.com/en-us/profile/applications';
     if (domain.includes('meta')) return 'https://www.metacareers.com/profile/applications';
-    if (domain.includes('netflix')) return 'https://jobs.netflix.com/my-profile';
+    if (domain.includes('netflix')) return 'https://jobs.netflix.com';
     if (domain.includes('uber')) return 'https://www.uber.com/us/en/careers/candidate/';
     if (domain.includes('openai')) return 'https://openai.com/careers/';
     if (domain.includes('anthropic')) return 'https://www.anthropic.com/careers';

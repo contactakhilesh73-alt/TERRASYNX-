@@ -17,6 +17,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { UpcomingInternshipCycle, InternshipCycleCurrentStatus, StudentProfile } from '../types';
 import { UpcomingInternshipsService, RECURRING_ANNUAL_INTERNSHIPS, detectNaturalSynonymHint } from '../services/upcomingInternshipsService';
+import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
 import { 
@@ -454,10 +455,11 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
   // Progressive batch rendering (16 cards per batch)
   const [visibleCount, setVisibleCount] = useState<number>(16);
 
-  // Reset pagination when active filter, search, month, category, or simulation date changes
+  // Reset pagination ONLY when student explicitly changes filter criteria (tab, month, category, search, matrix, batch)
+  // NEVER reset on background clock updates or bookmark/track state changes
   useEffect(() => {
     setVisibleCount(16);
-  }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, referenceDate, matrixFilter, studentBatch, trackedCycleIds]);
+  }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, matrixFilter, studentBatch]);
 
   const visibleCycles = useMemo(() => {
     return filteredCycles.slice(0, visibleCount);
@@ -1783,9 +1785,10 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                 <div className="mt-5 pt-3.5 border-t border-slate-800/80 space-y-2.5">
                   {/* Primary Link: Official Careers Portal (Prominent) */}
                   <a
-                    href={cycle.officialCareersUrl}
+                    href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-mono font-bold transition-all shadow-md shadow-indigo-950 cursor-pointer"
                   >
                     <span>Official Careers Portal ↗ (Confirm on {cycle.companyName})</span>
@@ -1798,7 +1801,10 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                       <div className="flex-1 flex items-center gap-2">
                         <button
                           type="button"
-                          onClick={() => handleToggleTrack(cycle)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleTrack(cycle);
+                          }}
                           className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-black transition-all cursor-pointer bg-emerald-950/90 text-emerald-200 border border-emerald-500/80 shadow-md shadow-emerald-500/20 hover:bg-emerald-900/80"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -1810,6 +1816,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                           href={createGoogleCalendarUrl(cycle, referenceDate)}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
                           className="px-2.5 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 bg-indigo-950/70 hover:bg-indigo-900 text-indigo-300 border border-indigo-700/60 shadow-sm shrink-0"
                           title="Add opening and closing dates to your Google Calendar"
                         >
@@ -1820,7 +1827,10 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                     ) : (
                       <button
                         type="button"
-                        onClick={() => handleToggleTrack(cycle)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleTrack(cycle);
+                        }}
                         className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 hover:border-indigo-500/80 hover:shadow-md hover:shadow-indigo-500/10 group"
                       >
                         <Bookmark className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-400 transition-colors" />

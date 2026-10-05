@@ -157,6 +157,25 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           {opportunity.title}
         </h3>
 
+        {/* Prompt 27: Newly Funded Badge */}
+        {opportunity.isNewlyFunded && (
+          <div 
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-mono font-bold shadow-sm"
+            title={opportunity.fundingRoundDetails 
+              ? `Recently funded ${opportunity.companyName}: ${opportunity.fundingRoundDetails.amountRaised} in ${opportunity.fundingRoundDetails.roundName} capital. Actively hiring engineering talent!` 
+              : 'Recently funded startup with active public ATS hiring pipeline.'
+            }
+          >
+            <span className="text-xs">🔥</span>
+            <span>Newly Funded — Actively Hiring</span>
+            {opportunity.fundingRoundDetails?.amountRaised && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-200 border border-amber-400/30 font-extrabold">
+                {opportunity.fundingRoundDetails.amountRaised}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Tactical Badges & Compensation Matrix */}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           {/* Compensation */}
