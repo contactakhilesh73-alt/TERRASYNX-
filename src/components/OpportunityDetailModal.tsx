@@ -137,6 +137,89 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               </div>
             )}
 
+            {/* Prompt 29: Hacker News Provenance Banner */}
+            {opportunity.isHnListing && (
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-mono font-bold shadow-sm flex-wrap">
+                <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+                <span>Ask HN: Who is Hiring</span>
+                {opportunity.hnListingDetails?.author && (
+                  <span className="text-orange-200">
+                    by @{opportunity.hnListingDetails.author}
+                  </span>
+                )}
+                {opportunity.hnListingDetails?.confidenceScore && (
+                  <span className="px-2 py-0.5 rounded bg-orange-400/20 text-orange-200 border border-orange-400/30 text-[10px]">
+                    Gemini AI Confidence: {opportunity.hnListingDetails.confidenceScore}%
+                  </span>
+                )}
+                {opportunity.hnListingDetails?.commentUrl && (
+                  <a
+                    href={opportunity.hnListingDetails.commentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-1 text-cyan-400 hover:text-cyan-300 underline inline-flex items-center gap-1 font-normal text-[11px]"
+                  >
+                    <span>View HN Thread</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Prompt 30: Built In Provenance Banner */}
+            {opportunity.isBuiltInListing && (
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-500/20 text-teal-300 border border-teal-500/40 text-xs font-mono font-bold shadow-sm flex-wrap">
+                <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+                <span>Built In • {opportunity.builtInDetails?.hub || 'Tech'} Hub</span>
+                <span className="px-2 py-0.5 rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px]">
+                  {opportunity.builtInDetails?.roleCategory === 'internship' ? 'Internship Role' : 'Entry-Level / Early Career'}
+                </span>
+                {opportunity.builtInDetails?.salarySnippet && (
+                  <span className="px-2 py-0.5 rounded bg-slate-900 text-teal-300 border border-teal-800 text-[10px]">
+                    {opportunity.builtInDetails.salarySnippet}
+                  </span>
+                )}
+                {opportunity.builtInDetails?.listingUrl && (
+                  <a
+                    href={opportunity.builtInDetails.listingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-1 text-cyan-400 hover:text-cyan-300 underline inline-flex items-center gap-1 font-normal text-[11px]"
+                  >
+                    <span>View on Built In</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Prompt 31: Singapore Government Portal Provenance Banner */}
+            {opportunity.isSingaporeGovPortal && (
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/20 text-rose-300 border border-red-500/40 text-xs font-mono font-bold shadow-sm flex-wrap">
+                <span>🇸🇬</span>
+                <span>Official Singapore Government Portal — Verified</span>
+                <span className="px-2 py-0.5 rounded bg-rose-950 text-rose-200 border border-rose-800 text-[10px]">
+                  MyCareersFuture • GovTech / WSG
+                </span>
+                {opportunity.singaporeGovDetails?.salaryRangeSgd && (
+                  <span className="px-2 py-0.5 rounded bg-slate-900 text-rose-300 border border-rose-900 text-[10px]">
+                    {opportunity.singaporeGovDetails.salaryRangeSgd}
+                  </span>
+                )}
+                {opportunity.singaporeGovDetails?.portalUrl && (
+                  <a
+                    href={opportunity.singaporeGovDetails.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-1 text-cyan-400 hover:text-cyan-300 underline inline-flex items-center gap-1 font-normal text-[11px]"
+                  >
+                    <span>View on MyCareersFuture</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                )}
+              </div>
+            )}
+
             <p className="text-xs text-slate-400 font-mono mt-1">
               Requisition ID: {opportunity.verification.requisitionId} • Root Domain: {opportunity.verification.rootDomain}
             </p>

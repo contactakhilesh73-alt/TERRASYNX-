@@ -34,7 +34,8 @@ import {
   Mail,
   UserPlus,
   LogIn,
-  BookOpen
+  BookOpen,
+  Radio
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -53,6 +54,7 @@ interface HeaderProps {
   onOpenAuth?: () => void;
   onSignInWithGoogle?: () => void;
   onSignOut?: () => void;
+  onOpenAtsDiscovery?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -71,6 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAuth,
   onSignInWithGoogle,
   onSignOut,
+  onOpenAtsDiscovery,
 }) => {
   const [showInsigniaModal, setShowInsigniaModal] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string>(() => {
@@ -141,6 +144,19 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 text-[9px] font-mono font-bold">
                   {appliedCount}
                 </span>
+              </button>
+            </>
+          )}
+          {onOpenAtsDiscovery && (
+            <>
+              <span className="text-slate-700">|</span>
+              <button
+                onClick={onOpenAtsDiscovery}
+                className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer text-[10px]"
+                title="ATS Board Auto-Discover Internal Tool (Prompt 28)"
+              >
+                <Radio className="w-3 h-3 text-cyan-400 animate-pulse" />
+                <span className="font-mono font-semibold">ATS Discover</span>
               </button>
             </>
           )}

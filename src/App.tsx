@@ -42,6 +42,7 @@ import { EmailDraftType } from './services/emailDraftService';
 import { CompanyResearchModal } from './components/CompanyResearchModal';
 import { CompanyRedFlagModal } from './components/CompanyRedFlagModal';
 import { SelfReportApplyModal } from './components/SelfReportApplyModal';
+import { AtsDiscoveryModal } from './components/AtsDiscoveryModal';
 import { StoryBankView } from './components/StoryBankView';
 import { AppliedDossierService } from './services/appliedDossierService';
 import { PipelineIntegrityService } from './services/pipelineIntegrityService';
@@ -99,6 +100,7 @@ export default function App() {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
   const [isAuditModalOpen, setIsAuditModalOpen] = useState<boolean>(false);
   const [isDossierVaultOpen, setIsDossierVaultOpen] = useState<boolean>(false);
+  const [isAtsDiscoveryOpen, setIsAtsDiscoveryOpen] = useState<boolean>(false);
   const [mutedAlertIds, setMutedAlertIds] = useState<string[]>([]);
   const [simulatedEmails, setSimulatedEmails] = useState(RadarEngine.getSimulatedEmails());
 
@@ -127,6 +129,7 @@ export default function App() {
         setIsShortcutsOpen(false);
         setIsAuditModalOpen(false);
         setIsDossierVaultOpen(false);
+        setIsAtsDiscoveryOpen(false);
         return;
       }
 
@@ -134,6 +137,13 @@ export default function App() {
       if (((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') || e.key === '?') {
         e.preventDefault();
         setIsShortcutsOpen(prev => !prev);
+        return;
+      }
+
+      // Hotkey 'Shift + D': Toggle ATS Board Auto-Discover Internal Tool (Prompt 28)
+      if (e.shiftKey && e.key.toUpperCase() === 'D') {
+        e.preventDefault();
+        setIsAtsDiscoveryOpen(prev => !prev);
         return;
       }
 
@@ -384,6 +394,7 @@ export default function App() {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenAudit={() => setIsAuditModalOpen(true)}
         onOpenDossierVault={() => setIsDossierVaultOpen(true)}
+        onOpenAtsDiscovery={() => setIsAtsDiscoveryOpen(true)}
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onSignInWithGoogle={handleGoogleSignIn}
@@ -405,6 +416,7 @@ export default function App() {
             onOpenCoverLetter={setCoverLetterOpp}
             onOpenEmailDraft={handleOpenEmailDraft}
             onSelfReportApplied={handleOpenSelfReport}
+            onOpenAtsDiscovery={() => setIsAtsDiscoveryOpen(true)}
             mutedAlertIds={mutedAlertIds}
           />
         )}
@@ -816,6 +828,17 @@ export default function App() {
         onClose={() => setSelfReportOpp(null)}
         onConfirm={handleConfirmSelfReport}
         onOpenGoogleSignIn={handleGoogleSignIn}
+      />
+
+      {/* ATS Board Auto-Discover Internal Tool Modal (Prompt 28) */}
+      <AtsDiscoveryModal
+        isOpen={isAtsDiscoveryOpen}
+        onClose={() => setIsAtsDiscoveryOpen(false)}
+        onTargetAdded={async () => {
+          // Immediately sync radar opportunities with new target
+          await RadarEngine.scanLiveAtsBoards();
+          setOpportunities(RadarEngine.getOpportunities());
+        }}
       />
 
     </div>

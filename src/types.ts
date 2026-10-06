@@ -21,7 +21,7 @@ export type WorkMode = 'remote' | 'hybrid' | 'on-site';
 // Cryptographic & Origin Verification Proof (Strict Rule #2 & Req #2)
 export interface VerificationProof {
   verified: boolean;
-  sourceType: 'greenhouse' | 'lever' | 'ashby' | 'workday' | 'smartrecruiters' | 'workable' | 'direct_careers_domain';
+  sourceType: 'greenhouse' | 'lever' | 'ashby' | 'workday' | 'smartrecruiters' | 'workable' | 'direct_careers_domain' | 'hacker_news' | 'builtin' | 'singapore_gov';
   rootDomain: string;             // e.g. "openai.com", "google.com"
   endpointUrl: string;           // Direct API or careers portal URL
   lastCheckedTimestamp: number;   // Epoch ms of latest pulse check
@@ -137,6 +137,44 @@ export interface Opportunity {
     amountRaised?: string;  // e.g. "$600M", "$1.1B", "$260M"
     announcedDate?: string; // Formatted date string
     sourceUrl?: string;     // TechCrunch / Crunchbase announcement link
+  };
+
+  // Hacker News "Who is Hiring" Scanner Signals (Prompt 29)
+  isHnListing?: boolean;
+  hnListingDetails?: {
+    threadId: number | string;
+    commentId: number | string;
+    threadTitle: string;
+    author: string;
+    commentUrl: string;
+    confidenceScore: number;
+    techStack?: string[];
+  };
+
+  // Built In Aggregator Signals (Prompt 30)
+  isBuiltInListing?: boolean;
+  builtInDetails?: {
+    jobId: string;
+    hub: 'Remote' | 'SF' | 'NYC' | 'Austin' | 'Seattle' | string;
+    isRemote: boolean;
+    roleCategory: 'internship' | 'entry-level' | 'new-grad';
+    salarySnippet?: string;
+    postedAgo?: string;
+    listingUrl: string;
+  };
+
+  // Singapore Government Portal Signals (Prompt 31)
+  isSingaporeGovPortal?: boolean;
+  singaporeGovDetails?: {
+    jobPostId: string;
+    portalUrl: string;
+    uen?: string;
+    salaryRangeSgd?: string;
+    verifiedAt: number;
+    category?: string;
+    employmentType?: string;
+    positionLevel?: string;
+    schemeNames?: string[];
   };
 }
 

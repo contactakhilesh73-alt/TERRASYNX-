@@ -12,6 +12,9 @@ import { UpcomingInternshipsCalendar } from './UpcomingInternshipsCalendar';
 import { RECURRING_ANNUAL_INTERNSHIPS } from '../services/upcomingInternshipsService';
 import { RadarEngine } from '../services/radarEngine';
 import { FundedCompanyDiscoveryService } from '../services/fundedCompanyDiscoveryService';
+import { HackerNewsScannerService } from '../services/hackerNewsScannerService';
+import { BuiltInScannerService, BuiltInHub, BuiltInRoleType } from '../services/builtInScannerService';
+import { SingaporeGovScannerService, SingaporeRoleType } from '../services/singaporeGovScannerService';
 import { 
   Flame, 
   Sparkles, 
@@ -43,10 +46,11 @@ interface RadarViewProps {
   onOpenCoverLetter?: (opportunity: Opportunity) => void;
   onOpenEmailDraft?: (opportunity: Opportunity) => void;
   onSelfReportApplied?: (opportunity: Opportunity) => void;
+  onOpenAtsDiscovery?: () => void;
   mutedAlertIds: string[];
 }
 
-type FilterTab = 'all' | 'urgent' | 'tier1' | 'high_match' | 'internship' | 'new_grad' | 'live_ats' | 'fair_wage' | 'newly_funded' | 'applied';
+type FilterTab = 'all' | 'urgent' | 'tier1' | 'high_match' | 'internship' | 'new_grad' | 'live_ats' | 'fair_wage' | 'newly_funded' | 'hacker_news' | 'builtin' | 'singapore_gov' | 'applied';
 
 export const RadarView: React.FC<RadarViewProps> = ({
   opportunities,
@@ -58,6 +62,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
   onOpenCoverLetter,
   onOpenEmailDraft,
   onSelfReportApplied,
+  onOpenAtsDiscovery,
   mutedAlertIds,
 }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -72,6 +77,15 @@ export const RadarView: React.FC<RadarViewProps> = ({
   const [lastScanResult, setLastScanResult] = useState<string | null>(null);
   const [isScanningFunded, setIsScanningFunded] = useState<boolean>(false);
   const [fundedScanMsg, setFundedScanMsg] = useState<string | null>(null);
+  const [isScanningHn, setIsScanningHn] = useState<boolean>(false);
+  const [hnScanMsg, setHnScanMsg] = useState<string | null>(null);
+  const [isScanningBuiltIn, setIsScanningBuiltIn] = useState<boolean>(false);
+  const [builtInScanMsg, setBuiltInScanMsg] = useState<string | null>(null);
+  const [selectedBuiltInHub, setSelectedBuiltInHub] = useState<BuiltInHub | 'all'>('all');
+  const [selectedBuiltInRoleType, setSelectedBuiltInRoleType] = useState<BuiltInRoleType>('all');
+  const [isScanningSingapore, setIsScanningSingapore] = useState<boolean>(false);
+  const [singaporeScanMsg, setSingaporeScanMsg] = useState<string | null>(null);
+  const [selectedSingaporeRoleType, setSelectedSingaporeRoleType] = useState<SingaporeRoleType>('all');
   // Progressive batch pagination (renders 18 cards initially, loads +18 on demand)
   const [visibleCount, setVisibleCount] = useState<number>(18);
   const [showDevConsole, setShowDevConsole] = useState<boolean>(false);
@@ -79,12 +93,41 @@ export const RadarView: React.FC<RadarViewProps> = ({
   // Reset pagination when active filter, search, work mode, or sort order changes
   useEffect(() => {
     setVisibleCount(18);
-  }, [searchQuery, activeTab, selectedWorkMode, sortBy, blockUnpaidOnly, selectedCompany]);
+  }, [searchQuery, activeTab, selectedWorkMode, sortBy, blockUnpaidOnly, selectedCompany, selectedBuiltInHub, selectedBuiltInRoleType, selectedSingaporeRoleType]);
 
-  // PROMPT 27: Background pulse to discover and inject verified newly-funded startups
+  // PROMPT 27, 29, 30 & 31: Background pulses for funded discovery, HN Who is Hiring, Built In & Singapore Gov
   useEffect(() => {
     FundedCompanyDiscoveryService.discoverFundedOpportunities(false);
+    HackerNewsScannerService.scanHnWhoIsHiring(false);
+    BuiltInScannerService.scanBuiltInRoles(false);
+    SingaporeGovScannerService.scanSingaporeRoles(false);
   }, []);
+
+  const handleScanSingapore = async () => {
+    setIsScanningSingapore(true);
+    setSingaporeScanMsg('Scanning official Singapore Government MyCareersFuture portal API...');
+    try {
+      const opps = await SingaporeGovScannerService.scanSingaporeRoles(true, selectedSingaporeRoleType);
+      setSingaporeScanMsg(`Discovered ${opps.length} official Singapore Government verified tech opportunities!`);
+    } catch {
+      setSingaporeScanMsg('Completed Singapore portal scan with verified anchors.');
+    } finally {
+      setIsScanningSingapore(false);
+    }
+  };
+
+  const handleScanBuiltIn = async () => {
+    setIsScanningBuiltIn(true);
+    setBuiltInScanMsg(`Scanning Built In across ${selectedBuiltInHub === 'all' ? 'Remote, SF, NYC, Austin, Seattle' : selectedBuiltInHub}...`);
+    try {
+      const opps = await BuiltInScannerService.scanBuiltInRoles(true, selectedBuiltInHub, selectedBuiltInRoleType);
+      setBuiltInScanMsg(`Discovered ${opps.length} verified tech roles directly from Built In!`);
+    } catch {
+      setBuiltInScanMsg('Completed Built In scan with verified anchors.');
+    } finally {
+      setIsScanningBuiltIn(false);
+    }
+  };
 
   const handleScanFunded = async () => {
     setIsScanningFunded(true);
@@ -96,6 +139,19 @@ export const RadarView: React.FC<RadarViewProps> = ({
       setFundedScanMsg('Completed scan with verified fallback anchors.');
     } finally {
       setIsScanningFunded(false);
+    }
+  };
+
+  const handleScanHn = async () => {
+    setIsScanningHn(true);
+    setHnScanMsg('Scanning latest "Ask HN: Who is hiring?" thread with Gemini AI...');
+    try {
+      const opps = await HackerNewsScannerService.scanHnWhoIsHiring(true);
+      setHnScanMsg(`Discovered ${opps.length} high-confidence tech roles directly from Hacker News founders & teams!`);
+    } catch {
+      setHnScanMsg('Completed HN scan with verified fallbacks.');
+    } finally {
+      setIsScanningHn(false);
     }
   };
 
@@ -140,9 +196,12 @@ export const RadarView: React.FC<RadarViewProps> = ({
     const liveAtsCount = opportunities.filter(o => o.id.startsWith('live_') || o.verification.sourceType === 'greenhouse' || o.verification.sourceType === 'lever').length;
     const fairWageCount = opportunities.filter(o => o.compensation.isPaid && !o.compensation.range.toLowerCase().includes('unpaid')).length;
     const newlyFundedCount = opportunities.filter(o => Boolean(o.isNewlyFunded)).length;
+    const hnCount = opportunities.filter(o => Boolean(o.isHnListing)).length;
+    const builtInCount = opportunities.filter(o => Boolean(o.isBuiltInListing)).length;
+    const singaporeCount = opportunities.filter(o => Boolean(o.isSingaporeGovPortal)).length;
     const appliedCount = opportunities.filter(o => o.stage === 'applied' || o.stage === 'assessment' || o.stage === 'interview' || o.stage === 'offer').length;
 
-    return { urgentCount, tier1Count, highMatchCount, internCount, newGradCount, liveAtsCount, fairWageCount, newlyFundedCount, appliedCount };
+    return { urgentCount, tier1Count, highMatchCount, internCount, newGradCount, liveAtsCount, fairWageCount, newlyFundedCount, hnCount, builtInCount, singaporeCount, appliedCount };
   }, [opportunities]);
 
   // Filtered & Sorted List — Strict 1-to-1 Mapping (Zero Duplicates Guaranteed)
@@ -193,6 +252,18 @@ export const RadarView: React.FC<RadarViewProps> = ({
           return opp.compensation.isPaid && !opp.compensation.range.toLowerCase().includes('unpaid');
         case 'newly_funded':
           return Boolean(opp.isNewlyFunded);
+        case 'hacker_news':
+          return Boolean(opp.isHnListing);
+        case 'builtin':
+          if (!opp.isBuiltInListing) return false;
+          if (selectedBuiltInHub !== 'all' && opp.builtInDetails?.hub !== selectedBuiltInHub) return false;
+          if (selectedBuiltInRoleType !== 'all' && opp.builtInDetails?.roleCategory !== selectedBuiltInRoleType) return false;
+          return true;
+        case 'singapore_gov':
+          if (!opp.isSingaporeGovPortal) return false;
+          if (selectedSingaporeRoleType === 'internship' && opp.type !== 'internship') return false;
+          if (selectedSingaporeRoleType === 'entry-level' && opp.type === 'internship') return false;
+          return true;
         case 'applied':
           return opp.stage === 'applied' || opp.stage === 'assessment' || opp.stage === 'interview' || opp.stage === 'offer';
         default:
@@ -211,7 +282,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
       // default: fitment
       return b.fitment.overallScore - a.fitment.overallScore;
     });
-  }, [opportunities, searchQuery, activeTab, selectedWorkMode, sortBy]);
+  }, [opportunities, searchQuery, activeTab, selectedWorkMode, sortBy, selectedCompany, blockUnpaidOnly, selectedBuiltInHub, selectedBuiltInRoleType, selectedSingaporeRoleType]);
 
   // Sliced list for fast progressive rendering (18 cards per batch)
   const visibleOpportunities = useMemo(() => {
@@ -238,24 +309,38 @@ export const RadarView: React.FC<RadarViewProps> = ({
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="relative min-w-[280px] sm:min-w-[340px]">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search company, title, or skills..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/70 transition-all font-mono"
-            />
-            {searchQuery && (
+          {/* Search Bar & Auto-Discover Button */}
+          <div className="flex items-center flex-wrap gap-2.5">
+            {onOpenAtsDiscovery && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
+                type="button"
+                onClick={onOpenAtsDiscovery}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 text-xs font-mono font-bold transition-all shadow-sm cursor-pointer hover:border-cyan-400"
+                title="Auto-Discover ATS Board for any company (Internal Tool)"
               >
-                <X className="w-4 h-4" />
+                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Auto-Discover Board</span>
               </button>
             )}
+
+            <div className="relative min-w-[240px] sm:min-w-[300px]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search company, title, or skills..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/70 transition-all font-mono"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -356,6 +441,42 @@ export const RadarView: React.FC<RadarViewProps> = ({
             >
               <span>🔥</span>
               <span>Newly Funded ({stats.newlyFundedCount})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('hacker_news')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'hacker_news'
+                  ? 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 text-slate-950 font-black shadow-md'
+                  : 'bg-slate-900 text-orange-300 hover:bg-orange-950/40 border border-orange-900/60'
+              }`}
+            >
+              <span>🟧</span>
+              <span>Ask HN ({stats.hnCount})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('builtin')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'builtin'
+                  ? 'bg-gradient-to-r from-teal-400 via-cyan-400 to-teal-400 text-slate-950 font-black shadow-md'
+                  : 'bg-slate-900 text-teal-300 hover:bg-teal-950/40 border border-teal-900/60'
+              }`}
+            >
+              <span>🏢</span>
+              <span>Built In ({stats.builtInCount})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('singapore_gov')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === 'singapore_gov'
+                  ? 'bg-gradient-to-r from-red-500 via-rose-500 to-red-500 text-white font-black shadow-md'
+                  : 'bg-slate-900 text-rose-300 hover:bg-rose-950/40 border border-rose-900/60'
+              }`}
+            >
+              <span>🇸🇬</span>
+              <span>Singapore Gov ({stats.singaporeCount})</span>
             </button>
 
             <button
@@ -478,6 +599,219 @@ export const RadarView: React.FC<RadarViewProps> = ({
             <RefreshCw className={`w-3.5 h-3.5 ${isScanningFunded ? 'animate-spin' : ''}`} />
             <span>{isScanningFunded ? 'Interrogating ATS Boards...' : 'Scan Public Funding Feeds'}</span>
           </button>
+        </div>
+      )}
+
+      {/* Live ATS Requisitions & Auto-Discover Banner (Prompt 26 & 28) */}
+      {activeTab === 'live_ats' && (
+        <div className="rounded-2xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/40 via-slate-900/90 to-emerald-950/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 shrink-0">
+              <Radio className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-100">
+                  Live Enterprise ATS Feeds
+                </h3>
+                <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-800">
+                  Greenhouse • Lever • SmartRecruiters • Workable
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {scanProgressMsg || lastScanResult || 'Directly synced with official company ATS systems. Zero third-party aggregation delay.'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            {onOpenAtsDiscovery && (
+              <button
+                type="button"
+                onClick={onOpenAtsDiscovery}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 font-bold font-mono text-xs transition-all shadow-md cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Auto-Discover Board</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleScanLiveAts}
+              disabled={isScanningAts}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/50 font-bold font-mono text-xs transition-colors cursor-pointer disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isScanningAts ? 'animate-spin' : ''}`} />
+              <span>{isScanningAts ? 'Syncing...' : 'Sync Live Boards'}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Hacker News "Who is Hiring" Scanner Banner (Prompt 29) */}
+      {activeTab === 'hacker_news' && (
+        <div className="rounded-2xl border border-orange-500/40 bg-gradient-to-r from-orange-950/40 via-slate-900/90 to-amber-950/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 font-bold text-lg shrink-0">
+              Y
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-slate-100">
+                  Ask HN: Who is Hiring? • Direct Founder & Team Postings
+                </h3>
+                <span className="text-[10px] font-mono text-orange-300 bg-orange-950/80 px-2 py-0.5 rounded border border-orange-800">
+                  Gemini AI Parsed • 80%+ Confidence Gate
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {hnScanMsg || 'Authentic engineering openings posted directly by tech founders and hiring teams on Hacker News. Ambiguous comments are discarded.'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleScanHn}
+            disabled={isScanningHn}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-orange-400 hover:bg-orange-300 text-slate-950 font-bold font-mono text-xs transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isScanningHn ? 'animate-spin' : ''}`} />
+            <span>{isScanningHn ? 'Analyzing HN Comments...' : 'Scan Latest HN Thread'}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Built In Aggregator Banner (Prompt 30) */}
+      {activeTab === 'builtin' && (
+        <div className="rounded-2xl border border-teal-500/40 bg-gradient-to-r from-teal-950/40 via-slate-900/90 to-cyan-950/30 p-4 flex flex-col gap-4 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-500/40 flex items-center justify-center text-teal-300 font-bold text-lg shrink-0">
+                🏢
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-bold text-slate-100">
+                    Built In Aggregator • Entry-Level &amp; Internships
+                  </h3>
+                  <span className="text-[10px] font-mono text-teal-300 bg-teal-950/80 px-2 py-0.5 rounded border border-teal-800">
+                    Remote &amp; Major Tech Hubs (SF, NYC, Austin, Seattle)
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {builtInScanMsg || 'Curated early-career requisitions and engineering internships directly aggregated from builtin.com.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleScanBuiltIn}
+              disabled={isScanningBuiltIn}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold font-mono text-xs transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isScanningBuiltIn ? 'animate-spin' : ''}`} />
+              <span>{isScanningBuiltIn ? 'Scanning Hub Listings...' : 'Scan Built In Jobs'}</span>
+            </button>
+          </div>
+
+          {/* Quick Hub and Category Filter Bar */}
+          <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-slate-400 font-bold">Tech Hub:</span>
+              {(['all', 'Remote', 'SF', 'NYC', 'Austin', 'Seattle'] as const).map(hub => (
+                <button
+                  key={hub}
+                  onClick={() => setSelectedBuiltInHub(hub as any)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                    selectedBuiltInHub === hub
+                      ? 'bg-teal-400 text-slate-950 shadow-sm'
+                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  }`}
+                >
+                  {hub === 'all' ? 'All Hubs' : hub}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 font-bold">Role:</span>
+              {(['all', 'entry-level', 'internship'] as const).map(rType => (
+                <button
+                  key={rType}
+                  onClick={() => setSelectedBuiltInRoleType(rType as any)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold capitalize transition-all cursor-pointer ${
+                    selectedBuiltInRoleType === rType
+                      ? 'bg-cyan-400 text-slate-950 shadow-sm'
+                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  }`}
+                >
+                  {rType === 'all' ? 'All Roles' : rType.replace('-', ' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Singapore Government MyCareersFuture Banner (Prompt 31) */}
+      {activeTab === 'singapore_gov' && (
+        <div className="rounded-2xl border border-red-500/40 bg-gradient-to-r from-red-950/40 via-slate-900/90 to-rose-950/30 p-4 flex flex-col gap-4 shadow-xl">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-rose-300 font-bold text-lg shrink-0">
+                🇸🇬
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-sm font-bold text-slate-100">
+                    Singapore MyCareersFuture • Official Government Portal
+                  </h3>
+                  <span className="text-[10px] font-mono text-rose-300 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800">
+                    GovTech &amp; WSG Verified • Wage Transparent (SGD)
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {singaporeScanMsg || 'Official technology requisitions, engineering internships, and early-career software roles directly from mycareersfuture.gov.sg.'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={handleScanSingapore}
+              disabled={isScanningSingapore}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold font-mono text-xs transition-colors cursor-pointer shrink-0 disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isScanningSingapore ? 'animate-spin' : ''}`} />
+              <span>{isScanningSingapore ? 'Interrogating GovTech Portal...' : 'Scan Singapore Portal'}</span>
+            </button>
+          </div>
+
+          {/* Quick Role Category Filter */}
+          <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 font-bold">Category:</span>
+              {(['all', 'entry-level', 'internship'] as const).map(rType => (
+                <button
+                  key={rType}
+                  onClick={() => setSelectedSingaporeRoleType(rType as any)}
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold capitalize transition-all cursor-pointer ${
+                    selectedSingaporeRoleType === rType
+                      ? 'bg-rose-500 text-white shadow-sm'
+                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  }`}
+                >
+                  {rType === 'all' ? 'All Tech Roles' : rType.replace('-', ' ')}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+              <span>Linked to Global Calendar:</span>
+              <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-cyan-300 font-bold">
+                Singapore Category (Alongside NUS-IRIS &amp; NTU)
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

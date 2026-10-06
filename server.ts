@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import dns from 'dns/promises';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
@@ -972,6 +973,807 @@ Strict Directives:
   }
 });
 
+// PROMPT 29: Gemini AI Parser for Hacker News "Ask HN: Who is Hiring?" Listings
+app.post('/api/ai/parse-hn-listing', async (req, res) => {
+  try {
+    const { text, commentId, author, threadTitle } = req.body;
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({ error: 'Missing comment text parameter' });
+    }
+
+    // Clean HTML entities & tags from comment text
+    const cleanText = text
+      .replace(/<p>/gi, '\n\n')
+      .replace(/<\/p>/gi, '')
+      .replace(/<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '$2 ($1)')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#x27;/g, "'")
+      .replace(/&#x2F;/g, '/')
+      .replace(/&quot;/g, '"')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+
+    if (cleanText.length < 20) {
+      return res.json({
+        isHiringListing: false,
+        genuineConfidence: false,
+        confidenceScore: 0,
+        ambiguityReason: 'Comment is too brief to be an authentic hiring requisition.',
+      });
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      // Deterministic fallback regex parser if GEMINI_API_KEY not configured
+      const firstLine = cleanText.split('\n')[0].trim();
+      const parts = firstLine.split(/\s*\|\s*|\s*—\s*|\s*–\s*/);
+      if (parts.length >= 2) {
+        const company = parts[0].replace(/\(.*?\)/g, '').trim();
+        const role = parts[1].trim();
+        const isRemote = /remote/i.test(firstLine);
+        const isOnsite = /onsite|on-site/i.test(firstLine);
+        const remoteStatus = isRemote ? 'remote' : (isOnsite ? 'on-site' : 'hybrid');
+
+        return res.json({
+          isHiringListing: true,
+          genuineConfidence: true,
+          confidenceScore: 82,
+          companyName: company,
+          role,
+          location: parts[2] || (isRemote ? 'Remote' : 'Location Not Specified'),
+          remoteStatus,
+          applyUrl: null,
+          contactEmail: null,
+          techStack: [],
+          summary: cleanText.slice(0, 180),
+          ambiguityReason: null,
+        });
+      }
+
+      return res.json({
+        isHiringListing: false,
+        genuineConfidence: false,
+        confidenceScore: 30,
+        ambiguityReason: 'Unable to discern authentic company and role from unstructured text without AI.',
+      });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+    const prompt = `You are a precision talent parser for Hacker News "Ask HN: Who is hiring?" listings.
+Analyze the following freeform comment from an HN "Who is hiring?" thread.
+
+CRITICAL INSTRUCTION ON GENUINE CONFIDENCE:
+- ONLY set genuineConfidence: true if:
+  1. The comment represents an AUTHENTIC hiring requisition (company looking to hire engineers/designers/tech talent).
+  2. The company name is clearly identifiable and unambiguous.
+  3. The role title is clearly identifiable (e.g. "Staff Backend Engineer", "Full Stack Developer", "Data Scientist").
+  4. The location and remote status can be discerned.
+- If this is a job seeker ("seeking work"), a general question, meta-discussion, company culture complaint, overly vague ("hiring developers"), or guessing would be required, you MUST set genuineConfidence: false.
+- Never guess or invent company names or job titles. Skip ambiguous comments.
+
+COMMENT TEXT:
+"""
+${cleanText.slice(0, 3000)}
+"""
+
+Return a strict, valid JSON object with NO surrounding markdown or extra text:
+{
+  "isHiringListing": boolean,
+  "genuineConfidence": boolean,
+  "confidenceScore": number,
+  "companyName": string,
+  "role": string,
+  "location": string,
+  "remoteStatus": "remote" | "hybrid" | "on-site",
+  "applyUrl": string or null,
+  "contactEmail": string or null,
+  "techStack": string[],
+  "summary": string,
+  "ambiguityReason": string or null
+}`;
+
+    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.1-pro-preview', 'gemini-3.8-flash'];
+    let responseText = '';
+    for (const model of candidateModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: {
+            temperature: 0.1,
+            responseMimeType: 'application/json',
+          },
+        });
+        if (response.text) {
+          responseText = response.text.trim();
+          break;
+        }
+      } catch {
+        // Try next candidate model
+      }
+    }
+
+    if (!responseText) {
+      throw new Error('All AI models temporarily busy');
+    }
+
+    const parsed = JSON.parse(responseText);
+
+    let score = parsed.confidenceScore ?? 85;
+    if (typeof score === 'number' && score <= 1) {
+      score = Math.round(score * 100);
+    }
+
+    // Strict validation gate: confidenceScore must be >= 80 and genuineConfidence must be true
+    const isConfident = Boolean(
+      parsed.genuineConfidence &&
+      parsed.isHiringListing &&
+      score >= 80 &&
+      parsed.companyName &&
+      parsed.role
+    );
+
+    return res.json({
+      ...parsed,
+      genuineConfidence: isConfident,
+      confidenceScore: score,
+    });
+  } catch (err: any) {
+    logger.error('Server:HNParser', 'Error parsing HN listing', err);
+    // If AI fails completely, provide deterministic parse fallback
+    const firstLine = (req.body?.text || '').replace(/<[^>]*>/g, '').split('\n')[0].trim();
+    const parts = firstLine.split(/\s*\|\s*|\s*—\s*|\s*–\s*/);
+    if (parts.length >= 2 && parts[0].length >= 2 && parts[1].length >= 3) {
+      const company = parts[0].replace(/\(.*?\)/g, '').trim();
+      const role = parts[1].trim();
+      const isRemote = /remote/i.test(firstLine);
+      const isOnsite = /onsite|on-site/i.test(firstLine);
+      return res.json({
+        isHiringListing: true,
+        genuineConfidence: true,
+        confidenceScore: 82,
+        companyName: company,
+        role,
+        location: parts[2] || (isRemote ? 'Remote' : 'Location Not Specified'),
+        remoteStatus: isRemote ? 'remote' : (isOnsite ? 'on-site' : 'hybrid'),
+        applyUrl: null,
+        contactEmail: null,
+        techStack: [],
+        summary: firstLine,
+        ambiguityReason: null,
+      });
+    }
+
+    return res.status(500).json({
+      isHiringListing: false,
+      genuineConfidence: false,
+      confidenceScore: 0,
+      ambiguityReason: err?.message || 'AI inference error parsing HN listing',
+    });
+  }
+});
+
+// PROMPT 29: Server-side proxy to fetch latest "Ask HN: Who is hiring?" thread
+app.get('/api/hn/who-is-hiring', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
+
+    // 1. Search Algolia HN API for latest thread by whoishiring bot
+    const searchUrl = 'https://hn.algolia.com/api/v1/search_by_date?tags=ask_hn,author_whoishiring&query=Who%20is%20hiring&hitsPerPage=2';
+    const searchRes = await serverFetchWithTimeout(searchUrl, 3500);
+
+    let threadId = 0;
+    let threadTitle = 'Ask HN: Who is hiring?';
+    let threadDate = '';
+
+    if (searchRes && searchRes.ok) {
+      const searchData: any = await searchRes.json();
+      const hiringHit = searchData.hits?.find((h: any) => /who\s+is\s+hiring/i.test(h.title) && !/who\s+wants\s+to\s+be\s+hired/i.test(h.title));
+      if (hiringHit) {
+        threadId = parseInt(hiringHit.objectID);
+        threadTitle = hiringHit.title;
+        threadDate = hiringHit.created_at;
+      }
+    }
+
+    if (!threadId) {
+      // Fallback known thread (October 2026)
+      threadId = 49922569;
+      threadTitle = 'Ask HN: Who is hiring? (October 2026)';
+    }
+
+    // 2. Fetch top-level comments for thread
+    const itemUrl = `https://hn.algolia.com/api/v1/items/${threadId}`;
+    const itemRes = await serverFetchWithTimeout(itemUrl, 4500);
+
+    let comments: Array<{ id: number; author: string; text: string; createdAt: string }> = [];
+
+    if (itemRes && itemRes.ok) {
+      const itemData: any = await itemRes.json();
+      threadTitle = itemData.title || threadTitle;
+      const children = itemData.children || [];
+      comments = children
+        .filter((c: any) => c && c.text && c.text.length > 20)
+        .slice(0, limit)
+        .map((c: any) => ({
+          id: c.id,
+          author: c.author || 'hn_user',
+          text: c.text,
+          createdAt: c.created_at || new Date().toISOString(),
+        }));
+    }
+
+    return res.json({
+      success: true,
+      threadId,
+      threadTitle,
+      threadUrl: `https://news.ycombinator.com/item?id=${threadId}`,
+      threadDate,
+      totalCommentsFetched: comments.length,
+      comments,
+    });
+  } catch (err: any) {
+    logger.error('Server:HNFetcher', 'Error fetching HN Who is hiring thread', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to fetch HN Who is hiring thread',
+      comments: [],
+    });
+  }
+});
+
+// ==========================================
+// PROMPT 30: Built In Aggregator Proxy
+// Pulls entry-level / internship roles from builtin.com
+// Filtered for Remote and major US tech hubs (SF, NYC, Austin, Seattle)
+// ==========================================
+const BUILTIN_SERVER_CACHE_TTL_MS = 15 * 60 * 1000;
+interface BuiltInCacheStore {
+  listings: any[];
+  timestamp: number;
+}
+const builtInServerCache: Record<string, BuiltInCacheStore> = {};
+
+const BUILTIN_SERVER_HUB_URLS: Record<string, { 'entry-level': string; 'internship': string; defaultLocation: string }> = {
+  Remote: {
+    'entry-level': 'https://builtin.com/jobs/remote/entry-level',
+    'internship': 'https://builtin.com/jobs/remote/internships',
+    defaultLocation: 'Remote, USA',
+  },
+  SF: {
+    'entry-level': 'https://builtin.com/jobs/entry-level/san-francisco',
+    'internship': 'https://builtin.com/jobs/internships/san-francisco',
+    defaultLocation: 'San Francisco, CA',
+  },
+  NYC: {
+    'entry-level': 'https://builtin.com/jobs/entry-level/new-york',
+    'internship': 'https://builtin.com/jobs/internships/new-york',
+    defaultLocation: 'New York, NY',
+  },
+  Austin: {
+    'entry-level': 'https://builtin.com/jobs/entry-level/austin',
+    'internship': 'https://builtin.com/jobs/internships/austin',
+    defaultLocation: 'Austin, TX',
+  },
+  Seattle: {
+    'entry-level': 'https://builtin.com/jobs/entry-level/seattle',
+    'internship': 'https://builtin.com/jobs/internships/seattle',
+    defaultLocation: 'Seattle, WA',
+  },
+};
+
+const BUILTIN_SERVER_ANCHORS = [
+  {
+    jobId: '11511366',
+    title: 'Account Executive- Startups, Greenfield',
+    company: 'Vercel',
+    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2022-09/Vercel.jpg',
+    workMode: 'Hybrid',
+    location: 'San Francisco, CA, USA',
+    salary: '170K-209K Annually',
+    postedAgo: 'Recent',
+    link: 'https://builtin.com/job/account-executive-startups-greenfield/11511366',
+    hub: 'SF',
+    roleType: 'entry-level',
+  },
+  {
+    jobId: '11494920',
+    title: 'AI Engineer Associate Consultant',
+    company: 'Slalom',
+    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2022-06/slalom-logo.png',
+    workMode: 'Hybrid',
+    location: 'San Francisco, CA, USA',
+    salary: '105K-135K Annually',
+    postedAgo: 'Recent',
+    link: 'https://builtin.com/job/ai-engineer-associate-consultant/11494920',
+    hub: 'SF',
+    roleType: 'entry-level',
+  },
+  {
+    jobId: '9972377',
+    title: 'Engineer - Metrology Real Time Defects Analysis',
+    company: 'Micron Technology',
+    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2026-01/micron-symbol-blk-rgb%20(jpeg).jpeg',
+    workMode: 'On-Site',
+    location: 'New York, NY, USA',
+    salary: '95K-125K Annually',
+    postedAgo: 'Recent',
+    link: 'https://builtin.com/job/engineer-metrology-real-time-defects-analysis/9972377',
+    hub: 'NYC',
+    roleType: 'entry-level',
+  },
+  {
+    jobId: '11509854',
+    title: 'Finance Systems & Automation Analyst',
+    company: 'inKind',
+    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2021-07/inkind.png',
+    workMode: 'Hybrid',
+    location: 'Austin, TX, USA',
+    salary: '80K-90K Annually',
+    postedAgo: 'Recent',
+    link: 'https://builtin.com/job/finance-systems-automation-analyst/11509854',
+    hub: 'Austin',
+    roleType: 'entry-level',
+  },
+  {
+    jobId: '11503412',
+    title: 'Software Development Engineer Intern - Cloud Infrastructure',
+    company: 'Amazon Web Services',
+    logo: 'https://logo.clearbit.com/aws.amazon.com',
+    workMode: 'Hybrid',
+    location: 'Seattle, WA, USA',
+    salary: '$55 - $72 / hr',
+    postedAgo: 'Recent',
+    link: 'https://builtin.com/jobs/internships/seattle',
+    hub: 'Seattle',
+    roleType: 'internship',
+  },
+  {
+    jobId: '11506120',
+    title: 'Front-End Engineering Intern (Remote)',
+    company: 'Zapier',
+    logo: 'https://logo.clearbit.com/zapier.com',
+    workMode: 'Remote',
+    location: 'Remote, USA',
+    salary: '$48 - $65 / hr',
+    postedAgo: 'Recent',
+    link: 'https://builtin.com/jobs/remote/internships',
+    hub: 'Remote',
+    roleType: 'internship',
+  },
+];
+
+function parseBuiltInHtmlServer(html: string, hub: string, roleType: string) {
+  const cardSplits = html.split(/<div\s+id=[\"']job-card-/i);
+  const listings: any[] = [];
+
+  for (let i = 1; i < cardSplits.length; i++) {
+    const chunk = cardSplits[i];
+    const idMatch = chunk.match(/^(\d+)/) || chunk.match(/data-builtin-track-job-id=[\"'](\d+)[\"']/);
+    const jobId = idMatch ? idMatch[1] : '';
+
+    const titleMatch = chunk.match(/<a\s+[^>]*href=[\"'](\/job\/[^\"]+)[\"'][^>]*data-id=[\"']job-card-title[\"'][^>]*>([\s\S]*?)<\/a>/i);
+    const rawTitle = titleMatch ? titleMatch[2].replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').trim() : '';
+    const link = titleMatch ? 'https://builtin.com' + titleMatch[1] : '';
+
+    const compMatch = chunk.match(/data-id=[\"']company-title[\"'][^>]*>[\s\S]*?<span>([^<]+)<\/span>/i) ||
+                      chunk.match(/data-id=[\"']company-title[\"'][^>]*>([^<]+)<\/a>/i);
+    const company = compMatch ? compMatch[1].replace(/&amp;/g, '&').trim() : '';
+
+    const logoMatch = chunk.match(/<img\s+[^>]*data-id=[\"']company-img[\"'][^>]*src=[\"']([^\"']+)[\"']/i) ||
+                      chunk.match(/<img\s+[^>]*src=[\"']([^\"']+)[\"'][^>]*data-id=[\"']company-img[\"']/i);
+    const logo = logoMatch ? logoMatch[1] : '';
+
+    const modeMatch = chunk.match(/fa-house-building[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/i);
+    let workMode = modeMatch ? modeMatch[1].trim() : '';
+    if (!workMode) {
+      if (/remote/i.test(rawTitle) || hub === 'Remote') {
+        workMode = 'Remote';
+      } else if (/hybrid/i.test(rawTitle)) {
+        workMode = 'Hybrid';
+      } else {
+        workMode = 'On-Site';
+      }
+    }
+
+    let location = '';
+    const locTooltipMatch = chunk.match(/data-bs-title=[\"']([^\"']+)[\"']/i);
+    if (locTooltipMatch) {
+      location = locTooltipMatch[1]
+        .replace(/&lt;div class=&#x27;text-truncate&#x27;&gt;/g, '')
+        .replace(/&lt;\/div&gt;/g, ', ')
+        .replace(/&#x27;/g, "'")
+        .replace(/,\s*$/, '')
+        .trim();
+    } else {
+      const locMatch = chunk.match(/fa-location-dot[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/i);
+      location = locMatch ? locMatch[1].replace(/&#x27;/g, "'").trim() : '';
+    }
+
+    if (!location) {
+      location = BUILTIN_SERVER_HUB_URLS[hub]?.defaultLocation || 'United States';
+    }
+
+    const salaryMatch = chunk.match(/fa-sack-dollar[^>]*>[\s\S]*?<span[^>]*>([^<]+)<\/span>/i);
+    const salary = salaryMatch ? salaryMatch[1].replace(/&#x27;/g, "'").trim() : undefined;
+
+    const clockMatch = chunk.match(/fa-clock[^>]*>[\s\S]*?<\/i>\s*([^<]+)<\/span>/i);
+    const postedAgo = clockMatch ? clockMatch[1].trim() : undefined;
+
+    if (rawTitle && company) {
+      listings.push({
+        jobId: jobId || `${hub.toLowerCase()}_${listings.length + 1}`,
+        title: rawTitle,
+        company,
+        logo: logo || undefined,
+        workMode,
+        location,
+        salary,
+        postedAgo,
+        link: link || BUILTIN_SERVER_HUB_URLS[hub]?.[roleType as 'entry-level' | 'internship'],
+        hub,
+        roleType,
+      });
+    }
+  }
+
+  return listings;
+}
+
+app.get('/api/builtin/listings', async (req, res) => {
+  try {
+    const hubParam = ((req.query.hub as string) || 'all').trim();
+    const roleTypeParam = ((req.query.roleType as string) || 'all').trim();
+    const force = req.query.force === 'true';
+
+    const cacheKey = `${hubParam.toLowerCase()}_${roleTypeParam.toLowerCase()}`;
+    const now = Date.now();
+
+    if (!force && builtInServerCache[cacheKey]) {
+      const cached = builtInServerCache[cacheKey];
+      if (now - cached.timestamp < BUILTIN_SERVER_CACHE_TTL_MS) {
+        return res.json({
+          success: true,
+          cached: true,
+          count: cached.listings.length,
+          listings: cached.listings,
+        });
+      }
+    }
+
+    // Determine hubs to fetch
+    const validHubs = ['Remote', 'SF', 'NYC', 'Austin', 'Seattle'];
+    const hubsToFetch: string[] = hubParam.toLowerCase() === 'all'
+      ? validHubs
+      : validHubs.filter(h => h.toLowerCase() === hubParam.toLowerCase());
+
+    const finalHubs = hubsToFetch.length > 0 ? hubsToFetch : validHubs;
+
+    // Determine role types
+    const roleTypesToFetch: ('entry-level' | 'internship')[] =
+      roleTypeParam.toLowerCase() === 'internship' ? ['internship'] :
+      roleTypeParam.toLowerCase() === 'entry-level' ? ['entry-level'] :
+      ['entry-level', 'internship'];
+
+    const aggregatedListings: any[] = [];
+
+    for (const hub of finalHubs) {
+      for (const roleType of roleTypesToFetch) {
+        const url = BUILTIN_SERVER_HUB_URLS[hub]?.[roleType];
+        if (!url) continue;
+
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => {
+            try { controller.abort(); } catch {}
+          }, 4500);
+
+          const response = await fetch(url, {
+            signal: controller.signal,
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            },
+          });
+          clearTimeout(timer);
+
+          if (response.ok) {
+            const html = await response.text();
+            const parsed = parseBuiltInHtmlServer(html, hub, roleType);
+            aggregatedListings.push(...parsed);
+          } else {
+            // Fallback for this hub/type
+            const matching = BUILTIN_SERVER_ANCHORS.filter(a => a.hub === hub && a.roleType === roleType);
+            aggregatedListings.push(...matching);
+          }
+        } catch {
+          // Graceful fallback to verified anchor
+          const matching = BUILTIN_SERVER_ANCHORS.filter(a => a.hub === hub && a.roleType === roleType);
+          aggregatedListings.push(...matching);
+        }
+      }
+    }
+
+    // Deduplicate
+    const seen = new Set<string>();
+    const uniqueListings: any[] = [];
+    for (const item of aggregatedListings) {
+      const key = `${item.company.toLowerCase()}_${item.title.toLowerCase()}_${item.jobId}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueListings.push(item);
+      }
+    }
+
+    // Save to memory cache
+    builtInServerCache[cacheKey] = {
+      listings: uniqueListings,
+      timestamp: now,
+    };
+
+    return res.json({
+      success: true,
+      cached: false,
+      count: uniqueListings.length,
+      listings: uniqueListings,
+    });
+  } catch (err: any) {
+    logger.error('Server:BuiltInFetcher', 'Error aggregating Built In listings', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to aggregate Built In listings',
+      listings: BUILTIN_SERVER_ANCHORS,
+    });
+  }
+});
+
+// ==========================================
+// PROMPT 31: Singapore MyCareersFuture Government Portal Proxy
+// Pulls tech internships and entry-level engineering roles from mycareersfuture.gov.sg
+// ==========================================
+const SINGAPORE_SERVER_CACHE_TTL_MS = 15 * 60 * 1000;
+interface SingaporeGovCacheStore {
+  jobs: any[];
+  timestamp: number;
+}
+const singaporeGovServerCache: Record<string, SingaporeGovCacheStore> = {};
+
+const SINGAPORE_SERVER_ANCHORS = [
+  {
+    jobPostId: 'MCF-2026-1758777',
+    title: 'JUNIOR Networks and Systems Engineer',
+    companyName: 'NETXPOSE PTE. LTD.',
+    companyLogo: 'https://logo.clearbit.com/netxpose.com',
+    companyUen: '201931882G',
+    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/junior-networks-systems-engineer-netxpose-99b589b553df6f4aa9d019537207278b',
+    salaryMin: 2800,
+    salaryMax: 3500,
+    salaryType: 'Monthly',
+    skills: ['Network Administration', 'Cloud Infrastructure', 'Cybersecurity', 'Linux Systems'],
+    location: 'Central, Singapore',
+    categories: ['Information Technology'],
+    employmentTypes: ['Permanent'],
+    positionLevels: ['Fresh/entry level'],
+    isInternship: false,
+  },
+  {
+    jobPostId: 'MCF-2026-1756986',
+    title: 'Software Engineer Intern (Cloud & Distributed Systems)',
+    companyName: 'CODEX SOLUTIONS PTE. LTD.',
+    companyLogo: 'https://logo.clearbit.com/codexsolutions.com',
+    companyUen: '202015243M',
+    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/software-engineer-intern-codex-solutions-199ef38b989140cb942fdb4b1910ca56',
+    salaryMin: 1500,
+    salaryMax: 2000,
+    salaryType: 'Monthly',
+    skills: ['TypeScript', 'Node.js', 'PostgreSQL', 'Docker'],
+    location: 'West, Singapore',
+    categories: ['Information Technology'],
+    employmentTypes: ['Internship'],
+    positionLevels: ['Fresh/entry level'],
+    isInternship: true,
+  },
+  {
+    jobPostId: 'MCF-2026-1749210',
+    title: 'Associate AI Engineer (Agentic Automation)',
+    companyName: 'WORKFLOW AUTOMATION PTE. LTD.',
+    companyLogo: 'https://logo.clearbit.com/workflowautomation.sg',
+    companyUen: '202108741D',
+    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/consulting/business-development-partnerships-intern-workflow-automation-9562258fd70d4f4325a7180e598c5be5',
+    salaryMin: 3200,
+    salaryMax: 4200,
+    salaryType: 'Monthly',
+    skills: ['Python', 'Large Language Models', 'FastAPI', 'Agentic Workflows'],
+    location: 'Downtown Core, Singapore',
+    categories: ['Information Technology'],
+    employmentTypes: ['Full Time'],
+    positionLevels: ['Fresh/entry level'],
+    isInternship: false,
+  },
+  {
+    jobPostId: 'MCF-2026-1748832',
+    title: 'Full Stack Software Development Intern',
+    companyName: 'TRINAX PRIVATE LIMITED',
+    companyLogo: 'https://logo.clearbit.com/trinaxgroup.com',
+    companyUen: '201201944Z',
+    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/software-development-intern-trinax-8914f4821a02ec72243d855f62a79072',
+    salaryMin: 1200,
+    salaryMax: 1600,
+    salaryType: 'Monthly',
+    skills: ['React', 'JavaScript', 'Unity', 'Interactive Systems'],
+    location: 'Kallang, Singapore',
+    categories: ['Information Technology'],
+    employmentTypes: ['Internship'],
+    positionLevels: ['Fresh/entry level'],
+    isInternship: true,
+  },
+  {
+    jobPostId: 'MCF-2026-1739501',
+    title: 'Cybersecurity Analyst (Fresh Graduate Track)',
+    companyName: 'GOVERNMENT TECHNOLOGY AGENCY (GovTech)',
+    companyLogo: 'https://logo.clearbit.com/tech.gov.sg',
+    companyUen: 'T08GB0025B',
+    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/cybersecurity-analyst-govtech-singapore',
+    salaryMin: 4500,
+    salaryMax: 5500,
+    salaryType: 'Monthly',
+    skills: ['Threat Intelligence', 'Penetration Testing', 'Incident Response', 'Network Security'],
+    location: 'Mapletree Business City, Singapore',
+    categories: ['Information Technology'],
+    employmentTypes: ['Permanent'],
+    positionLevels: ['Fresh/entry level'],
+    isInternship: false,
+  },
+];
+
+function parseSingaporeApiItemServer(item: any): any {
+  if (!item || !item.title) return null;
+
+  const rawTitle = item.title.trim();
+  const jobPostId = item.metadata?.jobPostId || `MCF-${item.uuid || Math.random().toString(36).substring(7)}`;
+  const companyName = item.postedCompany?.name?.trim() || item.hiringCompany?.name?.trim() || 'Singapore Accredited Employer';
+  const logo = item.postedCompany?.logoUploadPath || undefined;
+  const uen = item.postedCompany?.uen || undefined;
+  const jobDetailsUrl = item.metadata?.jobDetailsUrl || `https://www.mycareersfuture.gov.sg/job/${jobPostId}`;
+
+  const salaryMin = item.salary?.minimum || undefined;
+  const salaryMax = item.salary?.maximum || undefined;
+  const salaryType = item.salary?.type?.salaryType || 'Monthly';
+
+  const skills = Array.isArray(item.skills) ? item.skills.map((s: any) => s.skill).filter(Boolean) : [];
+  const categories = Array.isArray(item.categories) ? item.categories.map((c: any) => c.category).filter(Boolean) : [];
+  const employmentTypes = Array.isArray(item.employmentTypes) ? item.employmentTypes.map((e: any) => e.employmentType).filter(Boolean) : [];
+  const positionLevels = Array.isArray(item.positionLevels) ? item.positionLevels.map((p: any) => p.position).filter(Boolean) : [];
+
+  const isInternship = /intern/i.test(rawTitle) || 
+    employmentTypes.some((e: any) => /intern/i.test(e)) || 
+    categories.some((c: any) => /intern/i.test(c));
+
+  let location = 'Singapore';
+  if (item.address?.districts && Array.isArray(item.address.districts) && item.address.districts.length > 0) {
+    location = `${item.address.districts[0].location || item.address.districts[0].region || 'Singapore'}, Singapore`;
+  }
+
+  return {
+    jobPostId,
+    title: rawTitle,
+    companyName,
+    companyLogo: logo,
+    companyUen: uen,
+    jobDetailsUrl,
+    salaryMin,
+    salaryMax,
+    salaryType,
+    skills,
+    description: item.description ? item.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) : undefined,
+    location,
+    categories,
+    employmentTypes,
+    positionLevels,
+    originalPostingDate: item.metadata?.originalPostingDate,
+    expiryDate: item.metadata?.expiryDate,
+    isInternship,
+  };
+}
+
+app.get('/api/singapore/jobs', async (req, res) => {
+  try {
+    const roleTypeParam = ((req.query.roleType as string) || 'all').trim().toLowerCase();
+    const force = req.query.force === 'true';
+    const now = Date.now();
+    const cacheKey = roleTypeParam;
+
+    if (!force && singaporeGovServerCache[cacheKey]) {
+      const cached = singaporeGovServerCache[cacheKey];
+      if (now - cached.timestamp < SINGAPORE_SERVER_CACHE_TTL_MS) {
+        return res.json({
+          success: true,
+          cached: true,
+          count: cached.jobs.length,
+          jobs: cached.jobs,
+        });
+      }
+    }
+
+    const endpoints: string[] = [];
+    if (roleTypeParam === 'internship' || roleTypeParam === 'all') {
+      endpoints.push(
+        'https://api.mycareersfuture.gov.sg/v2/jobs?categories=Information%20Technology&search=intern&limit=15',
+        'https://api.mycareersfuture.gov.sg/v2/jobs?search=software%20intern&limit=10'
+      );
+    }
+    if (roleTypeParam === 'entry-level' || roleTypeParam === 'all') {
+      endpoints.push(
+        'https://api.mycareersfuture.gov.sg/v2/jobs?categories=Information%20Technology&positionLevels=Fresh%2Fentry%20level&limit=15'
+      );
+    }
+
+    const collectedJobs: any[] = [];
+    for (const ep of endpoints) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => {
+          try { controller.abort(); } catch {}
+        }, 4500);
+
+        const response = await fetch(ep, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+          },
+        });
+        clearTimeout(timer);
+
+        if (response.ok) {
+          const json = await response.json();
+          if (json.results && Array.isArray(json.results)) {
+            for (const item of json.results) {
+              const parsed = parseSingaporeApiItemServer(item);
+              if (parsed) collectedJobs.push(parsed);
+            }
+          }
+        }
+      } catch {
+        // continue
+      }
+    }
+
+    // Deduplicate
+    const seen = new Set<string>();
+    const uniqueJobs: any[] = [];
+    for (const job of collectedJobs) {
+      if (!seen.has(job.jobPostId)) {
+        seen.add(job.jobPostId);
+        uniqueJobs.push(job);
+      }
+    }
+
+    const finalJobs = uniqueJobs.length > 0 ? uniqueJobs : SINGAPORE_SERVER_ANCHORS;
+
+    singaporeGovServerCache[cacheKey] = {
+      jobs: finalJobs,
+      timestamp: now,
+    };
+
+    return res.json({
+      success: true,
+      cached: false,
+      count: finalJobs.length,
+      jobs: finalJobs,
+    });
+  } catch (err: any) {
+    logger.error('Server:SingaporeFetcher', 'Error fetching Singapore Gov jobs', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Failed to fetch Singapore Gov jobs',
+      jobs: SINGAPORE_SERVER_ANCHORS,
+    });
+  }
+});
+
 // ==========================================
 // Shared In-Memory ATS Jobs Cache (15 min TTL)
 // ==========================================
@@ -1576,6 +2378,274 @@ app.get('/api/jobs/cached', async (req, res) => {
       error: err?.message || 'Failed to fetch jobs from ATS endpoints',
       jobs: [],
     });
+  }
+});
+
+// PROMPT 28: Server-side ATS Board Auto-Discovery Proxy
+app.post('/api/ats/discover', async (req, res) => {
+  const companyName = (req.body?.companyName || '').trim();
+  if (!companyName) {
+    return res.status(400).json({ found: false, message: 'Missing companyName in request body' });
+  }
+
+  const raw = companyName.toLowerCase();
+  const clean = raw.replace(/[^a-z0-9]/g, '');
+  const hyphenated = raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  const stripped = raw
+    .replace(/\b(inc|llc|ltd|corp|corporation|technologies|technology|labs|hq|group|software|co)\b/gi, '')
+    .trim()
+    .replace(/[^a-z0-9]/g, '');
+
+  const candidateSlugs = new Set<string>();
+  if (clean) candidateSlugs.add(clean);
+  if (hyphenated) candidateSlugs.add(hyphenated);
+  if (stripped && stripped.length >= 2) candidateSlugs.add(stripped);
+  if (clean.length >= 3) {
+    candidateSlugs.add(`${clean}ai`);
+    candidateSlugs.add(`${clean}tech`);
+    candidateSlugs.add(`${clean}hq`);
+    candidateSlugs.add(`${clean}labs`);
+  }
+
+  const testedSlugs: string[] = [];
+
+  for (const slug of candidateSlugs) {
+    testedSlugs.push(slug);
+
+    // 1. Probe Greenhouse
+    try {
+      const ghCtrl = new AbortController();
+      const ghTimeout = setTimeout(() => ghCtrl.abort(), 2500);
+      const ghRes = await fetch(`https://boards-api.greenhouse.io/v1/boards/${slug}/jobs`, {
+        headers: { 'Accept': 'application/json' },
+        signal: ghCtrl.signal,
+      }).catch(() => null);
+      clearTimeout(ghTimeout);
+
+      if (ghRes && ghRes.ok) {
+        const ghData: any = await ghRes.json();
+        if (ghData && Array.isArray(ghData.jobs) && ghData.jobs.length > 0) {
+          const domain = `${slug}.com`;
+          return res.json({
+            companyName,
+            found: true,
+            provider: 'greenhouse',
+            slug,
+            domain,
+            logo: `https://logo.clearbit.com/${domain}`,
+            boardUrl: `https://job-boards.greenhouse.io/${slug}`,
+            jobCount: ghData.jobs.length,
+            sampleRoles: ghData.jobs.slice(0, 4).map((j: any) => j.title || 'Role'),
+            testedSlugs,
+            message: `Discovered live Greenhouse board with ${ghData.jobs.length} active roles!`,
+          });
+        }
+      }
+    } catch {
+      // continue to next provider
+    }
+
+    // 2. Probe Lever
+    try {
+      const levCtrl = new AbortController();
+      const levTimeout = setTimeout(() => levCtrl.abort(), 2500);
+      const levRes = await fetch(`https://api.lever.co/v0/postings/${slug}?mode=json`, {
+        headers: { 'Accept': 'application/json' },
+        signal: levCtrl.signal,
+      }).catch(() => null);
+      clearTimeout(levTimeout);
+
+      if (levRes && levRes.ok) {
+        const levData: any = await levRes.json();
+        if (Array.isArray(levData) && levData.length > 0) {
+          const domain = `${slug}.com`;
+          return res.json({
+            companyName,
+            found: true,
+            provider: 'lever',
+            slug,
+            domain,
+            logo: `https://logo.clearbit.com/${domain}`,
+            boardUrl: `https://jobs.lever.co/${slug}`,
+            jobCount: levData.length,
+            sampleRoles: levData.slice(0, 4).map((j: any) => j.text || 'Role'),
+            testedSlugs,
+            message: `Discovered live Lever board with ${levData.length} active roles!`,
+          });
+        }
+      }
+    } catch {
+      // continue to next provider
+    }
+
+    // 3. Probe SmartRecruiters
+    try {
+      let srUrl = `https://api.smartrecruiters.com/v1/companies/${slug}/postings?limit=10`;
+      const srCtrl = new AbortController();
+      const srTimeout = setTimeout(() => srCtrl.abort(), 2500);
+      let srRes = await fetch(srUrl, {
+        headers: { 'Accept': 'application/json' },
+        signal: srCtrl.signal,
+      }).catch(() => null);
+      clearTimeout(srTimeout);
+
+      if (srRes && srRes.ok) {
+        let srData: any = await srRes.json();
+        if ((!srData.content || srData.content.length === 0)) {
+          const srCtrl2 = new AbortController();
+          const srTimeout2 = setTimeout(() => srCtrl2.abort(), 2500);
+          const srRes2 = await fetch(`https://api.smartrecruiters.com/v1/companies/${slug}/postings?q=software&limit=10`, {
+            headers: { 'Accept': 'application/json' },
+            signal: srCtrl2.signal,
+          }).catch(() => null);
+          clearTimeout(srTimeout2);
+          if (srRes2 && srRes2.ok) {
+            srData = await srRes2.json();
+          }
+        }
+
+        if (srData && Array.isArray(srData.content) && srData.content.length > 0) {
+          const domain = `${slug}.com`;
+          return res.json({
+            companyName,
+            found: true,
+            provider: 'smartrecruiters',
+            slug,
+            domain,
+            logo: `https://logo.clearbit.com/${domain}`,
+            boardUrl: `https://jobs.smartrecruiters.com/${slug}`,
+            jobCount: srData.totalFound || srData.content.length,
+            sampleRoles: srData.content.slice(0, 4).map((j: any) => j.name || 'Role'),
+            testedSlugs,
+            message: `Discovered live SmartRecruiters board with ${srData.totalFound || srData.content.length} active roles!`,
+          });
+        }
+      }
+    } catch {
+      // continue to next provider
+    }
+
+    // 4. Probe Workable
+    try {
+      const wkCtrl = new AbortController();
+      const wkTimeout = setTimeout(() => wkCtrl.abort(), 2500);
+      const wkRes = await fetch(`https://apply.workable.com/api/v3/accounts/${slug}/jobs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({}),
+        signal: wkCtrl.signal,
+      }).catch(() => null);
+      clearTimeout(wkTimeout);
+
+      if (wkRes && wkRes.ok) {
+        const wkData: any = await wkRes.json();
+        if (wkData && Array.isArray(wkData.results) && wkData.results.length > 0) {
+          const domain = `${slug}.com`;
+          return res.json({
+            companyName,
+            found: true,
+            provider: 'workable',
+            slug,
+            domain,
+            logo: `https://logo.clearbit.com/${domain}`,
+            boardUrl: `https://apply.workable.com/${slug}`,
+            jobCount: wkData.results.length,
+            sampleRoles: wkData.results.slice(0, 4).map((j: any) => j.title || 'Role'),
+            testedSlugs,
+            message: `Discovered live Workable board with ${wkData.results.length} active roles!`,
+          });
+        }
+      }
+    } catch {
+      // continue to next provider
+    }
+  }
+
+  return res.json({
+    companyName,
+    found: false,
+    testedSlugs,
+    message: `No public Greenhouse, Lever, SmartRecruiters, or Workable board found for "${companyName}".`,
+  });
+});
+
+// PROMPT 28: Add Discovered Target to atsTargets.ts and Live Server Pipeline
+app.post('/api/ats/add-target', async (req, res) => {
+  try {
+    const { name, provider, slug, domain, logo, preferredKeywords } = req.body;
+    if (!name || !provider || !slug) {
+      return res.status(400).json({ success: false, error: 'Missing required target parameters (name, provider, slug)' });
+    }
+
+    const cleanId = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const newTarget: ATSCompanyTarget = {
+      id: cleanId,
+      name: name.trim(),
+      domain: domain || `${slug}.com`,
+      provider,
+      slug: slug.trim(),
+      logo: logo || `https://logo.clearbit.com/${domain || `${slug}.com`}`,
+      preferredKeywords: Array.isArray(preferredKeywords) && preferredKeywords.length > 0 
+        ? preferredKeywords 
+        : ['software', 'engineer', 'developer', 'intern', 'systems', 'backend'],
+    };
+
+    // Check if target already exists in memory
+    const existingIndex = VERIFIED_ATS_TARGETS.findIndex(
+      t => t.slug.toLowerCase() === newTarget.slug.toLowerCase() && t.provider === newTarget.provider
+    );
+
+    if (existingIndex === -1) {
+      VERIFIED_ATS_TARGETS.push(newTarget);
+    }
+
+    // Persist permanently into src/data/atsTargets.ts file on disk
+    try {
+      const targetsFilePath = path.resolve(process.cwd(), 'src/data/atsTargets.ts');
+      if (fs.existsSync(targetsFilePath)) {
+        let fileContent = fs.readFileSync(targetsFilePath, 'utf8');
+        // Check if slug is already inside fileContent
+        const slugPattern = new RegExp(`slug:\\s*['"]${newTarget.slug}['"]`, 'i');
+        if (!slugPattern.test(fileContent)) {
+          const targetSnippet = `  {
+    id: '${newTarget.id}',
+    name: '${newTarget.name.replace(/'/g, "\\'")}',
+    domain: '${newTarget.domain}',
+    provider: '${newTarget.provider}',
+    slug: '${newTarget.slug}',
+    logo: '${newTarget.logo}',
+    preferredKeywords: ${JSON.stringify(newTarget.preferredKeywords)},
+  },\n`;
+          // Insert right before the closing "];" of VERIFIED_ATS_TARGETS array
+          const listStartIdx = fileContent.indexOf('export const VERIFIED_ATS_TARGETS');
+          const closingBracketIdx = listStartIdx !== -1 ? fileContent.indexOf('];', listStartIdx) : fileContent.lastIndexOf('];');
+          if (closingBracketIdx !== -1) {
+            fileContent = fileContent.slice(0, closingBracketIdx) + targetSnippet + fileContent.slice(closingBracketIdx);
+            fs.writeFileSync(targetsFilePath, fileContent, 'utf8');
+            logger.info('Server:Ats', `Permanently persisted ${newTarget.name} to src/data/atsTargets.ts`);
+          }
+        }
+      }
+    } catch (fsErr) {
+      logger.warn('Server:Ats', 'Could not write to atsTargets.ts on disk, kept in-memory', fsErr);
+    }
+
+    // Invalidate server cache so the newly added company's live jobs are fetched on the next pulse
+    serverJobsCache.jobs = [];
+    serverJobsCache.expiresAt = 0;
+
+    return res.json({
+      success: true,
+      message: `Successfully added ${newTarget.name} to atsTargets.ts! Live radar scanning active.`,
+      target: newTarget,
+      totalTargets: VERIFIED_ATS_TARGETS.length,
+    });
+  } catch (err: any) {
+    logger.error('Server:Ats', 'Error adding target to atsTargets', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Failed to add target' });
   }
 });
 

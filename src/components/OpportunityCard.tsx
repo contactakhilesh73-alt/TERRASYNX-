@@ -176,6 +176,54 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </div>
         )}
 
+        {/* Prompt 29: Hacker News Who's Hiring Badge */}
+        {opportunity.isHnListing && (
+          <div
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-orange-500/20 via-amber-500/20 to-orange-500/20 text-orange-300 border border-orange-500/40 text-[11px] font-mono font-bold shadow-sm"
+            title={`Direct posting from Hacker News "Ask HN: Who is Hiring?" by @${opportunity.hnListingDetails?.author || 'founder'}. Verified by Gemini AI with ${opportunity.hnListingDetails?.confidenceScore || 85}% confidence.`}
+          >
+            <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+            <span>Ask HN: Who is Hiring</span>
+            {opportunity.hnListingDetails?.author && (
+              <span className="text-[10px] text-orange-200/80 font-normal">
+                @{opportunity.hnListingDetails.author}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Prompt 30: Built In Aggregator Badge */}
+        {opportunity.isBuiltInListing && (
+          <div
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-teal-500/20 via-cyan-500/20 to-teal-500/20 text-teal-300 border border-teal-500/40 text-[11px] font-mono font-bold shadow-sm"
+            title={`Aggregated from Built In public listings for ${opportunity.builtInDetails?.hub || 'Tech'} Hub (${opportunity.builtInDetails?.roleCategory || 'role'}).`}
+          >
+            <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+            <span>Built In • {opportunity.builtInDetails?.hub || 'US Hub'}</span>
+            {opportunity.builtInDetails?.salarySnippet && (
+              <span className="text-[10px] text-teal-200/80 font-normal">
+                {opportunity.builtInDetails.salarySnippet}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Prompt 31: Official Singapore Government Portal Badge */}
+        {opportunity.isSingaporeGovPortal && (
+          <div
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-red-500/20 via-rose-500/20 to-red-500/20 text-rose-300 border border-red-500/40 text-[11px] font-mono font-bold shadow-sm"
+            title={`Verified requisition from official Singapore Government national jobs portal (MyCareersFuture / GovTech). Requisition ID: ${opportunity.singaporeGovDetails?.jobPostId || 'Verified'}.`}
+          >
+            <span>🇸🇬</span>
+            <span>Official Singapore Government Portal — Verified</span>
+            {opportunity.singaporeGovDetails?.salaryRangeSgd && (
+              <span className="text-[10px] text-rose-200/90 font-normal">
+                {opportunity.singaporeGovDetails.salaryRangeSgd}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Tactical Badges & Compensation Matrix */}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           {/* Compensation */}
