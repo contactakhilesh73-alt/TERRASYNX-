@@ -195,6 +195,7 @@ export type InternshipCycleCurrentStatus = 'OPEN_NOW' | 'UPCOMING' | 'PASSED_THI
 export interface UpcomingInternshipCycle {
   id: string;
   companyName: string;
+  country: string;
   companyLogo: string;
   companyDomain: string;
   programTitle: string;
@@ -356,7 +357,11 @@ export type OperationalMode =
   | 'alerts'         // Notification Relay & 4-Tier Email Architecture
   | 'insider'        // Alumni & Referral Bridge
   | 'profile'        // Student Candidate Profile & Context Studio (Req #18)
-  | 'internship_calendar' // Seasonal Internships: Ongoing Applications & Upcoming Predictable Annual Recruitment Cycles
+  | 'internship_calendar' // Seasonal Internships: Legacy Alias
+  | 'internships'    // 1. Corporate Internships: tech_giant, quant_hft, frontier_ai, early_undergrad_exclusive
+  | 'scholarships'   // 2. Scholarships: scholarship_12th, global_full_ride, pre_university_full_ride
+  | 'research_fellowships' // 3. Research & Fellowships: scientific_lab, academic_fellowship
+  | 'open_source'    // 4. Open Source: open_source_grant
   | 'analytics'      // Real-Time Application Telemetry & Conversion Analytics (Phase 4 Point 1)
   | 'calendar'       // Automated Interview & Assessment Calendar Sync / Scheduler (Phase 4 Point 2)
   | 'mock_interview' // Real-Time Mock Interview Simulator & STAR Response Coach (Phase 7 Point 1)

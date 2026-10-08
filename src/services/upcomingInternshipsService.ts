@@ -226,6 +226,7 @@ export function matchesSearchQuery(item: UpcomingInternshipCycle, query: string)
 
   const searchableText = [
     item.companyName,
+    item.country,
     item.programTitle,
     item.companyDomain,
     item.eligibility,
@@ -295,6 +296,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 1. NEED-BLIND IVY+ ADMISSIONS
   {
     id: 'cycle_harvard_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Harvard University',
     companyLogo: 'https://logo.clearbit.com/harvard.edu',
     companyDomain: 'harvard.edu',
@@ -337,6 +339,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mit_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Massachusetts Institute of Technology (MIT)',
     companyLogo: 'https://logo.clearbit.com/mit.edu',
     companyDomain: 'mit.edu',
@@ -379,6 +382,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_princeton_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Princeton University',
     companyLogo: 'https://logo.clearbit.com/princeton.edu',
     companyDomain: 'princeton.edu',
@@ -421,6 +425,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_yale_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Yale University',
     companyLogo: 'https://logo.clearbit.com/yale.edu',
     companyDomain: 'yale.edu',
@@ -463,6 +468,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amherst_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Amherst College',
     companyLogo: 'https://logo.clearbit.com/amherst.edu',
     companyDomain: 'amherst.edu',
@@ -505,6 +511,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_dartmouth_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Dartmouth College',
     companyLogo: 'https://logo.clearbit.com/dartmouth.edu',
     companyDomain: 'dartmouth.edu',
@@ -547,6 +554,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_bowdoin_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Bowdoin College',
     companyLogo: 'https://logo.clearbit.com/bowdoin.edu',
     companyDomain: 'bowdoin.edu',
@@ -589,6 +597,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_brown_need_blind_full_ride',
+    country: 'USA',
     companyName: 'Brown University',
     companyLogo: 'https://logo.clearbit.com/brown.edu',
     companyDomain: 'brown.edu',
@@ -631,6 +640,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_notre_dame_need_blind_full_ride',
+    country: 'USA',
     companyName: 'University of Notre Dame',
     companyLogo: 'https://logo.clearbit.com/nd.edu',
     companyDomain: 'nd.edu',
@@ -673,6 +683,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_washington_lee_johnson_full_ride',
+    country: 'USA',
     companyName: 'Washington and Lee University',
     companyLogo: 'https://logo.clearbit.com/wlu.edu',
     companyDomain: 'wlu.edu',
@@ -717,6 +728,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 2. NAMED SCHOLARSHIPS
   {
     id: 'cycle_tata_cornell_scholarship',
+    country: 'USA',
     companyName: 'Cornell University (Tata Trust)',
     companyLogo: 'https://logo.clearbit.com/cornell.edu',
     companyDomain: 'cornell.edu',
@@ -759,6 +771,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_lester_b_pearson_utoronto',
+    country: 'Canada',
     companyName: 'University of Toronto',
     companyLogo: 'https://logo.clearbit.com/utoronto.ca',
     companyDomain: 'utoronto.ca',
@@ -801,6 +814,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_karsh_international_duke',
+    country: 'USA',
     companyName: 'Duke University',
     companyLogo: 'https://logo.clearbit.com/duke.edu',
     companyDomain: 'duke.edu',
@@ -843,6 +857,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jardine_oxbridge_scholarship',
+    country: 'UK',
     companyName: 'The Jardine Foundation (Oxford & Cambridge)',
     companyLogo: 'https://logo.clearbit.com/ox.ac.uk',
     companyDomain: 'jardine-foundation.org',
@@ -887,6 +902,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 3. INDIAN GOVERNMENT SCHEMES
   {
     id: 'cycle_national_overseas_scholarship_nos',
+    country: 'Global/Remote',
     companyName: 'Government of India (MSJE / MoTA)',
     companyLogo: 'https://logo.clearbit.com/india.gov.in',
     companyDomain: 'socialjustice.gov.in',
@@ -929,6 +945,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_marang_gomke_jharkhand_scholarship',
+    country: 'UK',
     companyName: 'Government of Jharkhand',
     companyLogo: 'https://logo.clearbit.com/jharkhand.gov.in',
     companyDomain: 'maranggomke.jharkhand.gov.in',
@@ -971,6 +988,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rajarshi_shahu_maharashtra_scholarship',
+    country: 'Global/Remote',
     companyName: 'Government of Maharashtra (SJSA)',
     companyLogo: 'https://logo.clearbit.com/maharashtra.gov.in',
     companyDomain: 'sjsa.maharashtra.gov.in',
@@ -1013,6 +1031,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ambedkar_overseas_vidya_nidhi',
+    country: 'Global/Remote',
     companyName: 'Government of Andhra Pradesh & Telangana',
     companyLogo: 'https://logo.clearbit.com/telangana.gov.in',
     companyDomain: 'telanganaepass.cgg.gov.in',
@@ -1055,6 +1074,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_google_summer_intern',
+    country: 'Global/Remote',
     companyName: 'Google',
     companyLogo: 'https://logo.clearbit.com/google.com',
     companyDomain: 'google.com',
@@ -1084,6 +1104,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_explore_swe',
+    country: 'Global/Remote',
     companyName: 'Microsoft',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
     companyDomain: 'microsoft.com',
@@ -1113,6 +1134,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amazon_sde_summer',
+    country: 'Global/Remote',
     companyName: 'Amazon',
     companyLogo: 'https://logo.clearbit.com/amazon.com',
     companyDomain: 'amazon.com',
@@ -1142,6 +1164,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_uber_star_swe',
+    country: 'Global/Remote',
     companyName: 'Uber',
     companyLogo: 'https://logo.clearbit.com/uber.com',
     companyDomain: 'uber.com',
@@ -1171,6 +1194,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_goldman_sachs_analyst',
+    country: 'Global/Remote',
     companyName: 'Goldman Sachs',
     companyLogo: 'https://logo.clearbit.com/goldmansachs.com',
     companyDomain: 'goldmansachs.com',
@@ -1205,6 +1229,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meta_swe_university',
+    country: 'Global/Remote',
     companyName: 'Meta',
     companyLogo: 'https://logo.clearbit.com/meta.com',
     companyDomain: 'meta.com',
@@ -1239,6 +1264,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_apple_summer_intern',
+    country: 'Global/Remote',
     companyName: 'Apple',
     companyLogo: 'https://logo.clearbit.com/apple.com',
     companyDomain: 'apple.com',
@@ -1273,6 +1299,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_salesforce_futureforce',
+    country: 'Global/Remote',
     companyName: 'Salesforce',
     companyLogo: 'https://logo.clearbit.com/salesforce.com',
     companyDomain: 'salesforce.com',
@@ -1307,6 +1334,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_adobe_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Adobe',
     companyLogo: 'https://logo.clearbit.com/adobe.com',
     companyDomain: 'adobe.com',
@@ -1336,6 +1364,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_cisco_ideathon_intern',
+    country: 'Global/Remote',
     companyName: 'Cisco',
     companyLogo: 'https://logo.clearbit.com/cisco.com',
     companyDomain: 'cisco.com',
@@ -1372,6 +1401,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 6 Additional Major Companies (Netflix, Nvidia, Oracle, IBM, SAP, Intel)
   {
     id: 'cycle_netflix_swe_intern',
+    country: 'USA',
     companyName: 'Netflix',
     companyLogo: 'https://logo.clearbit.com/netflix.com',
     companyDomain: 'netflix.com',
@@ -1406,6 +1436,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_nvidia_swe_hardware_intern',
+    country: 'Global/Remote',
     companyName: 'Nvidia',
     companyLogo: 'https://logo.clearbit.com/nvidia.com',
     companyDomain: 'nvidia.com',
@@ -1440,6 +1471,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_oracle_cloud_intern',
+    country: 'Global/Remote',
     companyName: 'Oracle',
     companyLogo: 'https://logo.clearbit.com/oracle.com',
     companyDomain: 'oracle.com',
@@ -1474,6 +1506,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ibm_extreme_blue_intern',
+    country: 'Global/Remote',
     companyName: 'IBM',
     companyLogo: 'https://logo.clearbit.com/ibm.com',
     companyDomain: 'ibm.com',
@@ -1508,6 +1541,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_sap_intern_star',
+    country: 'Global/Remote',
     companyName: 'SAP',
     companyLogo: 'https://logo.clearbit.com/sap.com',
     companyDomain: 'sap.com',
@@ -1542,6 +1576,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_intel_swe_firmware_intern',
+    country: 'Global/Remote',
     companyName: 'Intel',
     companyLogo: 'https://logo.clearbit.com/intel.com',
     companyDomain: 'intel.com',
@@ -1576,6 +1611,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_stripe_systems_intern',
+    country: 'Global/Remote',
     companyName: 'Stripe',
     companyLogo: 'https://logo.clearbit.com/stripe.com',
     companyDomain: 'stripe.com',
@@ -1610,6 +1646,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_openai_research_eng_intern',
+    country: 'USA',
     companyName: 'OpenAI',
     companyLogo: 'https://logo.clearbit.com/openai.com',
     companyDomain: 'openai.com',
@@ -1639,6 +1676,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_anthropic_systems_intern',
+    country: 'USA',
     companyName: 'Anthropic',
     companyLogo: 'https://logo.clearbit.com/anthropic.com',
     companyDomain: 'anthropic.com',
@@ -1668,6 +1706,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_databricks_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Databricks',
     companyLogo: 'https://logo.clearbit.com/databricks.com',
     companyDomain: 'databricks.com',
@@ -1697,6 +1736,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_snowflake_systems_intern',
+    country: 'Global/Remote',
     companyName: 'Snowflake',
     companyLogo: 'https://logo.clearbit.com/snowflake.com',
     companyDomain: 'snowflake.com',
@@ -1726,6 +1766,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_palantir_fde_intern',
+    country: 'Global/Remote',
     companyName: 'Palantir Technologies',
     companyLogo: 'https://logo.clearbit.com/palantir.com',
     companyDomain: 'palantir.com',
@@ -1755,6 +1796,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jane_street_swe_intern',
+    country: 'USA',
     companyName: 'Jane Street',
     companyLogo: 'https://logo.clearbit.com/janestreet.com',
     companyDomain: 'janestreet.com',
@@ -1789,6 +1831,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_citadel_swe_intern',
+    country: 'USA',
     companyName: 'Citadel',
     companyLogo: 'https://logo.clearbit.com/citadel.com',
     companyDomain: 'citadel.com',
@@ -1823,6 +1866,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_deshaw_intern',
+    country: 'Global/Remote',
     companyName: 'D. E. Shaw',
     companyLogo: 'https://logo.clearbit.com/deshaw.com',
     companyDomain: 'deshaw.com',
@@ -1857,6 +1901,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_two_sigma_intern',
+    country: 'USA',
     companyName: 'Two Sigma',
     companyLogo: 'https://logo.clearbit.com/twosigma.com',
     companyDomain: 'twosigma.com',
@@ -1891,6 +1936,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_morgan_stanley_students_graduates',
+    country: 'Global/Remote',
     companyName: 'Morgan Stanley',
     companyLogo: 'https://logo.clearbit.com/morganstanley.com',
     companyDomain: 'morganstanley.com',
@@ -1927,6 +1973,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jpmorgan_sep_intern',
+    country: 'Global/Remote',
     companyName: 'JPMorgan Chase & Co.',
     companyLogo: 'https://logo.clearbit.com/jpmorgan.com',
     companyDomain: 'jpmorgan.com',
@@ -1961,6 +2008,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_atlassian_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Atlassian',
     companyLogo: 'https://logo.clearbit.com/atlassian.com',
     companyDomain: 'atlassian.com',
@@ -1995,6 +2043,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_spotify_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Spotify',
     companyLogo: 'https://logo.clearbit.com/spotify.com',
     companyDomain: 'spotify.com',
@@ -2024,6 +2073,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_linkedin_swe_intern',
+    country: 'Global/Remote',
     companyName: 'LinkedIn',
     companyLogo: 'https://logo.clearbit.com/linkedin.com',
     companyDomain: 'linkedin.com',
@@ -2053,6 +2103,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_x_twitter_intern',
+    country: 'USA',
     companyName: 'X (Twitter)',
     companyLogo: 'https://logo.clearbit.com/x.com',
     companyDomain: 'x.com',
@@ -2082,6 +2133,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_snap_swe_intern',
+    country: 'USA',
     companyName: 'Snap Inc.',
     companyLogo: 'https://logo.clearbit.com/snap.com',
     companyDomain: 'snap.com',
@@ -2111,6 +2163,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_pinterest_pintech_intern',
+    country: 'USA',
     companyName: 'Pinterest',
     companyLogo: 'https://logo.clearbit.com/pinterest.com',
     companyDomain: 'pinterest.com',
@@ -2140,6 +2193,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_airbnb_swe_intern',
+    country: 'USA',
     companyName: 'Airbnb',
     companyLogo: 'https://logo.clearbit.com/airbnb.com',
     companyDomain: 'airbnb.com',
@@ -2169,6 +2223,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_doordash_swe_intern',
+    country: 'USA',
     companyName: 'DoorDash',
     companyLogo: 'https://logo.clearbit.com/doordash.com',
     companyDomain: 'doordash.com',
@@ -2198,6 +2253,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_robinhood_swe_intern',
+    country: 'USA',
     companyName: 'Robinhood',
     companyLogo: 'https://logo.clearbit.com/robinhood.com',
     companyDomain: 'robinhood.com',
@@ -2227,6 +2283,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_coinbase_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Coinbase',
     companyLogo: 'https://logo.clearbit.com/coinbase.com',
     companyDomain: 'coinbase.com',
@@ -2256,6 +2313,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_figma_swe_intern',
+    country: 'USA',
     companyName: 'Figma',
     companyLogo: 'https://logo.clearbit.com/figma.com',
     companyDomain: 'figma.com',
@@ -2285,6 +2343,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_cloudflare_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Cloudflare',
     companyLogo: 'https://logo.clearbit.com/cloudflare.com',
     companyDomain: 'cloudflare.com',
@@ -2314,6 +2373,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_datadog_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Datadog',
     companyLogo: 'https://logo.clearbit.com/datadoghq.com',
     companyDomain: 'datadoghq.com',
@@ -2343,6 +2403,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_gitlab_swe_intern',
+    country: 'Global/Remote',
     companyName: 'GitLab',
     companyLogo: 'https://logo.clearbit.com/gitlab.com',
     companyDomain: 'gitlab.com',
@@ -2372,6 +2433,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_qualcomm_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Qualcomm',
     companyLogo: 'https://logo.clearbit.com/qualcomm.com',
     companyDomain: 'qualcomm.com',
@@ -2406,6 +2468,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ti_embedded_intern',
+    country: 'Global/Remote',
     companyName: 'Texas Instruments',
     companyLogo: 'https://logo.clearbit.com/ti.com',
     companyDomain: 'ti.com',
@@ -2435,6 +2498,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amd_compiler_intern',
+    country: 'Global/Remote',
     companyName: 'AMD',
     companyLogo: 'https://logo.clearbit.com/amd.com',
     companyDomain: 'amd.com',
@@ -2464,6 +2528,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_samsung_prism_intern',
+    country: 'India',
     companyName: 'Samsung R&D',
     companyLogo: 'https://logo.clearbit.com/samsung.com',
     companyDomain: 'samsung.com',
@@ -2493,6 +2558,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_paypal_swe_intern',
+    country: 'Global/Remote',
     companyName: 'PayPal',
     companyLogo: 'https://logo.clearbit.com/paypal.com',
     companyDomain: 'paypal.com',
@@ -2522,6 +2588,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_intuit_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Intuit',
     companyLogo: 'https://logo.clearbit.com/intuit.com',
     companyDomain: 'intuit.com',
@@ -2551,6 +2618,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_twilio_swe_intern',
+    country: 'Global/Remote',
     companyName: 'Twilio',
     companyLogo: 'https://logo.clearbit.com/twilio.com',
     companyDomain: 'twilio.com',
@@ -2580,6 +2648,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_zoom_media_intern',
+    country: 'USA',
     companyName: 'Zoom Video Communications',
     companyLogo: 'https://logo.clearbit.com/zoom.us',
     companyDomain: 'zoom.us',
@@ -2614,6 +2683,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================
   {
     id: 'cycle_hcl_techbee_class12',
+    country: 'India',
     companyName: 'HCLTech',
     companyLogo: 'https://logo.clearbit.com/hcltech.com',
     companyDomain: 'hcltech.com',
@@ -2647,6 +2717,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amazon_future_engineer_scholarship',
+    country: 'India',
     companyName: 'Amazon',
     companyLogo: 'https://logo.clearbit.com/amazon.com',
     companyDomain: 'amazon.com',
@@ -2680,6 +2751,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_generation_google_scholarship',
+    country: 'India',
     companyName: 'Google',
     companyLogo: 'https://logo.clearbit.com/google.com',
     companyDomain: 'google.com',
@@ -2713,6 +2785,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_adobe_wit_scholarship',
+    country: 'India',
     companyName: 'Adobe',
     companyLogo: 'https://logo.clearbit.com/adobe.com',
     companyDomain: 'adobe.com',
@@ -2746,6 +2819,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_reliance_foundation_ug_scholarship',
+    country: 'India',
     companyName: 'Reliance Foundation',
     companyLogo: 'https://logo.clearbit.com/reliancefoundation.org',
     companyDomain: 'reliancefoundation.org',
@@ -2779,6 +2853,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_wipro_wilp_program',
+    country: 'India',
     companyName: 'Wipro',
     companyLogo: 'https://logo.clearbit.com/wipro.com',
     companyDomain: 'wipro.com',
@@ -2812,6 +2887,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_loreal_young_women_science',
+    country: 'India',
     companyName: 'L\'Oréal',
     companyLogo: 'https://logo.clearbit.com/loreal.com',
     companyDomain: 'loreal.com',
@@ -2845,6 +2921,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_palantir_future_scholars',
+    country: 'Global/Remote',
     companyName: 'Palantir Technologies',
     companyLogo: 'https://logo.clearbit.com/palantir.com',
     companyDomain: 'palantir.com',
@@ -2878,6 +2955,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_tcs_smart_hiring_program',
+    country: 'India',
     companyName: 'Tata Consultancy Services',
     companyLogo: 'https://logo.clearbit.com/tcs.com',
     companyDomain: 'tcs.com',
@@ -2911,6 +2989,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_infosys_springboard_early_talent',
+    country: 'India',
     companyName: 'Infosys',
     companyLogo: 'https://logo.clearbit.com/infosys.com',
     companyDomain: 'infosys.com',
@@ -2949,6 +3028,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // =========================================================================
   {
     id: 'cycle_tata_scholarship_cornell',
+    country: 'USA',
     companyName: 'Cornell University (Tata Trust)',
     companyLogo: 'https://logo.clearbit.com/cornell.edu',
     companyDomain: 'cornell.edu',
@@ -2985,6 +3065,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jardine_scholarship_oxbridge',
+    country: 'UK',
     companyName: 'Jardine Foundation (Oxford & Cambridge)',
     companyLogo: 'https://logo.clearbit.com/ox.ac.uk',
     companyDomain: 'ox.ac.uk',
@@ -3021,6 +3102,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_robertson_scholars_leadership',
+    country: 'USA',
     companyName: 'Duke & UNC Chapel Hill',
     companyLogo: 'https://logo.clearbit.com/duke.edu',
     companyDomain: 'duke.edu',
@@ -3057,6 +3139,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rise_global_talent',
+    country: 'Global/Remote',
     companyName: 'Schmidt Futures & Rhodes Trust',
     companyLogo: 'https://logo.clearbit.com/schmidtfutures.com',
     companyDomain: 'schmidtfutures.com',
@@ -3093,6 +3176,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_nyuad_full_ride_fellowship',
+    country: 'UAE',
     companyName: 'New York University Abu Dhabi',
     companyLogo: 'https://logo.clearbit.com/nyu.edu',
     companyDomain: 'nyu.edu',
@@ -3129,6 +3213,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_thiel_fellowship_class12',
+    country: 'USA',
     companyName: 'The Thiel Foundation',
     companyLogo: 'https://logo.clearbit.com/thielfellowship.org',
     companyDomain: 'thielfellowship.org',
@@ -3165,6 +3250,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_morehead_cain_unc',
+    country: 'USA',
     companyName: 'UNC Chapel Hill (Morehead-Cain)',
     companyLogo: 'https://logo.clearbit.com/unc.edu',
     companyDomain: 'unc.edu',
@@ -3205,6 +3291,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ============================================================================
   {
     id: 'cycle_cern_summer_student',
+    country: 'Switzerland',
     companyName: 'CERN',
     companyLogo: 'https://logo.clearbit.com/cern.ch',
     companyDomain: 'cern.ch',
@@ -3241,6 +3328,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_desy_summer_student',
+    country: 'Germany',
     companyName: 'DESY',
     companyLogo: 'https://logo.clearbit.com/desy.de',
     companyDomain: 'desy.de',
@@ -3277,6 +3365,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_riken_summer_program',
+    country: 'Japan',
     companyName: 'RIKEN',
     companyLogo: 'https://logo.clearbit.com/riken.jp',
     companyDomain: 'riken.jp',
@@ -3313,6 +3402,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mpi_sws_research_internship',
+    country: 'Germany',
     companyName: 'Max Planck Institute (MPI-SWS)',
     companyLogo: 'https://logo.clearbit.com/mpi-sws.org',
     companyDomain: 'mpi-sws.org',
@@ -3349,6 +3439,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_weizmann_kupcinet_getz',
+    country: 'Israel',
     companyName: 'Weizmann Institute of Science',
     companyLogo: 'https://logo.clearbit.com/weizmann.ac.il',
     companyDomain: 'weizmann.ac.il',
@@ -3385,6 +3476,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_fermilab_sist_internship',
+    country: 'USA',
     companyName: 'Fermilab',
     companyLogo: 'https://logo.clearbit.com/fnal.gov',
     companyDomain: 'fnal.gov',
@@ -3426,6 +3518,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ============================================================================
   {
     id: 'cycle_outreachy_open_source',
+    country: 'Global/Remote',
     companyName: 'Outreachy',
     companyLogo: 'https://logo.clearbit.com/outreachy.org',
     companyDomain: 'outreachy.org',
@@ -3462,6 +3555,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_gsoc_open_source',
+    country: 'Global/Remote',
     companyName: 'Google Summer of Code',
     companyLogo: 'https://logo.clearbit.com/google.com',
     companyDomain: 'summerofcode.withgoogle.com',
@@ -3498,6 +3592,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_lfx_mentorship',
+    country: 'Global/Remote',
     companyName: 'Linux Foundation (LFX)',
     companyLogo: 'https://logo.clearbit.com/linuxfoundation.org',
     companyDomain: 'lfx.linuxfoundation.org',
@@ -3534,6 +3629,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mlh_fellowship',
+    country: 'Global/Remote',
     companyName: 'Major League Hacking (MLH)',
     companyLogo: 'https://logo.clearbit.com/mlh.io',
     companyDomain: 'fellowship.mlh.io',
@@ -3570,6 +3666,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_gsod_season_of_docs',
+    country: 'Global/Remote',
     companyName: 'Google Season of Docs',
     companyLogo: 'https://logo.clearbit.com/google.com',
     companyDomain: 'developers.google.com/season-of-docs',
@@ -3611,6 +3708,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ============================================================================
   {
     id: 'cycle_mitacs_globalink_canada',
+    country: 'Canada',
     companyName: 'Mitacs Globalink',
     companyLogo: 'https://logo.clearbit.com/mitacs.ca',
     companyDomain: 'mitacs.ca',
@@ -3647,6 +3745,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_daad_wise_germany',
+    country: 'Germany',
     companyName: 'DAAD Germany',
     companyLogo: 'https://logo.clearbit.com/daad.de',
     companyDomain: 'daad.de',
@@ -3683,6 +3782,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_kaist_snu_korea',
+    country: 'South Korea',
     companyName: 'KAIST & SNU Korea',
     companyLogo: 'https://logo.clearbit.com/kaist.ac.kr',
     companyDomain: 'kaist.ac.kr',
@@ -3719,6 +3819,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ntu_india_connect',
+    country: 'Singapore',
     companyName: 'NTU Singapore',
     companyLogo: 'https://logo.clearbit.com/ntu.edu.sg',
     companyDomain: 'ntu.edu.sg',
@@ -3755,6 +3856,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_charpak_lab_france',
+    country: 'France',
     companyName: 'Campus France (Charpak)',
     companyLogo: 'https://logo.clearbit.com/campusfrance.org',
     companyDomain: 'campusfrance.org',
@@ -3796,6 +3898,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================================================
   {
     id: 'cycle_openai_residency',
+    country: 'USA',
     companyName: 'OpenAI',
     companyLogo: 'https://logo.clearbit.com/openai.com',
     companyDomain: 'openai.com',
@@ -3832,6 +3935,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_deepmind_research',
+    country: 'Global/Remote',
     companyName: 'Google DeepMind',
     companyLogo: 'https://logo.clearbit.com/deepmind.com',
     companyDomain: 'deepmind.google',
@@ -3868,6 +3972,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meta_fair_ai',
+    country: 'Global/Remote',
     companyName: 'Meta',
     companyLogo: 'https://logo.clearbit.com/meta.com',
     companyDomain: 'ai.meta.com',
@@ -3904,6 +4009,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_research_msr',
+    country: 'Global/Remote',
     companyName: 'Microsoft Research',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
     companyDomain: 'microsoft.com',
@@ -3945,6 +4051,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================================================
   {
     id: 'cycle_google_step',
+    country: 'Global/Remote',
     companyName: 'Google',
     companyLogo: 'https://logo.clearbit.com/google.com',
     companyDomain: 'google.com',
@@ -3981,6 +4088,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_explore',
+    country: 'USA',
     companyName: 'Microsoft',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
     companyDomain: 'microsoft.com',
@@ -4017,6 +4125,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_uber_star',
+    country: 'USA',
     companyName: 'Uber',
     companyLogo: 'https://logo.clearbit.com/uber.com',
     companyDomain: 'uber.com',
@@ -4053,6 +4162,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meta_university',
+    country: 'USA',
     companyName: 'Meta',
     companyLogo: 'https://logo.clearbit.com/meta.com',
     companyDomain: 'meta.com',
@@ -4089,6 +4199,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jane_street_first_year',
+    country: 'Global/Remote',
     companyName: 'Jane Street',
     companyLogo: 'https://logo.clearbit.com/janestreet.com',
     companyDomain: 'janestreet.com',
@@ -4127,6 +4238,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // Tier 7: Global Tech/SaaS Giant - ServiceNow (Addition of missing enterprise giant)
   {
     id: 'cycle_servicenow_intern',
+    country: 'Global/Remote',
     companyName: 'ServiceNow',
     companyLogo: 'https://logo.clearbit.com/servicenow.com',
     companyDomain: 'servicenow.com',
@@ -4167,6 +4279,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================================================
   {
     id: 'cycle_woven_by_toyota_internship',
+    country: 'Japan',
     companyName: 'Woven by Toyota',
     companyLogo: 'https://logo.clearbit.com/woven.toyota',
     companyDomain: 'woven.toyota',
@@ -4203,6 +4316,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_max_planck_institute_cis_germany',
+    country: 'Germany',
     companyName: 'Max Planck Institute',
     companyLogo: 'https://logo.clearbit.com/mpg.de',
     companyDomain: 'cis.mpg.de',
@@ -4239,6 +4353,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_nus_iris_singapore',
+    country: 'Singapore',
     companyName: 'National University of Singapore',
     companyLogo: 'https://logo.clearbit.com/nus.edu.sg',
     companyDomain: 'nusgs.nus.edu.sg',
@@ -4275,6 +4390,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mycareersfuture_singapore_gov',
+    country: 'Singapore',
     companyName: 'MyCareersFuture Singapore (GovTech / WSG)',
     companyLogo: 'https://static.mycareersfuture.gov.sg/images/company/logos/govtech.jpg',
     companyDomain: 'mycareersfuture.gov.sg',
@@ -4311,6 +4427,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_oist_research_internship_japan',
+    country: 'Japan',
     companyName: 'OIST',
     companyLogo: 'https://logo.clearbit.com/oist.jp',
     companyDomain: 'oist.jp',
@@ -4347,6 +4464,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_academia_sinica_tiip_taiwan',
+    country: 'Taiwan',
     companyName: 'Academia Sinica',
     companyLogo: 'https://logo.clearbit.com/sinica.edu.tw',
     companyDomain: 'sinica.edu.tw',
@@ -4383,6 +4501,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rbi_summer_placement',
+    country: 'India',
     companyName: 'Reserve Bank of India',
     companyLogo: 'https://logo.clearbit.com/rbi.org.in',
     companyDomain: 'rbi.org.in',
@@ -4419,6 +4538,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rbi_research_internship',
+    country: 'India',
     companyName: 'Reserve Bank of India',
     companyLogo: 'https://logo.clearbit.com/rbi.org.in',
     companyDomain: 'rbi.org.in',
@@ -4455,6 +4575,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_global_university_internship',
+    country: 'Global/Remote',
     companyName: 'Microsoft',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
     companyDomain: 'microsoft.com',
@@ -4491,6 +4612,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_deloitte_university_internship',
+    country: 'Global/Remote',
     companyName: 'Deloitte',
     companyLogo: 'https://logo.clearbit.com/deloitte.com',
     companyDomain: 'deloitte.com',
@@ -4527,6 +4649,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_niti_aayog_internship',
+    country: 'India',
     companyName: 'NITI Aayog',
     companyLogo: 'https://logo.clearbit.com/niti.gov.in',
     companyDomain: 'niti.gov.in',
@@ -4563,6 +4686,7 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meti_japan_government_internship',
+    country: 'Japan',
     companyName: 'METI Japan',
     companyLogo: 'https://logo.clearbit.com/meti.go.jp',
     companyDomain: 'internshipprogram.go.jp',
@@ -4629,8 +4753,28 @@ export class UpcomingInternshipsService {
           ? 'OFFICIAL_CONFIRMED'
           : 'MARKET_ESTIMATED'
       );
+
+      // Prompt 34B: Ensure accurate tierCategory resolution for corporate internships
+      let resolvedTier = cycle.tierCategory;
+      if (!resolvedTier || resolvedTier === 'industry_tech') {
+        if (cycle.isPreUniversityFullRide || cycle.programCategory === 'pre_university_full_ride') {
+          resolvedTier = 'pre_university_full_ride';
+        } else if (cycle.isGlobalFullRide || cycle.programCategory === 'global_full_ride') {
+          resolvedTier = 'global_full_ride';
+        } else if (cycle.programCategory === 'scholarship' || cycle.programCategory === 'early_career_12th' || cycle.isClass12Eligible) {
+          resolvedTier = 'scholarship';
+        } else if (cycle.id.includes('openai') || cycle.id.includes('anthropic')) {
+          resolvedTier = 'frontier_ai';
+        } else if (cycle.id.includes('robinhood')) {
+          resolvedTier = 'quant_hft';
+        } else {
+          resolvedTier = 'tech_giant';
+        }
+      }
+
       return {
         ...cycle,
+        tierCategory: resolvedTier,
         rateType: guaranteedRateType,
         currentStatus: evaluation.status,
         daysRemaining: evaluation.daysRemaining,
@@ -4640,18 +4784,88 @@ export class UpcomingInternshipsService {
   }
 
   /**
-   * Filter cycles by status, month, target batch, category, or search query with live day-level evaluation
+   * Prompt 34A & 34B: Portal categories for separate top-level portals:
+   * 1. Internships (corporate: tech_giant, quant_hft, frontier_ai, early_undergrad_exclusive)
+   * 2. Scholarships (scholarship_12th, global_full_ride, pre_university_full_ride)
+   * 3. Research & Fellowships (scientific_lab, academic_fellowship)
+   * 4. Open Source (open_source_grant)
+   */
+  public static isCycleInPortal(
+    cycle: UpcomingInternshipCycle, 
+    portal: 'all' | 'internships' | 'scholarships' | 'research' | 'open_source'
+  ): boolean {
+    if (!portal || portal === 'all') return true;
+
+    if (portal === 'open_source') {
+      return (
+        cycle.tierCategory === 'open_source_grant' ||
+        cycle.programCategory === 'open_source_grant' ||
+        cycle.hiringCycleType === 'open_source_grant'
+      );
+    }
+
+    if (portal === 'research') {
+      return (
+        cycle.tierCategory === 'scientific_lab' ||
+        cycle.tierCategory === 'academic_fellowship' ||
+        cycle.programCategory === 'scientific_lab' ||
+        cycle.programCategory === 'academic_fellowship' ||
+        cycle.hiringCycleType === 'scientific_lab' ||
+        cycle.hiringCycleType === 'academic_fellowship'
+      );
+    }
+
+    if (portal === 'scholarships') {
+      return Boolean(
+        cycle.isGlobalFullRide ||
+        cycle.isPreUniversityFullRide ||
+        cycle.tierCategory === 'pre_university_full_ride' ||
+        cycle.tierCategory === 'global_full_ride' ||
+        cycle.tierCategory === 'scholarship' ||
+        cycle.programCategory === 'pre_university_full_ride' ||
+        cycle.programCategory === 'global_full_ride' ||
+        cycle.programCategory === 'scholarship' ||
+        cycle.programCategory === 'early_career_12th' ||
+        cycle.hiringCycleType === 'scholarship' ||
+        cycle.hiringCycleType === 'global_full_ride' ||
+        cycle.hiringCycleType === 'pre_university_full_ride' ||
+        cycle.hiringCycleType === 'early_career_12th'
+      );
+    }
+
+    if (portal === 'internships') {
+      return (
+        cycle.tierCategory === 'tech_giant' ||
+        cycle.tierCategory === 'quant_hft' ||
+        cycle.tierCategory === 'frontier_ai' ||
+        cycle.tierCategory === 'early_undergrad_exclusive' ||
+        (!UpcomingInternshipsService.isCycleInPortal(cycle, 'open_source') &&
+         !UpcomingInternshipsService.isCycleInPortal(cycle, 'research') &&
+         !UpcomingInternshipsService.isCycleInPortal(cycle, 'scholarships'))
+      );
+    }
+
+    return true;
+  }
+
+  /**
+   * Filter cycles by status, month, target batch, category, portal, or search query with live day-level evaluation
    */
   public static filterUpcomingCycles(params: {
     status?: InternshipCycleCurrentStatus | 'all';
     month?: string;
     targetBatch?: number | 'class_12' | 'all';
     category?: 'all' | 'internship' | 'scholarship_12th' | 'global_full_ride_3cr' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'pre_university_full_ride';
+    portal?: 'all' | 'internships' | 'scholarships' | 'research' | 'open_source';
     query?: string;
     currentDate?: Date;
   }): UpcomingInternshipCycle[] {
     const curDate = params.currentDate || new Date();
     let list = this.getAllUpcomingCycles(curDate);
+
+    if (params.portal && params.portal !== 'all') {
+      list = list.filter(item => UpcomingInternshipsService.isCycleInPortal(item, params.portal!));
+    }
 
     if (params.status && params.status !== 'all') {
       list = list.filter(item => item.currentStatus === params.status);

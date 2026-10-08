@@ -33,6 +33,10 @@ import { NetworkGraphView } from './components/NetworkGraphView';
 import { RecruiterRadarView } from './components/RecruiterRadarView';
 import { ReferralTrackerView } from './components/ReferralTrackerView';
 import { UpcomingInternshipsCalendar } from './components/UpcomingInternshipsCalendar';
+import { InternshipsPortal } from './components/InternshipsPortal';
+import { ScholarshipsPortal } from './components/ScholarshipsPortal';
+import { ResearchPortal } from './components/ResearchPortal';
+import { OpenSourcePortal } from './components/OpenSourcePortal';
 import { HeartbeatScheduler } from './services/heartbeatScheduler';
 import { AuthModal } from './components/AuthModal';
 import { StudentOnboardingModal } from './components/StudentOnboardingModal';
@@ -180,6 +184,14 @@ export default function App() {
         'T': 'referral_tracker',
         'b': 'story_bank',
         'B': 'story_bank',
+        'i': 'internships',
+        'I': 'internships',
+        's': 'scholarships',
+        'S': 'scholarships',
+        'f': 'research_fellowships',
+        'F': 'research_fellowships',
+        'g': 'open_source',
+        'G': 'open_source',
       };
 
       if (keyMap[e.key]) {
@@ -499,10 +511,40 @@ export default function App() {
           />
         )}
 
-        {/* MODE: Seasonal Internships Portal (Ongoing Applications & Upcoming Predictable Recruitment Calendar) */}
-        {currentMode === 'internship_calendar' && (
+        {/* PORTAL 1: Corporate Internships (tech_giant, quant_hft, frontier_ai, early_undergrad_exclusive) */}
+        {(currentMode === 'internships' || currentMode === 'internship_calendar') && (
           <div className="space-y-6">
-            <UpcomingInternshipsCalendar
+            <InternshipsPortal
+              onNavigateToCalendar={() => setCurrentMode('calendar')}
+              studentProfile={studentProfile}
+            />
+          </div>
+        )}
+
+        {/* PORTAL 2: Scholarships (scholarship_12th, global_full_ride, pre_university_full_ride) */}
+        {currentMode === 'scholarships' && (
+          <div className="space-y-6">
+            <ScholarshipsPortal
+              onNavigateToCalendar={() => setCurrentMode('calendar')}
+              studentProfile={studentProfile}
+            />
+          </div>
+        )}
+
+        {/* PORTAL 3: Research & Fellowships (scientific_lab, academic_fellowship) */}
+        {currentMode === 'research_fellowships' && (
+          <div className="space-y-6">
+            <ResearchPortal
+              onNavigateToCalendar={() => setCurrentMode('calendar')}
+              studentProfile={studentProfile}
+            />
+          </div>
+        )}
+
+        {/* PORTAL 4: Open Source Programs (open_source_grant) */}
+        {currentMode === 'open_source' && (
+          <div className="space-y-6">
+            <OpenSourcePortal
               onNavigateToCalendar={() => setCurrentMode('calendar')}
               studentProfile={studentProfile}
             />

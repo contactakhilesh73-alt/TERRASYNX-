@@ -55,13 +55,41 @@ import {
   Star,
   Radio,
   AlertTriangle,
-  ChevronDown
+  ChevronDown,
+  MapPin
 } from 'lucide-react';
+
+/**
+ * Returns flag emoji for a given country name
+ */
+export function getCountryFlag(country?: string): string {
+  if (!country) return '🌐';
+  switch (country.trim()) {
+    case 'USA': return '🇺🇸';
+    case 'India': return '🇮🇳';
+    case 'Germany': return '🇩🇪';
+    case 'Switzerland': return '🇨🇭';
+    case 'Japan': return '🇯🇵';
+    case 'Singapore': return '🇸🇬';
+    case 'Canada': return '🇨🇦';
+    case 'UK': return '🇬🇧';
+    case 'France': return '🇫🇷';
+    case 'Israel': return '🇮🇱';
+    case 'South Korea': return '🇰🇷';
+    case 'Taiwan': return '🇹🇼';
+    case 'UAE': return '🇦🇪';
+    case 'Global/Remote': return '🌐';
+    default: return '📍';
+  }
+}
+
+export type PortalType = 'all' | 'internships' | 'scholarships' | 'research' | 'open_source';
 
 interface UpcomingInternshipsCalendarProps {
   onNavigateToCalendar?: () => void;
   onBookmarkReminder?: (cycle: UpcomingInternshipCycle) => void;
   studentProfile?: StudentProfile;
+  portalType?: PortalType;
 }
 
 export type LiveStatusTab = 'ALL' | 'OPEN_NOW' | 'OPENING_SOON' | 'UPCOMING_SEASON' | 'PASSED_THIS_CYCLE' | 'TRACKED';
@@ -299,7 +327,9 @@ export function evaluateEligibilityMatrix(
 export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarProps> = ({
   onNavigateToCalendar,
   studentProfile,
-}) => {
+  portalType: initialPortalType = 'all',
+}: UpcomingInternshipsCalendarProps) => {
+  const portalType: PortalType = initialPortalType;
   // Live Date Reference State: defaults to new Date() and auto-updates
   const [referenceDate, setReferenceDate] = useState<Date>(() => new Date());
   const [isSimulatingDate, setIsSimulatingDate] = useState<boolean>(false);
@@ -317,6 +347,15 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
   const [activeStatusTab, setActiveStatusTab] = useState<LiveStatusTab>('OPEN_NOW');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'quant_hft' | 'tech_giant' | 'frontier_ai' | 'early_undergrad_exclusive' | 'internship' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'scholarship_12th' | 'global_full_ride_3cr' | 'pre_university_full_ride'>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  // Prompt 33: Country / Jurisdiction filter
+  const [selectedCountry, setSelectedCountry] = useState<string>('all');
+
+  // Reset category, country, and status tab whenever switching between top-level portals
+  useEffect(() => {
+    setSelectedCategory('all');
+    setSelectedCountry('all');
+    setActiveStatusTab('OPEN_NOW');
+  }, [portalType]);
   
   // Tracked Opportunities state (persisted in localStorage)
   const [trackedCycleIds, setTrackedCycleIds] = useState<string[]>(() => {
@@ -362,23 +401,50 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     { key: 'november', label: 'November' },
   ];
 
-  // Base dataset dynamically computed for the current referenceDate
+  // Base dataset dynamically filtered for active top-level portal from the single authoritative source
   const allCycles = useMemo(() => {
-    return UpcomingInternshipsService.getAllUpcomingCycles(referenceDate);
-  }, [referenceDate]);
+    const raw = UpcomingInternshipsService.getAllUpcomingCycles(referenceDate);
+    if (!portalType || portalType === 'all') return raw;
+    return raw.filter(c => UpcomingInternshipsService.isCycleInPortal(c, portalType));
+  }, [referenceDate, portalType]);
+
+  // Prompt 33: Dynamic distinct country counts from dataset
+  const countryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const cycle of allCycles) {
+      const c = cycle.country?.trim() || 'Global/Remote';
+      counts[c] = (counts[c] || 0) + 1;
+    }
+    return counts;
+  }, [allCycles]);
+
+  // Prompt 33: Distinct sorted country list (Global/Remote first, then alphabetical)
+  const distinctCountries = useMemo(() => {
+    const keys = Object.keys(countryCounts);
+    return keys.sort((a, b) => {
+      if (a === 'Global/Remote') return -1;
+      if (b === 'Global/Remote') return 1;
+      return a.localeCompare(b);
+    });
+  }, [countryCounts]);
 
   // Live Status Strip Counts (Open Now, Opening Soon (<30d), Upcoming Season (>30d), Passed, Tracked, All)
   const statusStripCounts = useMemo(() => {
-    const list = selectedCategory === 'all' 
+    let list = selectedCategory === 'all' 
       ? allCycles 
       : UpcomingInternshipsService.filterUpcomingCycles({
           status: 'all',
           month: selectedMonth,
           targetBatch: 'all',
           category: selectedCategory,
+          portal: portalType,
           query: searchQuery,
           currentDate: referenceDate,
         });
+
+    if (selectedCountry !== 'all') {
+      list = list.filter(c => c.country === selectedCountry);
+    }
 
     return {
       ALL: list.length,
@@ -388,7 +454,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
       PASSED_THIS_CYCLE: list.filter(c => c.currentStatus === 'PASSED_THIS_CYCLE').length,
       TRACKED: list.filter(c => trackedCycleIds.includes(c.id)).length,
     };
-  }, [allCycles, selectedCategory, selectedMonth, searchQuery, referenceDate, trackedCycleIds]);
+  }, [allCycles, selectedCategory, selectedMonth, selectedCountry, searchQuery, referenceDate, trackedCycleIds, portalType]);
 
   // Dynamic counts for each 1-click filter category chip
   const categoryCounts = useMemo(() => {
@@ -422,9 +488,15 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
       month: selectedMonth,
       targetBatch: 'all',
       category: selectedCategory,
+      portal: portalType,
       query: searchQuery,
       currentDate: referenceDate,
     });
+
+    // Prompt 33: Country Filter (Narrows what student chooses without hiding by eligibility)
+    if (selectedCountry !== 'all') {
+      baseList = baseList.filter(c => c.country === selectedCountry);
+    }
 
     if (activeStatusTab === 'OPEN_NOW') {
       baseList = baseList.filter(c => c.currentStatus === 'OPEN_NOW');
@@ -450,16 +522,16 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     }
 
     return baseList;
-  }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, referenceDate, matrixFilter, studentBatch, trackedCycleIds]);
+  }, [activeStatusTab, selectedMonth, selectedCategory, selectedCountry, searchQuery, referenceDate, matrixFilter, studentBatch, trackedCycleIds, portalType]);
 
   // Progressive batch rendering (16 cards per batch)
   const [visibleCount, setVisibleCount] = useState<number>(16);
 
-  // Reset pagination ONLY when student explicitly changes filter criteria (tab, month, category, search, matrix, batch)
+  // Reset pagination ONLY when student explicitly changes filter criteria (tab, month, category, country, search, matrix, batch, portal)
   // NEVER reset on background clock updates or bookmark/track state changes
   useEffect(() => {
     setVisibleCount(16);
-  }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, matrixFilter, studentBatch]);
+  }, [activeStatusTab, selectedMonth, selectedCategory, selectedCountry, searchQuery, matrixFilter, studentBatch, portalType]);
 
   const visibleCycles = useMemo(() => {
     return filteredCycles.slice(0, visibleCount);
@@ -496,6 +568,10 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
       currentDate: referenceDate,
     });
 
+    if (selectedCountry !== 'all') {
+      baseList = baseList.filter(c => c.country === selectedCountry);
+    }
+
     if (activeStatusTab === 'OPEN_NOW') {
       baseList = baseList.filter(c => c.currentStatus === 'OPEN_NOW');
     } else if (activeStatusTab === 'OPENING_SOON') {
@@ -522,7 +598,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     });
 
     return counts;
-  }, [activeStatusTab, selectedMonth, selectedCategory, searchQuery, referenceDate, studentBatch, trackedCycleIds]);
+  }, [activeStatusTab, selectedMonth, selectedCategory, selectedCountry, searchQuery, referenceDate, studentBatch, trackedCycleIds]);
 
   // Date simulation handlers for testing the dynamic live transition
   const handleSetSimulatedDate = (year: number, month: number, day: number) => {
@@ -638,6 +714,54 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
     }
   };
 
+  const portalMeta = useMemo(() => {
+    switch (portalType) {
+      case 'scholarships':
+        return {
+          tag: 'GLOBAL FULL-RIDE SCHOLARSHIPS & 12TH TALENT',
+          tagClass: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
+          title: 'Scholarships & Full-Ride Grant Radar',
+          description: '₹3 - 4 Crore Need-Blind Ivy+ & Premier Global Scholarships (Harvard, MIT, Princeton, Yale, Oxford, Cambridge, Tata Cornell), plus Class 12 / High-School talent programs (HCL TechBee, Amazon Future Engineer, Reliance Foundation).',
+          icon: GraduationCap,
+          iconColor: 'text-amber-400',
+          countLabel: 'Tracked Scholarships',
+        };
+      case 'research':
+        return {
+          tag: 'SCIENTIFIC RESEARCH LABS & ACADEMIC FELLOWSHIPS',
+          tagClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+          title: 'Research & Academic Fellowships Tracker',
+          description: "Fully funded research internships and visiting student programmes at the world's premier scientific institutes (CERN Summer Student, DESY Germany, RIKEN Japan, Max Planck MPI-SWS, Weizmann Israel, Mitacs Canada, DAAD Germany, NTU Singapore).",
+          icon: FlaskConical,
+          iconColor: 'text-emerald-400',
+          countLabel: 'Research Programs',
+        };
+      case 'open_source':
+        return {
+          tag: 'OPEN SOURCE GRANTS & CONTRIBUTOR FELLOWSHIPS',
+          tagClass: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+          title: 'Open Source Grants & Contributor Fellowships',
+          description: 'Prestigious open-source contributor programs & funded developer grants (Google Summer of Code, Outreachy, Linux Foundation LFX, MLH Fellowship, Google Season of Docs).',
+          icon: GitBranch,
+          iconColor: 'text-cyan-400',
+          countLabel: 'Contributor Grants',
+        };
+      case 'internships':
+      default:
+        return {
+          tag: 'CORPORATE RECRUITMENT RECURRING CALENDAR',
+          tagClass: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
+          title: 'Corporate Internships & High-Yield Tech Programs',
+          description: 'Top technology firms (Google, Microsoft, Amazon, Nvidia, Netflix, Apple, Uber, ServiceNow), Quant/HFT powerhouses (Jane Street, Citadel, Jump Trading), and Frontier AI labs (OpenAI, DeepMind, Meta FAIR). Calculated live against your current viewing day with day-level precision.',
+          icon: Briefcase,
+          iconColor: 'text-indigo-400',
+          countLabel: 'Tracked Roles',
+        };
+    }
+  }, [portalType]);
+
+  const PortalIcon = portalMeta.icon;
+
   return (
     <div className="space-y-6">
       
@@ -648,9 +772,9 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-indigo-400" />
-                ANNUAL RECURRING RECRUITMENT CALENDAR
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold border flex items-center gap-1.5 ${portalMeta.tagClass}`}>
+                <PortalIcon className={`w-3.5 h-3.5 ${portalMeta.iconColor}`} />
+                {portalMeta.tag}
               </span>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-purple-500/10 text-purple-300 border border-purple-500/20 flex items-center gap-1">
                 <Info className="w-3 h-3 text-purple-400" />
@@ -658,21 +782,20 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
               </span>
             </div>
             <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              Annual Internship Announcement Tracker
+              {portalMeta.title}
             </h3>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Top technology firms (Google, Microsoft, Amazon, Nvidia, Netflix, Apple, Uber, Oracle) follow cyclical recruitment waves. 
-              Calculated live against your current viewing day with day-level precision.
+              {portalMeta.description}
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             <div className="bg-slate-900/90 border border-slate-800 rounded-xl px-4 py-3 text-center">
               <span className="block text-2xl font-black font-mono text-indigo-400">
-                {RECURRING_ANNUAL_INTERNSHIPS.length}
+                {allCycles.length}
               </span>
               <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
-                Tracked Programs
+                {portalMeta.countLabel}
               </span>
             </div>
             {onNavigateToCalendar && (
@@ -982,125 +1105,230 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                   : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
               }`}
             >
-              <span>All Opportunities ({categoryCounts.all})</span>
+              <span>All ({categoryCounts.all})</span>
             </button>
 
-            {/* Chip 1: 1st/2nd Year Freshers */}
+            {/* Chips for Corporate Internships portal */}
+            {(portalType === 'internships' || portalType === 'all') && (
+              <>
+                <button
+                  onClick={() => setSelectedCategory('tech_giant')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'tech_giant'
+                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black shadow-md shadow-sky-500/25 ring-1 ring-sky-300'
+                      : 'bg-sky-950/30 text-sky-300 hover:bg-sky-950/60 border border-sky-800/50'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Big Tech ({categoryCounts.tech_giant})</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedCategory('quant_hft')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'quant_hft'
+                      ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/30 ring-1 ring-amber-300'
+                      : 'bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 border border-amber-800/50'
+                  }`}
+                >
+                  <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Quants &amp; HFT ({categoryCounts.quant_hft})</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedCategory('frontier_ai')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'frontier_ai'
+                      ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-black shadow-md shadow-violet-600/30 ring-1 ring-violet-400/50'
+                      : 'bg-violet-950/30 text-violet-300 hover:bg-violet-950/60 border border-violet-800/50'
+                  }`}
+                >
+                  <Cpu className="w-3.5 h-3.5 text-violet-400" />
+                  <span>Frontier AI ({categoryCounts.frontier_ai})</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedCategory('early_undergrad_exclusive')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'early_undergrad_exclusive'
+                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-slate-950 font-black shadow-md shadow-cyan-500/25 ring-1 ring-cyan-300'
+                      : 'bg-cyan-950/30 text-cyan-300 hover:bg-cyan-950/60 border border-cyan-800/50'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>1st/2nd Yr Freshers ({categoryCounts.early_undergrad_exclusive})</span>
+                </button>
+              </>
+            )}
+
+            {/* Chips for Scholarships portal */}
+            {(portalType === 'scholarships' || portalType === 'all') && (
+              <>
+                <button
+                  onClick={() => setSelectedCategory('scholarship_12th')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'scholarship_12th'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/25'
+                      : 'bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 border border-amber-800/50'
+                  }`}
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Class 12th &amp; Early Talent ({categoryCounts.scholarship_12th})</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedCategory('global_full_ride_3cr')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'global_full_ride_3cr'
+                      ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-slate-950 font-black shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-300'
+                      : 'bg-emerald-950/40 text-emerald-300 hover:bg-emerald-950/70 border border-emerald-800/60'
+                  }`}
+                >
+                  <Crown className="w-3.5 h-3.5 text-amber-400" />
+                  <span>₹3-4 Cr Full-Rides ({categoryCounts.global_full_ride_3cr})</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedCategory('pre_university_full_ride')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'pre_university_full_ride'
+                      ? 'bg-gradient-to-r from-rose-500 via-red-500 to-amber-500 text-white font-black shadow-lg shadow-rose-500/30 ring-2 ring-rose-400'
+                      : 'bg-rose-950/40 text-rose-300 hover:bg-rose-950/70 border border-rose-800/60'
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Early Runway: Pre-Univ Full-Rides ({categoryCounts.pre_university_full_ride})</span>
+                </button>
+              </>
+            )}
+
+            {/* Chips for Research & Fellowships portal */}
+            {(portalType === 'research' || portalType === 'all') && (
+              <>
+                <button
+                  onClick={() => setSelectedCategory('scientific_lab')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'scientific_lab'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black shadow-md shadow-blue-500/25'
+                      : 'bg-blue-950/30 text-blue-300 hover:bg-blue-950/60 border border-blue-800/50'
+                  }`}
+                >
+                  <FlaskConical className="w-3.5 h-3.5 text-blue-400" />
+                  <span>Global Research Labs ({categoryCounts.scientific_lab})</span>
+                </button>
+
+                <button
+                  onClick={() => setSelectedCategory('academic_fellowship')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCategory === 'academic_fellowship'
+                      ? 'bg-gradient-to-r from-teal-500 to-emerald-600 text-slate-950 font-black shadow-md shadow-teal-500/25'
+                      : 'bg-teal-950/30 text-teal-300 hover:bg-teal-950/60 border border-teal-800/50'
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5 text-teal-400" />
+                  <span>Academic Fellowships ({categoryCounts.academic_fellowship})</span>
+                </button>
+              </>
+            )}
+
+            {/* Chips for Open Source portal */}
+            {(portalType === 'open_source' || portalType === 'all') && (
+              <button
+                onClick={() => setSelectedCategory('open_source_grant')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                  selectedCategory === 'open_source_grant'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black shadow-md shadow-emerald-500/25'
+                    : 'bg-emerald-950/30 text-emerald-300 hover:bg-emerald-950/60 border border-emerald-800/50'
+                }`}
+              >
+                <GitBranch className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Open-Source Grants ({categoryCounts.open_source_grant})</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* PROMPT 33: COUNTRY / LOCATION FILTER (CHIPS & DROPDOWN WITH DYNAMIC COUNTS) */}
+        <div className="mt-3 pt-3 border-t border-slate-800/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 text-cyan-400" />
+                <span>Host Country &amp; Jurisdiction Filter</span>
+              </span>
+              {selectedCountry !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCountry('all')}
+                  className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 bg-cyan-950/60 hover:bg-cyan-900/60 px-2 py-0.5 rounded border border-cyan-700/60 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="Reset country filter to All"
+                >
+                  <span>Reset to All</span>
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown selector for rapid navigation */}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="text-[11px] font-mono text-slate-400">Jump to Country:</span>
+              <select
+                value={selectedCountry}
+                onChange={(e) => setSelectedCountry(e.target.value)}
+                aria-label="Filter by Country"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono font-bold text-cyan-300 focus:outline-none focus:border-cyan-400 cursor-pointer shadow-sm"
+              >
+                <option value="all">🌐 All Countries ({allCycles.length})</option>
+                {distinctCountries.map(c => (
+                  <option key={c} value={c}>
+                    {getCountryFlag(c)} {c} ({countryCounts[c] || 0})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Interactive Country Filter Chips */}
+          <div className="flex flex-wrap items-center gap-1.5">
             <button
-              onClick={() => setSelectedCategory('early_undergrad_exclusive')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'early_undergrad_exclusive'
+              type="button"
+              onClick={() => setSelectedCountry('all')}
+              className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCountry === 'all'
                   ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-slate-950 font-black shadow-md shadow-cyan-500/25 ring-1 ring-cyan-300'
-                  : 'bg-cyan-950/30 text-cyan-300 hover:bg-cyan-950/60 border border-cyan-800/50'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              <span>1st/2nd Yr Freshers ({categoryCounts.early_undergrad_exclusive})</span>
+              <span>🌐 All Countries</span>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                selectedCountry === 'all' ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+              }`}>
+                {allCycles.length}
+              </span>
             </button>
-
-            {/* Chip 2: Open-Source Grants */}
-            <button
-              onClick={() => setSelectedCategory('open_source_grant')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'open_source_grant'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black shadow-md shadow-emerald-500/25'
-                  : 'bg-emerald-950/30 text-emerald-300 hover:bg-emerald-950/60 border border-emerald-800/50'
-              }`}
-            >
-              <GitBranch className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Open-Source ({categoryCounts.open_source_grant})</span>
-            </button>
-
-            {/* Chip 3: Global Research Labs */}
-            <button
-              onClick={() => setSelectedCategory('scientific_lab')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'scientific_lab'
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black shadow-md shadow-blue-500/25'
-                  : 'bg-blue-950/30 text-blue-300 hover:bg-blue-950/60 border border-blue-800/50'
-              }`}
-            >
-              <FlaskConical className="w-3.5 h-3.5 text-blue-400" />
-              <span>Global Research Labs ({categoryCounts.scientific_lab})</span>
-            </button>
-
-            {/* Chip 4: Frontier AI */}
-            <button
-              onClick={() => setSelectedCategory('frontier_ai')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'frontier_ai'
-                  ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-black shadow-md shadow-violet-600/30 ring-1 ring-violet-400/50'
-                  : 'bg-violet-950/30 text-violet-300 hover:bg-violet-950/60 border border-violet-800/50'
-              }`}
-            >
-              <Cpu className="w-3.5 h-3.5 text-violet-400" />
-              <span>Frontier AI ({categoryCounts.frontier_ai})</span>
-            </button>
-
-            {/* Chip 5: Quants & HFT */}
-            <button
-              onClick={() => setSelectedCategory('quant_hft')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'quant_hft'
-                  ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/30 ring-1 ring-amber-300'
-                  : 'bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 border border-amber-800/50'
-              }`}
-            >
-              <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
-              <span>Quants & HFT ({categoryCounts.quant_hft})</span>
-            </button>
-
-            {/* Chip 6: Big Tech Giants */}
-            <button
-              onClick={() => setSelectedCategory('tech_giant')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'tech_giant'
-                  ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white font-black shadow-md shadow-sky-500/25 ring-1 ring-sky-300'
-                  : 'bg-sky-950/30 text-sky-300 hover:bg-sky-950/60 border border-sky-800/50'
-              }`}
-            >
-              <Building2 className="w-3.5 h-3.5 text-sky-400" />
-              <span>Big Tech ({categoryCounts.tech_giant})</span>
-            </button>
-
-            {/* Chip 7: ₹3-4 Cr Full-Rides */}
-            <button
-              onClick={() => setSelectedCategory('global_full_ride_3cr')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'global_full_ride_3cr'
-                  ? 'bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 text-slate-950 font-black shadow-lg shadow-emerald-500/25 ring-1 ring-emerald-300'
-                  : 'bg-emerald-950/40 text-emerald-300 hover:bg-emerald-950/70 border border-emerald-800/60'
-              }`}
-            >
-              <Crown className="w-3.5 h-3.5 text-amber-400" />
-              <span>₹3-4 Cr Full-Rides ({categoryCounts.global_full_ride_3cr})</span>
-            </button>
-
-            {/* Chip 8: Class 12 & Scholarships */}
-            <button
-              onClick={() => setSelectedCategory('scholarship_12th')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'scholarship_12th'
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black shadow-md shadow-amber-500/25'
-                  : 'bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 border border-amber-800/50'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
-              <span>Class 12th ({categoryCounts.scholarship_12th})</span>
-            </button>
-
-            {/* Chip 9: Early Runway: Pre-University Full-Rides */}
-            <button
-              onClick={() => setSelectedCategory('pre_university_full_ride')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                selectedCategory === 'pre_university_full_ride'
-                  ? 'bg-gradient-to-r from-rose-500 via-red-500 to-amber-500 text-white font-black shadow-lg shadow-rose-500/30 ring-2 ring-rose-400'
-                  : 'bg-rose-950/40 text-rose-300 hover:bg-rose-950/70 border border-rose-800/60'
-              }`}
-            >
-              <Award className="w-3.5 h-3.5 text-rose-400" />
-              <span>Early Runway: Pre-Univ Full-Rides ({categoryCounts.pre_university_full_ride})</span>
-            </button>
+            {distinctCountries.map(c => {
+              const isSelected = selectedCountry === c;
+              const count = countryCounts[c] || 0;
+              return (
+                <button
+                  type="button"
+                  key={c}
+                  onClick={() => setSelectedCountry(c)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    isSelected
+                      ? 'bg-gradient-to-r from-cyan-500 to-teal-500 text-slate-950 font-black shadow-md shadow-cyan-500/25 ring-1 ring-cyan-300'
+                      : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800/80'
+                  }`}
+                >
+                  <span>{getCountryFlag(c)} {c}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${
+                    isSelected ? 'bg-slate-950/20 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'
+                  }`}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -1398,13 +1626,18 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                         size="md"
                       />
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="text-base font-bold text-slate-100 group-hover:text-indigo-300 transition-colors">
                             {cycle.companyName}
                           </h4>
                           <span className="text-[10px] font-mono text-slate-400 bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700">
                             {cycle.companyDomain}
                           </span>
+                          {cycle.country && (
+                            <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/70 px-1.5 py-0.5 rounded border border-cyan-800/70 flex items-center gap-1" title={`Program Location: ${cycle.country}`}>
+                              <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs text-indigo-400 font-mono font-semibold block mt-0.5">
                           {cycle.programTitle}
@@ -1508,8 +1741,8 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                     </div>
                   </div>
 
-                  {/* EXTRA PROMINENT (Normal se zyada bold / red-bordered) MANDATORY DISCLAIMER FOR PRE-UNIVERSITY FULL-RIDE TIER */}
-                  {(cycle.isPreUniversityFullRide || cycle.tierCategory === 'pre_university_full_ride' || cycle.disclaimerNotice) && (
+                  {/* EXTRA PROMINENT (Normal se zyada bold / red-bordered) MANDATORY DISCLAIMER FOR SCHOLARSHIP CARDS & PRE-UNIVERSITY FULL-RIDE TIER */}
+                  {(portalType === 'scholarships' || UpcomingInternshipsService.isCycleInPortal(cycle, 'scholarships') || cycle.isPreUniversityFullRide || cycle.tierCategory === 'pre_university_full_ride' || cycle.disclaimerNotice) && (
                     <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-red-950/90 via-red-900/50 to-slate-950 border-2 border-red-500 shadow-lg shadow-red-950/60 flex items-start gap-2.5 animate-pulse-slow">
                       <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                       <div className="space-y-1 w-full">
@@ -1524,7 +1757,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                           )}
                         </div>
                         <p className="text-xs font-mono font-black text-red-100 leading-snug tracking-tight">
-                          &ldquo;{cycle.disclaimerNotice || 'Confirm exact dates and opening quotas directly on the official host university/program website — this schedule serves as an advisory guide.'}&rdquo;
+                          &ldquo;{cycle.disclaimerNotice || 'Confirm exact dates, application deadlines, and opening quotas directly on the official host scholarship/institution website — this schedule serves as an advisory guide.'}&rdquo;
                         </p>
                       </div>
                     </div>

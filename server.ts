@@ -108,74 +108,6 @@ app.get('/api/funding/recent', async (req, res) => {
       extractedCompany: string;
     }> = [];
 
-    // Verified recent tech funding rounds
-    const verifiedAnchors = [
-      {
-        company: 'Zipline',
-        round: 'Series F',
-        amount: '$600M',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/2026/01/21/zipline-charts-drone-delivery-expansion-with-600m-in-new-funding/',
-        description: 'Autonomous instant logistics & drone delivery network'
-      },
-      {
-        company: 'CoreWeave',
-        round: 'Series C',
-        amount: '$1.1B',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Specialized hyperscale cloud GPU infrastructure for AI'
-      },
-      {
-        company: 'Together AI',
-        round: 'Series B',
-        amount: '$106M',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Leading cloud platform for open-source generative AI models'
-      },
-      {
-        company: 'Figure AI',
-        round: 'Series B',
-        amount: '$675M',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Autonomous humanoid robotics backed by OpenAI & Nvidia'
-      },
-      {
-        company: 'Glean',
-        round: 'Series E',
-        amount: '$260M',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Enterprise search and work AI assistant'
-      },
-      {
-        company: 'Anduril Industries',
-        round: 'Series F',
-        amount: '$1.5B',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Advanced autonomous defense hardware and software'
-      },
-      {
-        company: 'Anthropic',
-        round: 'Series D',
-        amount: '$2.75B',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Frontier AI safety research and Claude foundation intelligence'
-      },
-      {
-        company: 'Mistral AI',
-        round: 'Series B',
-        amount: '$640M',
-        date: 'Recent Round',
-        link: 'https://techcrunch.com/tag/funding/',
-        description: 'Open-weight frontier foundation models and enterprise AI reasoning'
-      }
-    ];
-
     for (const feedUrl of feeds) {
       try {
         const response = await fetch(feedUrl, {
@@ -229,7 +161,6 @@ app.get('/api/funding/recent', async (req, res) => {
       success: true,
       timestamp: Date.now(),
       feedCount: rawAnnouncements.length,
-      anchors: verifiedAnchors,
       announcements: rawAnnouncements
     });
   } catch (error: any) {

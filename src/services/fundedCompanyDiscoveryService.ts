@@ -47,101 +47,6 @@ export class FundedCompanyDiscoveryService {
   private static lastScannedAt = 0;
 
   /**
-   * Verified anchor companies that recently completed mega/growth funding rounds
-   * with confirmed public ATS boards.
-   */
-  private static KNOWN_FUNDED_ANCHORS: FundedCompanyCandidate[] = [
-    {
-      companyName: 'Zipline',
-      domain: 'flyzipline.com',
-      roundName: 'Series F',
-      amountRaised: '$600M',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Autonomous instant logistics & global drone delivery',
-      knownAtsSlug: 'zipline',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'CoreWeave',
-      domain: 'coreweave.com',
-      roundName: 'Series C',
-      amountRaised: '$1.1B',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Specialized hyperscale cloud GPU infrastructure for frontier AI',
-      knownAtsSlug: 'coreweave',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'Together AI',
-      domain: 'together.ai',
-      roundName: 'Series B',
-      amountRaised: '$106M',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Cloud platform for open-source AI models & training cluster infrastructure',
-      knownAtsSlug: 'togetherai',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'Figure AI',
-      domain: 'figure.ai',
-      roundName: 'Series B',
-      amountRaised: '$675M',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Autonomous humanoid robotics backed by OpenAI & Nvidia',
-      knownAtsSlug: 'figure',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'Glean',
-      domain: 'glean.com',
-      roundName: 'Series E',
-      amountRaised: '$260M',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'AI-powered enterprise work search & autonomous intelligence assistant',
-      knownAtsSlug: 'gleanwork',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'Anduril Industries',
-      domain: 'anduril.com',
-      roundName: 'Series F',
-      amountRaised: '$1.5B',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Advanced autonomous defense hardware and sensor fusion operating systems',
-      knownAtsSlug: 'andurilindustries',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'Anthropic',
-      domain: 'anthropic.com',
-      roundName: 'Series D',
-      amountRaised: '$2.75B',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Frontier AI safety research and Claude foundation intelligence',
-      knownAtsSlug: 'anthropic',
-      knownAtsProvider: 'greenhouse'
-    },
-    {
-      companyName: 'Mistral AI',
-      domain: 'mistral.ai',
-      roundName: 'Series B',
-      amountRaised: '$640M',
-      announcedDate: 'Recent 30 Days',
-      sourceUrl: 'https://techcrunch.com/tag/funding/',
-      description: 'Open-weight frontier foundation models and enterprise AI reasoning',
-      knownAtsSlug: 'mistral',
-      knownAtsProvider: 'lever'
-    }
-  ];
-
-  /**
    * Helper to execute fetch with a strict abort timeout to prevent any hanging
    */
   private static async fetchWithTimeout(url: string, timeoutMs = 3000): Promise<Response | null> {
@@ -271,7 +176,7 @@ export class FundedCompanyDiscoveryService {
    * Fetches recent funding announcements from server proxy or public RSS
    */
   public static async fetchRecentFundingNews(): Promise<FundedCompanyCandidate[]> {
-    const candidates: FundedCompanyCandidate[] = [...this.KNOWN_FUNDED_ANCHORS];
+    const candidates: FundedCompanyCandidate[] = [];
 
     try {
       const res = await this.fetchWithTimeout('/api/funding/recent', 3500);
@@ -296,9 +201,10 @@ export class FundedCompanyDiscoveryService {
         }
       }
     } catch (err) {
-      logger.warn('[FundedDiscovery] Live feed probe bypassed, utilizing verified anchors', err);
+      logger.warn('[FundedDiscovery] Live feed probe failed, returning empty candidates', err);
     }
 
+    // Never use fabricated or hardcoded listings as a fallback — return empty array on failure
     return candidates;
   }
 
@@ -594,7 +500,7 @@ export class FundedCompanyDiscoveryService {
       return discoveredJobs;
     } catch (err: any) {
       logger.error('FundedDiscovery', 'Error discovering funded opportunities', err);
-      return this.cachedOpportunities;
+      return [];
     } finally {
       this.isScanning = false;
     }

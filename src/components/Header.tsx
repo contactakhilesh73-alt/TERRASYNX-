@@ -34,6 +34,10 @@ import {
   Mail,
   UserPlus,
   LogIn,
+  Briefcase,
+  GraduationCap,
+  FlaskConical,
+  GitBranch,
   BookOpen,
   Radio
 } from 'lucide-react';
@@ -348,18 +352,67 @@ export const Header: React.FC<HeaderProps> = ({
             )}
           </button>
 
+          {/* Top-Level Portal 1: Corporate Internships (tech_giant, quant_hft, frontier_ai, early_undergrad_exclusive) */}
           <button
-            onClick={() => onModeChange('internship_calendar')}
+            onClick={() => onModeChange('internships')}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              currentMode === 'internship_calendar'
-                ? 'bg-indigo-500/20 text-indigo-200 border border-indigo-500/50 shadow-sm shadow-indigo-900/50'
+              currentMode === 'internships'
+                ? 'bg-blue-600/20 text-blue-200 border border-blue-500/50 shadow-sm shadow-blue-900/50'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
             }`}
           >
-            <Compass className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Seasonal Internships</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-800">
-              Ongoing &amp; Upcoming
+            <Briefcase className="w-3.5 h-3.5 text-blue-400" />
+            <span>Corporate Internships</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-blue-800 font-mono">
+              Corporate
+            </span>
+          </button>
+
+          {/* Top-Level Portal 2: Scholarships (scholarship_12th, global_full_ride, pre_university_full_ride) */}
+          <button
+            onClick={() => onModeChange('scholarships')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              currentMode === 'scholarships'
+                ? 'bg-amber-500/20 text-amber-200 border border-amber-500/50 shadow-sm shadow-amber-900/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+            <span>Scholarships</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-950 text-amber-300 border border-amber-800 font-mono">
+              Full-Ride &amp; 12th
+            </span>
+          </button>
+
+          {/* Top-Level Portal 3: Research & Fellowships (scientific_lab, academic_fellowship) */}
+          <button
+            onClick={() => onModeChange('research_fellowships')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              currentMode === 'research_fellowships'
+                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/50 shadow-sm shadow-emerald-900/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+            }`}
+          >
+            <FlaskConical className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Research &amp; Fellowships</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 font-mono">
+              Labs
+            </span>
+          </button>
+
+          {/* Top-Level Portal 4: Open Source Programs (open_source_grant) */}
+          <button
+            onClick={() => onModeChange('open_source')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              currentMode === 'open_source'
+                ? 'bg-purple-600/20 text-purple-200 border border-purple-500/50 shadow-sm shadow-purple-900/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+            }`}
+          >
+            <GitBranch className="w-3.5 h-3.5 text-purple-400" />
+            <span>Open Source Programs</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-purple-950 text-purple-300 border border-purple-800 font-mono">
+              Grants
             </span>
           </button>
 

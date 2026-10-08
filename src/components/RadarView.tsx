@@ -111,10 +111,10 @@ export const RadarView: React.FC<RadarViewProps> = ({
       if (opps.length > 0) {
         setSingaporeScanMsg(`Discovered ${opps.length} official Singapore Government verified tech opportunities!`);
       } else {
-        setSingaporeScanMsg('Singapore live feed temporarily unavailable');
+        setSingaporeScanMsg('Live feed temporarily unavailable');
       }
     } catch {
-      setSingaporeScanMsg('Singapore live feed temporarily unavailable');
+      setSingaporeScanMsg('Live feed temporarily unavailable');
     } finally {
       setIsScanningSingapore(false);
     }
@@ -128,10 +128,10 @@ export const RadarView: React.FC<RadarViewProps> = ({
       if (opps.length > 0) {
         setBuiltInScanMsg(`Discovered ${opps.length} verified tech roles directly from Built In!`);
       } else {
-        setBuiltInScanMsg('Built In live feed temporarily unavailable');
+        setBuiltInScanMsg('Live feed temporarily unavailable');
       }
     } catch {
-      setBuiltInScanMsg('Built In live feed temporarily unavailable');
+      setBuiltInScanMsg('Live feed temporarily unavailable');
     } finally {
       setIsScanningBuiltIn(false);
     }
@@ -145,10 +145,10 @@ export const RadarView: React.FC<RadarViewProps> = ({
       if (opps.length > 0) {
         setFundedScanMsg(`Discovered ${opps.length} active roles across recently-funded tech companies!`);
       } else {
-        setFundedScanMsg('Funded companies live feed temporarily unavailable');
+        setFundedScanMsg('Live feed temporarily unavailable');
       }
     } catch {
-      setFundedScanMsg('Funded companies live feed temporarily unavailable');
+      setFundedScanMsg('Live feed temporarily unavailable');
     } finally {
       setIsScanningFunded(false);
     }
@@ -787,7 +787,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  {singaporeScanMsg || (opportunities.some(o => o.isSingaporeGovPortal) ? 'Official technology requisitions, engineering internships, and early-career software roles directly from mycareersfuture.gov.sg.' : 'Singapore live feed temporarily unavailable')}
+                  {singaporeScanMsg || (opportunities.some(o => o.isSingaporeGovPortal) ? 'Official technology requisitions, engineering internships, and early-career software roles directly from mycareersfuture.gov.sg.' : 'Live feed temporarily unavailable')}
                 </p>
               </div>
             </div>
@@ -907,14 +907,8 @@ export const RadarView: React.FC<RadarViewProps> = ({
             <div className="text-center py-16 px-4 rounded-2xl border border-slate-800 bg-slate-900/30">
               <Filter className="w-10 h-10 text-slate-600 mx-auto mb-3" />
               <h4 className="text-base font-semibold text-slate-300">
-                {activeTab === 'singapore_gov'
-                  ? 'Singapore live feed temporarily unavailable'
-                  : activeTab === 'builtin'
-                  ? 'Built In live feed temporarily unavailable'
-                  : activeTab === 'hacker_news'
-                  ? 'Hacker News live feed temporarily unavailable'
-                  : activeTab === 'newly_funded'
-                  ? 'Funded companies live feed temporarily unavailable'
+                {activeTab === 'singapore_gov' || activeTab === 'builtin' || activeTab === 'newly_funded' || activeTab === 'hacker_news'
+                  ? 'Live feed temporarily unavailable'
                   : opportunities.length === 0
                   ? 'Connecting to Verified Live ATS Feeds...'
                   : 'No opportunities match the selected filter'}

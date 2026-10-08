@@ -406,7 +406,7 @@ export class SingaporeGovScannerService {
       return opportunities;
     } catch (err: any) {
       logger.error('SingaporeGovScanner', 'Error scanning Singapore Government portal', err);
-      return this.cachedOpportunities;
+      return [];
     } finally {
       this.isScanning = false;
     }
@@ -421,6 +421,7 @@ export class SingaporeGovScannerService {
       {
         id: 'cycle_mycareersfuture_singapore_gov',
         companyName: 'MyCareersFuture Singapore (GovTech / WSG)',
+        country: 'Singapore',
         companyLogo: 'https://static.mycareersfuture.gov.sg/images/company/logos/govtech.jpg',
         companyDomain: 'mycareersfuture.gov.sg',
         programTitle: 'Singapore National Tech Careers & Internship Initiative (MyCareersFuture / Smart Nation SG)',

@@ -199,7 +199,7 @@ export class BuiltInScannerService {
 
   /**
    * Fetches listings for a specific hub and role type from the server API,
-   * falling back to direct HTML or verified anchors.
+   * falling back to direct HTML. Never uses fabricated or hardcoded anchors.
    */
   public static async fetchHubListings(
     hub: BuiltInHub,
@@ -471,7 +471,7 @@ export class BuiltInScannerService {
       return opportunities;
     } catch (err: any) {
       logger.error('BuiltInScanner', 'Error executing Built In scan', err);
-      return this.cachedOpportunities;
+      return [];
     } finally {
       this.isScanning = false;
     }
