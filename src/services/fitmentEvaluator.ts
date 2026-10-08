@@ -15,7 +15,7 @@ export interface DimensionWeightConfig {
   compensationFairness: number;// Default: 10%
 }
 
-// PROMPT 25: Evidence Tier Weights (Discipline against Santiago's hallucination trap)
+// PROMPT 25: Evidence Tier Weights (Discipline against ungrounded hallucination traps)
 // EXPLICIT ground-truth requirements carry maximum weight (1.0).
 // INFERRED general assumptions are hard-capped at 0.35 to avoid artificial score distortion.
 export const EVIDENCE_TIER_WEIGHTS: Record<EvidenceTier, number> = {

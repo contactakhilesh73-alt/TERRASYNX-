@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { 
   BuiltInScannerService, 
   BUILTIN_HUB_URLS, 
-  VERIFIED_BUILTIN_ANCHORS,
   BuiltInRawListing 
 } from '../services/builtInScannerService';
 
@@ -127,13 +126,15 @@ describe('Built In Aggregator Service (PROMPT 30)', () => {
     expect(opp.builtInDetails?.roleCategory).toBe('internship');
   });
 
-  it('provides verified fallback anchors for all required hubs', () => {
-    expect(VERIFIED_BUILTIN_ANCHORS.length).toBeGreaterThanOrEqual(4);
-    const hubs = VERIFIED_BUILTIN_ANCHORS.map(a => a.hub);
-    expect(hubs).toContain('SF');
-    expect(hubs).toContain('NYC');
-    expect(hubs).toContain('Austin');
-    expect(hubs).toContain('Seattle');
-    expect(hubs).toContain('Remote');
+  it('strictly adheres to zero data fabrication: returns empty array when live fetch fails', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = () => Promise.reject(new Error('Network offline'));
+    try {
+      const results = await BuiltInScannerService.fetchHubListings('SF', 'entry-level');
+      expect(results).toEqual([]);
+      expect(results.length).toBe(0);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

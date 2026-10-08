@@ -1264,87 +1264,6 @@ const BUILTIN_SERVER_HUB_URLS: Record<string, { 'entry-level': string; 'internsh
   },
 };
 
-const BUILTIN_SERVER_ANCHORS = [
-  {
-    jobId: '11511366',
-    title: 'Account Executive- Startups, Greenfield',
-    company: 'Vercel',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2022-09/Vercel.jpg',
-    workMode: 'Hybrid',
-    location: 'San Francisco, CA, USA',
-    salary: '170K-209K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/account-executive-startups-greenfield/11511366',
-    hub: 'SF',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '11494920',
-    title: 'AI Engineer Associate Consultant',
-    company: 'Slalom',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2022-06/slalom-logo.png',
-    workMode: 'Hybrid',
-    location: 'San Francisco, CA, USA',
-    salary: '105K-135K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/ai-engineer-associate-consultant/11494920',
-    hub: 'SF',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '9972377',
-    title: 'Engineer - Metrology Real Time Defects Analysis',
-    company: 'Micron Technology',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2026-01/micron-symbol-blk-rgb%20(jpeg).jpeg',
-    workMode: 'On-Site',
-    location: 'New York, NY, USA',
-    salary: '95K-125K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/engineer-metrology-real-time-defects-analysis/9972377',
-    hub: 'NYC',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '11509854',
-    title: 'Finance Systems & Automation Analyst',
-    company: 'inKind',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2021-07/inkind.png',
-    workMode: 'Hybrid',
-    location: 'Austin, TX, USA',
-    salary: '80K-90K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/finance-systems-automation-analyst/11509854',
-    hub: 'Austin',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '11503412',
-    title: 'Software Development Engineer Intern - Cloud Infrastructure',
-    company: 'Amazon Web Services',
-    logo: 'https://logo.clearbit.com/aws.amazon.com',
-    workMode: 'Hybrid',
-    location: 'Seattle, WA, USA',
-    salary: '$55 - $72 / hr',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/jobs/internships/seattle',
-    hub: 'Seattle',
-    roleType: 'internship',
-  },
-  {
-    jobId: '11506120',
-    title: 'Front-End Engineering Intern (Remote)',
-    company: 'Zapier',
-    logo: 'https://logo.clearbit.com/zapier.com',
-    workMode: 'Remote',
-    location: 'Remote, USA',
-    salary: '$48 - $65 / hr',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/jobs/remote/internships',
-    hub: 'Remote',
-    roleType: 'internship',
-  },
-];
-
 function parseBuiltInHtmlServer(html: string, hub: string, roleType: string) {
   const cardSplits = html.split(/<div\s+id=[\"']job-card-/i);
   const listings: any[] = [];
@@ -1483,15 +1402,9 @@ app.get('/api/builtin/listings', async (req, res) => {
             const html = await response.text();
             const parsed = parseBuiltInHtmlServer(html, hub, roleType);
             aggregatedListings.push(...parsed);
-          } else {
-            // Fallback for this hub/type
-            const matching = BUILTIN_SERVER_ANCHORS.filter(a => a.hub === hub && a.roleType === roleType);
-            aggregatedListings.push(...matching);
           }
         } catch {
-          // Graceful fallback to verified anchor
-          const matching = BUILTIN_SERVER_ANCHORS.filter(a => a.hub === hub && a.roleType === roleType);
-          aggregatedListings.push(...matching);
+          // Never use fabricated job postings as a fallback — skip on failure
         }
       }
     }
@@ -1524,7 +1437,7 @@ app.get('/api/builtin/listings', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: err?.message || 'Failed to aggregate Built In listings',
-      listings: BUILTIN_SERVER_ANCHORS,
+      listings: [],
     });
   }
 });
@@ -1539,94 +1452,6 @@ interface SingaporeGovCacheStore {
   timestamp: number;
 }
 const singaporeGovServerCache: Record<string, SingaporeGovCacheStore> = {};
-
-const SINGAPORE_SERVER_ANCHORS = [
-  {
-    jobPostId: 'MCF-2026-1758777',
-    title: 'JUNIOR Networks and Systems Engineer',
-    companyName: 'NETXPOSE PTE. LTD.',
-    companyLogo: 'https://logo.clearbit.com/netxpose.com',
-    companyUen: '201931882G',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/junior-networks-systems-engineer-netxpose-99b589b553df6f4aa9d019537207278b',
-    salaryMin: 2800,
-    salaryMax: 3500,
-    salaryType: 'Monthly',
-    skills: ['Network Administration', 'Cloud Infrastructure', 'Cybersecurity', 'Linux Systems'],
-    location: 'Central, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Permanent'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: false,
-  },
-  {
-    jobPostId: 'MCF-2026-1756986',
-    title: 'Software Engineer Intern (Cloud & Distributed Systems)',
-    companyName: 'CODEX SOLUTIONS PTE. LTD.',
-    companyLogo: 'https://logo.clearbit.com/codexsolutions.com',
-    companyUen: '202015243M',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/software-engineer-intern-codex-solutions-199ef38b989140cb942fdb4b1910ca56',
-    salaryMin: 1500,
-    salaryMax: 2000,
-    salaryType: 'Monthly',
-    skills: ['TypeScript', 'Node.js', 'PostgreSQL', 'Docker'],
-    location: 'West, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Internship'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: true,
-  },
-  {
-    jobPostId: 'MCF-2026-1749210',
-    title: 'Associate AI Engineer (Agentic Automation)',
-    companyName: 'WORKFLOW AUTOMATION PTE. LTD.',
-    companyLogo: 'https://logo.clearbit.com/workflowautomation.sg',
-    companyUen: '202108741D',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/consulting/business-development-partnerships-intern-workflow-automation-9562258fd70d4f4325a7180e598c5be5',
-    salaryMin: 3200,
-    salaryMax: 4200,
-    salaryType: 'Monthly',
-    skills: ['Python', 'Large Language Models', 'FastAPI', 'Agentic Workflows'],
-    location: 'Downtown Core, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Full Time'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: false,
-  },
-  {
-    jobPostId: 'MCF-2026-1748832',
-    title: 'Full Stack Software Development Intern',
-    companyName: 'TRINAX PRIVATE LIMITED',
-    companyLogo: 'https://logo.clearbit.com/trinaxgroup.com',
-    companyUen: '201201944Z',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/software-development-intern-trinax-8914f4821a02ec72243d855f62a79072',
-    salaryMin: 1200,
-    salaryMax: 1600,
-    salaryType: 'Monthly',
-    skills: ['React', 'JavaScript', 'Unity', 'Interactive Systems'],
-    location: 'Kallang, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Internship'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: true,
-  },
-  {
-    jobPostId: 'MCF-2026-1739501',
-    title: 'Cybersecurity Analyst (Fresh Graduate Track)',
-    companyName: 'GOVERNMENT TECHNOLOGY AGENCY (GovTech)',
-    companyLogo: 'https://logo.clearbit.com/tech.gov.sg',
-    companyUen: 'T08GB0025B',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/cybersecurity-analyst-govtech-singapore',
-    salaryMin: 4500,
-    salaryMax: 5500,
-    salaryType: 'Monthly',
-    skills: ['Threat Intelligence', 'Penetration Testing', 'Incident Response', 'Network Security'],
-    location: 'Mapletree Business City, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Permanent'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: false,
-  },
-];
 
 function parseSingaporeApiItemServer(item: any): any {
   if (!item || !item.title) return null;
@@ -1751,7 +1576,7 @@ app.get('/api/singapore/jobs', async (req, res) => {
       }
     }
 
-    const finalJobs = uniqueJobs.length > 0 ? uniqueJobs : SINGAPORE_SERVER_ANCHORS;
+    const finalJobs = uniqueJobs;
 
     singaporeGovServerCache[cacheKey] = {
       jobs: finalJobs,
@@ -1769,7 +1594,7 @@ app.get('/api/singapore/jobs', async (req, res) => {
     return res.status(500).json({
       success: false,
       error: err?.message || 'Failed to fetch Singapore Gov jobs',
-      jobs: SINGAPORE_SERVER_ANCHORS,
+      jobs: [],
     });
   }
 });

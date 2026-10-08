@@ -41,7 +41,7 @@ export interface BuiltInScanSummary {
   totalListingsFound: number;
   hubsScanned: BuiltInHub[];
   listingsByHub: Record<string, number>;
-  source: 'api' | 'live_html' | 'cached';
+  source: 'api' | 'live_html' | 'cached' | 'empty';
 }
 
 const STORAGE_KEY = 'terrasynx_builtin_opportunities_v1';
@@ -74,88 +74,6 @@ export const BUILTIN_HUB_URLS: Record<BuiltInHub, { 'entry-level': string; 'inte
     defaultLocation: 'Seattle, WA',
   },
 };
-
-// Verified Built In Anchor Listings (ensures high-availability if network drops)
-export const VERIFIED_BUILTIN_ANCHORS: BuiltInRawListing[] = [
-  {
-    jobId: '11511366',
-    title: 'Account Executive- Startups, Greenfield',
-    company: 'Vercel',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2022-09/Vercel.jpg',
-    workMode: 'Hybrid',
-    location: 'San Francisco, CA, USA',
-    salary: '170K-209K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/account-executive-startups-greenfield/11511366',
-    hub: 'SF',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '11494920',
-    title: 'AI Engineer Associate Consultant',
-    company: 'Slalom',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2022-06/slalom-logo.png',
-    workMode: 'Hybrid',
-    location: 'San Francisco, CA, USA',
-    salary: '105K-135K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/ai-engineer-associate-consultant/11494920',
-    hub: 'SF',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '9972377',
-    title: 'Engineer - Metrology Real Time Defects Analysis',
-    company: 'Micron Technology',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2026-01/micron-symbol-blk-rgb%20(jpeg).jpeg',
-    workMode: 'On-Site',
-    location: 'New York, NY, USA',
-    salary: '95K-125K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/engineer-metrology-real-time-defects-analysis/9972377',
-    hub: 'NYC',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '11509854',
-    title: 'Finance Systems & Automation Analyst',
-    company: 'inKind',
-    logo: 'https://cdn.builtin.com/cdn-cgi/image/f=auto,fit=scale-down,w=128,h=128/sites/www.builtin.com/files/2021-07/inkind.png',
-    workMode: 'Hybrid',
-    location: 'Austin, TX, USA',
-    salary: '80K-90K Annually',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/job/finance-systems-automation-analyst/11509854',
-    hub: 'Austin',
-    roleType: 'entry-level',
-  },
-  {
-    jobId: '11503412',
-    title: 'Software Development Engineer Intern - Cloud Infrastructure',
-    company: 'Amazon Web Services',
-    logo: 'https://logo.clearbit.com/aws.amazon.com',
-    workMode: 'Hybrid',
-    location: 'Seattle, WA, USA',
-    salary: '$55 - $72 / hr',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/jobs/internships/seattle',
-    hub: 'Seattle',
-    roleType: 'internship',
-  },
-  {
-    jobId: '11506120',
-    title: 'Front-End Engineering Intern (Remote)',
-    company: 'Zapier',
-    logo: 'https://logo.clearbit.com/zapier.com',
-    workMode: 'Remote',
-    location: 'Remote, USA',
-    salary: '$48 - $65 / hr',
-    postedAgo: 'Recent',
-    link: 'https://builtin.com/jobs/remote/internships',
-    hub: 'Remote',
-    roleType: 'internship',
-  },
-];
 
 export class BuiltInScannerService {
   private static cachedOpportunities: Opportunity[] = [];
@@ -319,12 +237,8 @@ export class BuiltInScannerService {
       logger.warn('BuiltInScanner', `Direct HTML fetch failed for hub ${hub}`, e);
     }
 
-    // 3. Fallback to verified anchors matching this hub/type
-    const matchingAnchors = VERIFIED_BUILTIN_ANCHORS.filter(
-      a => (a.hub === hub || hub === 'Remote') && (a.roleType === roleType)
-    );
-
-    return matchingAnchors.length > 0 ? matchingAnchors : VERIFIED_BUILTIN_ANCHORS.slice(0, 2);
+    // Never use fabricated job postings as a fallback — return empty array
+    return [];
   }
 
   /**

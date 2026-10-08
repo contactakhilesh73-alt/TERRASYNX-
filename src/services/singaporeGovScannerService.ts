@@ -46,100 +46,11 @@ export interface SingaporeGovScanSummary {
   totalListingsFound: number;
   internshipsCount: number;
   entryLevelCount: number;
-  source: 'api' | 'cached' | 'fallback_anchors';
+  source: 'api' | 'cached' | 'empty';
 }
 
 const STORAGE_KEY = 'terrasynx_singapore_gov_opportunities_v1';
 const META_KEY = 'terrasynx_singapore_gov_meta_v1';
-
-// Verified Singapore Government Portal Tech Anchors
-export const VERIFIED_SINGAPORE_ANCHORS: SingaporeGovRawJob[] = [
-  {
-    jobPostId: 'MCF-2026-1758777',
-    title: 'JUNIOR Networks and Systems Engineer',
-    companyName: 'NETXPOSE PTE. LTD.',
-    companyLogo: 'https://logo.clearbit.com/netxpose.com',
-    companyUen: '201931882G',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/junior-networks-systems-engineer-netxpose-99b589b553df6f4aa9d019537207278b',
-    salaryMin: 2800,
-    salaryMax: 3500,
-    salaryType: 'Monthly',
-    skills: ['Network Administration', 'Cloud Infrastructure', 'Cybersecurity', 'Linux Systems'],
-    location: 'Central, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Permanent'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: false,
-  },
-  {
-    jobPostId: 'MCF-2026-1756986',
-    title: 'Software Engineer Intern (Cloud & Distributed Systems)',
-    companyName: 'CODEX SOLUTIONS PTE. LTD.',
-    companyLogo: 'https://logo.clearbit.com/codexsolutions.com',
-    companyUen: '202015243M',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/software-engineer-intern-codex-solutions-199ef38b989140cb942fdb4b1910ca56',
-    salaryMin: 1500,
-    salaryMax: 2000,
-    salaryType: 'Monthly',
-    skills: ['TypeScript', 'Node.js', 'PostgreSQL', 'Docker'],
-    location: 'West, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Internship'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: true,
-  },
-  {
-    jobPostId: 'MCF-2026-1749210',
-    title: 'Associate AI Engineer (Agentic Automation)',
-    companyName: 'WORKFLOW AUTOMATION PTE. LTD.',
-    companyLogo: 'https://logo.clearbit.com/workflowautomation.sg',
-    companyUen: '202108741D',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/consulting/business-development-partnerships-intern-workflow-automation-9562258fd70d4f4325a7180e598c5be5',
-    salaryMin: 3200,
-    salaryMax: 4200,
-    salaryType: 'Monthly',
-    skills: ['Python', 'Large Language Models', 'FastAPI', 'Agentic Workflows'],
-    location: 'Downtown Core, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Full Time'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: false,
-  },
-  {
-    jobPostId: 'MCF-2026-1748832',
-    title: 'Full Stack Software Development Intern',
-    companyName: 'TRINAX PRIVATE LIMITED',
-    companyLogo: 'https://logo.clearbit.com/trinaxgroup.com',
-    companyUen: '201201944Z',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/software-development-intern-trinax-8914f4821a02ec72243d855f62a79072',
-    salaryMin: 1200,
-    salaryMax: 1600,
-    salaryType: 'Monthly',
-    skills: ['React', 'JavaScript', 'Unity', 'Interactive Systems'],
-    location: 'Kallang, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Internship'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: true,
-  },
-  {
-    jobPostId: 'MCF-2026-1739501',
-    title: 'Cybersecurity Analyst (Fresh Graduate Track)',
-    companyName: 'GOVERNMENT TECHNOLOGY AGENCY (GovTech)',
-    companyLogo: 'https://logo.clearbit.com/tech.gov.sg',
-    companyUen: 'T08GB0025B',
-    jobDetailsUrl: 'https://www.mycareersfuture.gov.sg/job/information-technology/cybersecurity-analyst-govtech-singapore',
-    salaryMin: 4500,
-    salaryMax: 5500,
-    salaryType: 'Monthly',
-    skills: ['Threat Intelligence', 'Penetration Testing', 'Incident Response', 'Network Security'],
-    location: 'Mapletree Business City, Singapore',
-    categories: ['Information Technology'],
-    employmentTypes: ['Permanent'],
-    positionLevels: ['Fresh/entry level'],
-    isInternship: false,
-  },
-];
 
 export class SingaporeGovScannerService {
   private static cachedOpportunities: Opportunity[] = [];
@@ -282,17 +193,11 @@ export class SingaporeGovScannerService {
         return collected;
       }
     } catch (e) {
-      logger.warn('SingaporeGovScanner', 'Direct MCF fetch failed, using verified anchors', e);
+      logger.warn('SingaporeGovScanner', 'Direct MCF fetch failed, returning empty array', e);
     }
 
-    // 3. Fallback to verified anchors matching roleType
-    if (roleType === 'internship') {
-      return VERIFIED_SINGAPORE_ANCHORS.filter(a => a.isInternship);
-    }
-    if (roleType === 'entry-level') {
-      return VERIFIED_SINGAPORE_ANCHORS.filter(a => !a.isInternship);
-    }
-    return VERIFIED_SINGAPORE_ANCHORS;
+    // Never use fabricated job postings as a fallback — return empty array
+    return [];
   }
 
   /**

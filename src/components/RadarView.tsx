@@ -108,9 +108,13 @@ export const RadarView: React.FC<RadarViewProps> = ({
     setSingaporeScanMsg('Scanning official Singapore Government MyCareersFuture portal API...');
     try {
       const opps = await SingaporeGovScannerService.scanSingaporeRoles(true, selectedSingaporeRoleType);
-      setSingaporeScanMsg(`Discovered ${opps.length} official Singapore Government verified tech opportunities!`);
+      if (opps.length > 0) {
+        setSingaporeScanMsg(`Discovered ${opps.length} official Singapore Government verified tech opportunities!`);
+      } else {
+        setSingaporeScanMsg('Singapore live feed temporarily unavailable');
+      }
     } catch {
-      setSingaporeScanMsg('Completed Singapore portal scan with verified anchors.');
+      setSingaporeScanMsg('Singapore live feed temporarily unavailable');
     } finally {
       setIsScanningSingapore(false);
     }
@@ -121,9 +125,13 @@ export const RadarView: React.FC<RadarViewProps> = ({
     setBuiltInScanMsg(`Scanning Built In across ${selectedBuiltInHub === 'all' ? 'Remote, SF, NYC, Austin, Seattle' : selectedBuiltInHub}...`);
     try {
       const opps = await BuiltInScannerService.scanBuiltInRoles(true, selectedBuiltInHub, selectedBuiltInRoleType);
-      setBuiltInScanMsg(`Discovered ${opps.length} verified tech roles directly from Built In!`);
+      if (opps.length > 0) {
+        setBuiltInScanMsg(`Discovered ${opps.length} verified tech roles directly from Built In!`);
+      } else {
+        setBuiltInScanMsg('Built In live feed temporarily unavailable');
+      }
     } catch {
-      setBuiltInScanMsg('Completed Built In scan with verified anchors.');
+      setBuiltInScanMsg('Built In live feed temporarily unavailable');
     } finally {
       setIsScanningBuiltIn(false);
     }
@@ -134,9 +142,13 @@ export const RadarView: React.FC<RadarViewProps> = ({
     setFundedScanMsg('Scanning public funding news & probing Greenhouse / Lever endpoints...');
     try {
       const opps = await FundedCompanyDiscoveryService.discoverFundedOpportunities(true);
-      setFundedScanMsg(`Discovered ${opps.length} active roles across recently-funded tech companies!`);
+      if (opps.length > 0) {
+        setFundedScanMsg(`Discovered ${opps.length} active roles across recently-funded tech companies!`);
+      } else {
+        setFundedScanMsg('Funded companies live feed temporarily unavailable');
+      }
     } catch {
-      setFundedScanMsg('Completed scan with verified fallback anchors.');
+      setFundedScanMsg('Funded companies live feed temporarily unavailable');
     } finally {
       setIsScanningFunded(false);
     }
@@ -147,9 +159,13 @@ export const RadarView: React.FC<RadarViewProps> = ({
     setHnScanMsg('Scanning latest "Ask HN: Who is hiring?" thread with Gemini AI...');
     try {
       const opps = await HackerNewsScannerService.scanHnWhoIsHiring(true);
-      setHnScanMsg(`Discovered ${opps.length} high-confidence tech roles directly from Hacker News founders & teams!`);
+      if (opps.length > 0) {
+        setHnScanMsg(`Discovered ${opps.length} high-confidence tech roles directly from Hacker News founders & teams!`);
+      } else {
+        setHnScanMsg('Hacker News live feed temporarily unavailable');
+      }
     } catch {
-      setHnScanMsg('Completed HN scan with verified fallbacks.');
+      setHnScanMsg('Hacker News live feed temporarily unavailable');
     } finally {
       setIsScanningHn(false);
     }
@@ -771,7 +787,7 @@ export const RadarView: React.FC<RadarViewProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  {singaporeScanMsg || 'Official technology requisitions, engineering internships, and early-career software roles directly from mycareersfuture.gov.sg.'}
+                  {singaporeScanMsg || (opportunities.some(o => o.isSingaporeGovPortal) ? 'Official technology requisitions, engineering internships, and early-career software roles directly from mycareersfuture.gov.sg.' : 'Singapore live feed temporarily unavailable')}
                 </p>
               </div>
             </div>
@@ -891,14 +907,64 @@ export const RadarView: React.FC<RadarViewProps> = ({
             <div className="text-center py-16 px-4 rounded-2xl border border-slate-800 bg-slate-900/30">
               <Filter className="w-10 h-10 text-slate-600 mx-auto mb-3" />
               <h4 className="text-base font-semibold text-slate-300">
-                {opportunities.length === 0 ? 'Connecting to Verified Live ATS Feeds...' : 'No opportunities match the selected filter'}
+                {activeTab === 'singapore_gov'
+                  ? 'Singapore live feed temporarily unavailable'
+                  : activeTab === 'builtin'
+                  ? 'Built In live feed temporarily unavailable'
+                  : activeTab === 'hacker_news'
+                  ? 'Hacker News live feed temporarily unavailable'
+                  : activeTab === 'newly_funded'
+                  ? 'Funded companies live feed temporarily unavailable'
+                  : opportunities.length === 0
+                  ? 'Connecting to Verified Live ATS Feeds...'
+                  : 'No opportunities match the selected filter'}
               </h4>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                {opportunities.length === 0
+                {activeTab === 'singapore_gov'
+                  ? 'Could not connect to the live mycareersfuture.gov.sg statutory feed. Zero fabricated job postings are used. Please try scanning again shortly.'
+                  : activeTab === 'builtin'
+                  ? 'Could not connect to the live Built In feed. Zero fabricated job postings are used. Please try scanning again shortly.'
+                  : activeTab === 'hacker_news'
+                  ? 'Could not connect to the live Hacker News hiring thread. Zero fabricated job postings are used. Please try scanning again shortly.'
+                  : activeTab === 'newly_funded'
+                  ? 'Could not connect to live funding ATS feeds. Zero fabricated job postings are used. Please try scanning again shortly.'
+                  : opportunities.length === 0
                   ? 'All demo data has been purged. Ingesting 100% genuine live requisitions from Greenhouse and Lever enterprise endpoints.'
                   : 'Try adjusting your search query or reset your filters to view all active openings.'}
               </p>
-              {opportunities.length === 0 ? (
+              {activeTab === 'singapore_gov' ? (
+                <button
+                  onClick={handleScanSingapore}
+                  disabled={isScanningSingapore}
+                  className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500 text-white hover:bg-rose-400 cursor-pointer transition-all disabled:opacity-50"
+                >
+                  {isScanningSingapore ? 'Interrogating GovTech Portal...' : 'Retry Singapore Live Feed'}
+                </button>
+              ) : activeTab === 'builtin' ? (
+                <button
+                  onClick={handleScanBuiltIn}
+                  disabled={isScanningBuiltIn}
+                  className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-teal-400 text-slate-950 hover:bg-teal-300 cursor-pointer transition-all disabled:opacity-50"
+                >
+                  {isScanningBuiltIn ? 'Scanning Hub Listings...' : 'Retry Built In Live Feed'}
+                </button>
+              ) : activeTab === 'hacker_news' ? (
+                <button
+                  onClick={handleScanHn}
+                  disabled={isScanningHn}
+                  className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-orange-500 text-slate-950 hover:bg-orange-400 cursor-pointer transition-all disabled:opacity-50"
+                >
+                  {isScanningHn ? 'Scanning HN Thread...' : 'Retry Hacker News Feed'}
+                </button>
+              ) : activeTab === 'newly_funded' ? (
+                <button
+                  onClick={handleScanFunded}
+                  disabled={isScanningFunded}
+                  className="mt-4 px-4 py-2 rounded-xl text-xs font-semibold bg-cyan-500 text-slate-950 hover:bg-cyan-400 cursor-pointer transition-all disabled:opacity-50"
+                >
+                  {isScanningFunded ? 'Scanning Funded Companies...' : 'Retry Funded Companies Feed'}
+                </button>
+              ) : opportunities.length === 0 ? (
                 <button
                   onClick={handleScanLiveAts}
                   disabled={isScanningAts}

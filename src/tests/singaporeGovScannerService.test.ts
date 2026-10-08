@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { 
   SingaporeGovScannerService, 
-  VERIFIED_SINGAPORE_ANCHORS,
   SingaporeGovRawJob 
 } from '../services/singaporeGovScannerService';
 import { 
@@ -123,11 +122,15 @@ describe('Singapore MyCareersFuture Government Portal Scanner (PROMPT 31)', () =
     expect(serviceCycles[0].id).toBe('cycle_mycareersfuture_singapore_gov');
   });
 
-  it('provides verified fallback anchors for reliable offline and recovery execution', () => {
-    expect(VERIFIED_SINGAPORE_ANCHORS.length).toBeGreaterThanOrEqual(4);
-    const hasInternship = VERIFIED_SINGAPORE_ANCHORS.some(a => a.isInternship);
-    const hasEntryLevel = VERIFIED_SINGAPORE_ANCHORS.some(a => !a.isInternship);
-    expect(hasInternship).toBe(true);
-    expect(hasEntryLevel).toBe(true);
+  it('strictly adheres to zero data fabrication: returns empty array when live API fails', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = () => Promise.reject(new Error('Network offline'));
+    try {
+      const results = await SingaporeGovScannerService.fetchSingaporeJobs('all');
+      expect(results).toEqual([]);
+      expect(results.length).toBe(0);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });
