@@ -50,7 +50,7 @@ const OFFICIAL_ENTERPRISE_ROOT_DOMAINS: Record<string, { expectedAts: string[]; 
   'palantir.com': { expectedAts: ['lever', 'direct_careers_domain'], ipSubnet: '151.101.2.132' },
   'lyft.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '151.101.1.181' },
   'gitlab.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '172.65.251.78' },
-  'automattic.com': { expectedAts: ['greenhouse', 'direct_careers_domain'], ipSubnet: '192.0.78.13' },
+  'canva.com': { expectedAts: ['smartrecruiters', 'direct_careers_domain'], ipSubnet: '104.16.14.3' },
   'netflix.com': { expectedAts: ['workday', 'greenhouse', 'direct_careers_domain'], ipSubnet: '44.242.137.89' },
   'apple.com': { expectedAts: ['direct_careers_domain'], ipSubnet: '17.253.144.10' },
   'amazon.com': { expectedAts: ['direct_careers_domain', 'workday'], ipSubnet: '205.251.242.103' },

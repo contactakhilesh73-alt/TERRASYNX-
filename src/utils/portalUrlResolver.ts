@@ -5,10 +5,11 @@
  */
 
 import { Opportunity } from '../types';
+import { AtsProvider } from '../data/atsTargets';
 import { UrlHealthResolver } from '../services/urlHealthResolver';
 
 // Canonical mapping of companies to verified ATS slugs and providers
-export const COMPANY_ATS_REGISTRY: Record<string, { provider: 'greenhouse' | 'lever'; slug: string }> = {
+export const COMPANY_ATS_REGISTRY: Record<string, { provider: AtsProvider; slug: string }> = {
   'roblox': { provider: 'greenhouse', slug: 'roblox' },
   'pinterest': { provider: 'greenhouse', slug: 'pinterest' },
   'coinbase': { provider: 'greenhouse', slug: 'coinbase' },
@@ -37,7 +38,7 @@ export const COMPANY_ATS_REGISTRY: Record<string, { provider: 'greenhouse' | 'le
   'grafanalabs': { provider: 'greenhouse', slug: 'grafanalabs' },
   'canonical': { provider: 'greenhouse', slug: 'canonical' },
   'cockroachlabs': { provider: 'greenhouse', slug: 'cockroachlabs' },
-  'automattic': { provider: 'greenhouse', slug: 'automattic' },
+  'canva': { provider: 'smartrecruiters', slug: 'canva' },
   'scaleai': { provider: 'greenhouse', slug: 'scaleai' },
   'doordash': { provider: 'greenhouse', slug: 'doordash' },
   'stripe': { provider: 'greenhouse', slug: 'stripe' },
