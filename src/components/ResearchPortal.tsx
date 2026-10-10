@@ -15,6 +15,8 @@ import { UpcomingInternshipsService, detectNaturalSynonymHint } from '../service
 import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
+import { LinkHealthBadge } from './LinkHealthBadge';
+import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig } from '../utils/scholarshipBadges';
 import { getCountryFlag, createGoogleCalendarUrl, evaluateEligibilityMatrix, MatrixBadgeType } from './UpcomingInternshipsCalendar';
 import { 
   FlaskConical, 
@@ -1028,12 +1030,36 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
                   </div>
                 </div>
 
-                {/* Country Pill, Tier Badge, Rate Tag */}
+                {/* Country Pill, Study Level Badge, Coverage Type Badge, Tier Badge, Rate Tag */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-3">
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-800/90 text-emerald-300 border border-emerald-900/60 flex items-center gap-1 shadow-sm">
                     <MapPin className="w-2.5 h-2.5 text-emerald-400" />
                     <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                   </span>
+
+                  {/* Prompt 37: Study Level Badge */}
+                  {cycle.studyLevel && (() => {
+                    const levelBadge = getStudyLevelBadgeConfig(cycle.studyLevel);
+                    const LevelIcon = levelBadge.icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${levelBadge.className}`}>
+                        <LevelIcon className="w-3 h-3" />
+                        <span>{levelBadge.label}</span>
+                      </span>
+                    );
+                  })()}
+
+                  {/* Prompt 37: Coverage Type Badge */}
+                  {cycle.coverageType && (() => {
+                    const covBadge = getCoverageTypeBadgeConfig(cycle.coverageType);
+                    const CovIcon = covBadge.icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${covBadge.className}`}>
+                        <CovIcon className="w-3 h-3" />
+                        <span>{covBadge.label}</span>
+                      </span>
+                    );
+                  })()}
 
                   {subCategory === 'scientific_lab' ? (
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 flex items-center gap-1">
@@ -1052,6 +1078,19 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
                       💰 {cycle.historicalCompensation}
                     </span>
                   )}
+
+                  {/* Compensation rateType badge */}
+                  {cycle.rateType === 'OFFICIAL_CONFIRMED' ? (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      <span>[OFFICIAL EXACT RATE]</span>
+                    </span>
+                  ) : cycle.rateType === 'MARKET_ESTIMATED' ? (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-700/60 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                      <span>[MARKET ESTIMATED RANGE]</span>
+                    </span>
+                  ) : null}
                 </div>
 
                 {/* Announcement Timeline & Target Batches */}
@@ -1175,15 +1214,18 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
                   </a>
                 </div>
 
-                <a
-                  href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-emerald-950 group/btn"
-                >
-                  <span>Official Portal</span>
-                  <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                </a>
+                <div className="flex items-center gap-2">
+                  <LinkHealthBadge url={cycle.officialCareersUrl} companyDomain={cycle.companyDomain} compact />
+                  <a
+                    href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-emerald-950 group/btn"
+                  >
+                    <span>Official Portal</span>
+                    <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                  </a>
+                </div>
               </div>
             </div>
           );

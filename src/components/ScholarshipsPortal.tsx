@@ -10,11 +10,12 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { UpcomingInternshipCycle, InternshipCycleCurrentStatus, StudentProfile } from '../types';
+import { UpcomingInternshipCycle, InternshipCycleCurrentStatus, StudentProfile, StudyLevel, CoverageType } from '../types';
 import { UpcomingInternshipsService, detectNaturalSynonymHint } from '../services/upcomingInternshipsService';
 import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
+import { LinkHealthBadge } from './LinkHealthBadge';
 import { getCountryFlag, createGoogleCalendarUrl, evaluateEligibilityMatrix, MatrixBadgeType } from './UpcomingInternshipsCalendar';
 import { 
   GraduationCap, 
@@ -36,7 +37,11 @@ import {
   Landmark,
   X,
   CheckCircle2,
-  Bookmark
+  Bookmark,
+  BookOpen,
+  Briefcase,
+  Coins,
+  Plane
 } from 'lucide-react';
 
 interface ScholarshipsPortalProps {
@@ -47,6 +52,15 @@ interface ScholarshipsPortalProps {
 export type ScholarshipStatusTab = 'ALL' | 'OPEN_NOW' | 'OPENING_SOON' | 'UPCOMING_SEASON' | 'PASSED_THIS_CYCLE' | 'TRACKED';
 
 export type ScholarshipCategoryFilter = 'all' | 'pre_university_full_ride' | 'global_full_ride' | 'scholarship_12th';
+
+// Prompt 37: Dedicated Level Filter for Scholarships Portal
+export type ScholarshipLevelFilter = 'all' | StudyLevel;
+
+import { 
+  getStudyLevelBadgeConfig, 
+  getCoverageTypeBadgeConfig 
+} from '../utils/scholarshipBadges';
+export { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig };
 
 const CORPORATE_TIERS = new Set(['tech_giant', 'quant_hft', 'frontier_ai', 'early_undergrad_exclusive']);
 
@@ -70,6 +84,7 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
   // Live Status Tabs
   const [activeStatusTab, setActiveStatusTab] = useState<ScholarshipStatusTab>('OPEN_NOW');
   const [selectedCategory, setSelectedCategory] = useState<ScholarshipCategoryFilter>('all');
+  const [selectedStudyLevel, setSelectedStudyLevel] = useState<ScholarshipLevelFilter>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
 
@@ -202,11 +217,37 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
     };
   }, [scholarshipCycles]);
 
+  // Prompt 37: Dynamic Study Level Counts for Scholarships
+  const levelCounts = useMemo(() => {
+    let c12 = 0;
+    let pg = 0;
+    let sr = 0;
+    let intern = 0;
+
+    for (const cycle of scholarshipCycles) {
+      if (cycle.studyLevel === 'class12_ug') c12++;
+      else if (cycle.studyLevel === 'postgraduate') pg++;
+      else if (cycle.studyLevel === 'summer_research') sr++;
+      else if (cycle.studyLevel === 'internship') intern++;
+    }
+
+    return {
+      all: scholarshipCycles.length,
+      class12_ug: c12,
+      postgraduate: pg,
+      summer_research: sr,
+      internship: intern,
+    };
+  }, [scholarshipCycles]);
+
   // Status Strip Counts for scholarships
   const statusStripCounts = useMemo(() => {
     let list = scholarshipCycles;
     if (selectedCategory !== 'all') {
       list = list.filter(c => getScholarshipSubCategory(c) === selectedCategory);
+    }
+    if (selectedStudyLevel !== 'all') {
+      list = list.filter(c => c.studyLevel === selectedStudyLevel);
     }
     if (selectedMonth !== 'all') {
       const m = selectedMonth.toLowerCase();
@@ -233,7 +274,7 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
       PASSED_THIS_CYCLE: list.filter(c => c.currentStatus === 'PASSED_THIS_CYCLE').length,
       TRACKED: list.filter(c => trackedCycleIds.includes(c.id)).length,
     };
-  }, [scholarshipCycles, selectedCategory, selectedMonth, selectedCountry, searchQuery, trackedCycleIds]);
+  }, [scholarshipCycles, selectedCategory, selectedStudyLevel, selectedMonth, selectedCountry, searchQuery, trackedCycleIds]);
 
   // Filtered scholarship cycles
   const filteredCycles = useMemo(() => {
@@ -241,6 +282,10 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
 
     if (selectedCategory !== 'all') {
       list = list.filter(c => getScholarshipSubCategory(c) === selectedCategory);
+    }
+
+    if (selectedStudyLevel !== 'all') {
+      list = list.filter(c => c.studyLevel === selectedStudyLevel);
     }
 
     if (selectedMonth !== 'all') {
@@ -285,13 +330,13 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
     }
 
     return list;
-  }, [scholarshipCycles, selectedCategory, selectedMonth, selectedCountry, searchQuery, activeStatusTab, matrixFilter, studentBatch, referenceDate, trackedCycleIds]);
+  }, [scholarshipCycles, selectedCategory, selectedStudyLevel, selectedMonth, selectedCountry, searchQuery, activeStatusTab, matrixFilter, studentBatch, referenceDate, trackedCycleIds]);
 
   const [visibleCount, setVisibleCount] = useState<number>(16);
 
   useEffect(() => {
     setVisibleCount(16);
-  }, [activeStatusTab, selectedMonth, selectedCategory, selectedCountry, searchQuery, matrixFilter, studentBatch]);
+  }, [activeStatusTab, selectedMonth, selectedCategory, selectedStudyLevel, selectedCountry, searchQuery, matrixFilter, studentBatch]);
 
   const visibleCycles = useMemo(() => {
     return filteredCycles.slice(0, visibleCount);
@@ -778,6 +823,106 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
           </div>
         </div>
 
+        {/* Prompt 37: Study Level Filter Chips & Dropdown */}
+        <div className="mt-3 pt-3 border-t border-slate-800/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <BookOpen className="w-3 h-3 text-amber-400" />
+                <span>Study Level Filter</span>
+              </span>
+              {selectedStudyLevel !== 'all' && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudyLevel('all')}
+                  className="text-[10px] font-mono text-amber-400 hover:text-amber-300 bg-amber-950/60 hover:bg-amber-900/60 px-2 py-0.5 rounded border border-amber-700/60 flex items-center gap-1 cursor-pointer transition-colors"
+                  title="Reset study level filter to All"
+                >
+                  <span>Reset Level</span>
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="text-[11px] font-mono text-slate-400">Jump to Level:</span>
+              <select
+                value={selectedStudyLevel}
+                onChange={(e) => setSelectedStudyLevel(e.target.value as any)}
+                aria-label="Filter by Study Level"
+                className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 text-xs font-mono font-bold text-amber-300 focus:outline-none focus:border-amber-400 cursor-pointer shadow-sm"
+              >
+                <option value="all">All Study Levels ({scholarshipCycles.length})</option>
+                <option value="class12_ug">Class 12 / UG ({levelCounts.class12_ug})</option>
+                <option value="postgraduate">Postgraduate ({levelCounts.postgraduate})</option>
+                <option value="summer_research">Summer Research ({levelCounts.summer_research})</option>
+                <option value="internship">Internship ({levelCounts.internship})</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => setSelectedStudyLevel('all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedStudyLevel === 'all'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-md shadow-amber-500/20'
+                  : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
+              }`}
+            >
+              <span>All Levels ({levelCounts.all})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStudyLevel(selectedStudyLevel === 'class12_ug' ? 'all' : 'class12_ug')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedStudyLevel === 'class12_ug'
+                  ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-black shadow-md shadow-amber-500/25 ring-1 ring-amber-300'
+                  : 'bg-amber-950/30 text-amber-300 hover:bg-amber-950/60 border border-amber-800/50'
+              }`}
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-amber-400" />
+              <span>Class 12 / UG ({levelCounts.class12_ug})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStudyLevel(selectedStudyLevel === 'postgraduate' ? 'all' : 'postgraduate')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedStudyLevel === 'postgraduate'
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-slate-950 font-black shadow-md shadow-purple-500/25 ring-1 ring-purple-300'
+                  : 'bg-purple-950/30 text-purple-300 hover:bg-purple-950/60 border border-purple-800/50'
+              }`}
+            >
+              <Award className="w-3.5 h-3.5 text-purple-400" />
+              <span>Postgraduate ({levelCounts.postgraduate})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStudyLevel(selectedStudyLevel === 'summer_research' ? 'all' : 'summer_research')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedStudyLevel === 'summer_research'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-black shadow-md shadow-cyan-500/25 ring-1 ring-cyan-300'
+                  : 'bg-cyan-950/30 text-cyan-300 hover:bg-cyan-950/60 border border-cyan-800/50'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Summer Research ({levelCounts.summer_research})</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedStudyLevel(selectedStudyLevel === 'internship' ? 'all' : 'internship')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedStudyLevel === 'internship'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-slate-950 font-black shadow-md shadow-blue-500/25 ring-1 ring-blue-300'
+                  : 'bg-blue-950/30 text-blue-300 hover:bg-blue-950/60 border border-blue-800/50'
+              }`}
+            >
+              <Briefcase className="w-3.5 h-3.5 text-blue-400" />
+              <span>Internship ({levelCounts.internship})</span>
+            </button>
+          </div>
+        </div>
+
         {/* Prompt 34C: Country Filter (Chips + Dropdown) */}
         <div className="mt-3 pt-3 border-t border-slate-800/60">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
@@ -1045,39 +1190,82 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
                   </div>
                 </div>
 
-                {/* Country Pill, Tier Badge, Rate Tag */}
+                {/* Country Pill, Study Level Badge, Coverage Type Badge, Tier Badge, Rate Tag */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-3">
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-800/90 text-amber-300 border border-amber-900/60 flex items-center gap-1 shadow-sm">
                     <MapPin className="w-2.5 h-2.5 text-amber-400" />
                     <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                   </span>
 
-                  {subCategory === 'pre_university_full_ride' && (
+                  {/* Prompt 37: Study Level Badge */}
+                  {cycle.studyLevel && (() => {
+                    const levelBadge = getStudyLevelBadgeConfig(cycle.studyLevel);
+                    const LevelIcon = levelBadge.icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${levelBadge.className}`}>
+                        <LevelIcon className="w-3 h-3" />
+                        <span>{levelBadge.label}</span>
+                      </span>
+                    );
+                  })()}
+
+                  {/* Prompt 37: Coverage Type Badge */}
+                  {cycle.coverageType && (() => {
+                    const covBadge = getCoverageTypeBadgeConfig(cycle.coverageType);
+                    const CovIcon = covBadge.icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${covBadge.className}`}>
+                        <CovIcon className="w-3 h-3" />
+                        <span>{covBadge.label}</span>
+                      </span>
+                    );
+                  })()}
+
+                  {/* Strictly Full-Ride only if coverageType is FULL_RIDE */}
+                  {cycle.coverageType === 'FULL_RIDE' && subCategory === 'pre_university_full_ride' && (
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-amber-950/80 text-amber-300 border border-amber-800/60 flex items-center gap-1">
                       <Landmark className="w-3 h-3 text-amber-400" />
                       <span>100% Need-Blind Full-Ride</span>
                     </span>
                   )}
 
-                  {subCategory === 'global_full_ride' && (
+                  {cycle.coverageType === 'FULL_RIDE' && subCategory === 'global_full_ride' && (
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-yellow-950/80 text-yellow-300 border border-yellow-800/60 flex items-center gap-1">
                       <Award className="w-3 h-3 text-yellow-400" />
                       <span>₹3-4 Cr Global Full-Ride</span>
                     </span>
                   )}
 
-                  {subCategory === 'scholarship_12th' && (
+                  {cycle.studyLevel === 'postgraduate' ? (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-purple-950/80 text-purple-300 border border-purple-800/60 flex items-center gap-1">
+                      <Award className="w-3 h-3 text-purple-400" />
+                      <span>Postgraduate Fellowship</span>
+                    </span>
+                  ) : subCategory === 'scholarship_12th' ? (
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-orange-950/80 text-orange-300 border border-orange-800/60 flex items-center gap-1">
                       <GraduationCap className="w-3 h-3 text-orange-400" />
                       <span>Class 12th Early Talent</span>
                     </span>
-                  )}
+                  ) : null}
 
                   {cycle.historicalCompensation && (
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-800 text-emerald-300 border border-emerald-900/40">
                       💰 {cycle.historicalCompensation}
                     </span>
                   )}
+
+                  {/* Compensation rateType badge: [OFFICIAL EXACT RATE] (green) vs [MARKET ESTIMATED RANGE] (amber) */}
+                  {cycle.rateType === 'OFFICIAL_CONFIRMED' ? (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      <span>[OFFICIAL EXACT RATE]</span>
+                    </span>
+                  ) : cycle.rateType === 'MARKET_ESTIMATED' ? (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-700/60 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                      <span>[MARKET ESTIMATED RANGE]</span>
+                    </span>
+                  ) : null}
                 </div>
 
                 {/* Announcement Timeline & Target Batches */}
@@ -1221,15 +1409,18 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
                   </a>
                 </div>
 
-                <a
-                  href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-amber-950 group/btn"
-                >
-                  <span>Official Portal</span>
-                  <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                </a>
+                <div className="flex items-center gap-2">
+                  <LinkHealthBadge url={cycle.officialCareersUrl} companyDomain={cycle.companyDomain} compact />
+                  <a
+                    href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-400 hover:to-yellow-500 text-slate-950 text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-amber-950 group/btn"
+                  >
+                    <span>Official Portal</span>
+                    <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                  </a>
+                </div>
               </div>
             </div>
           );

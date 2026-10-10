@@ -7,6 +7,7 @@ import { Opportunity, StudentProfile, AlertEmailSimulation, ApplicationStage } f
 import { VerificationEngine } from './verificationEngine';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { AtsLiveService } from './atsLiveService';
+import { AtsClosureDetectionService } from './atsClosureDetectionService';
 import { logger } from '../utils/logger';
 import { sanitizeOpportunityUrls, resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 
@@ -383,6 +384,7 @@ export class RadarEngine {
   // Reset to clean initial state (Strict Zero-Fake Policy: Ingest live verified roles)
   public static resetToFactoryDefaults(): void {
     AtsLiveService.clearCache();
+    AtsClosureDetectionService.resetTracking();
     this.opportunities = [];
     this.studentProfile = DEFAULT_STUDENT_PROFILE;
     localStorage.removeItem(STORAGE_KEYS.MUTED_ALERTS);
@@ -421,18 +423,23 @@ export class RadarEngine {
   }
 
   // Phase 5 Point 1: Trigger Live ATS Ingestion across Greenhouse & Lever
+  // Prompt 41B: API-based closure detection: mark "Possibly closed" after 2 consecutive missing fetches without auto-deleting
   public static async scanLiveAtsBoards(onProgress?: (company: string, count: number) => void): Promise<number> {
     try {
       const liveJobs = await AtsLiveService.scanLiveBoards(onProgress);
       if (liveJobs.length === 0) return 0;
 
-      let addedCount = 0;
-      for (const job of liveJobs) {
-        const added = this.addNewOpportunity(job);
-        if (added) addedCount++;
-      }
+      // Prompt 41B: Process closure detection across consecutive fetches, preserving all opportunities
+      const { mergedOpportunities } = AtsClosureDetectionService.processFetchCycle(
+        this.opportunities,
+        liveJobs
+      );
 
-      return addedCount;
+      this.opportunities = this.deduplicateOpportunities(mergedOpportunities);
+      this.persistOpportunities();
+      this.notify();
+
+      return liveJobs.length;
     } catch (err) {
       logger.error('RadarEngine', 'Error scanning live ATS boards', err);
       return 0;

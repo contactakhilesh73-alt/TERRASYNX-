@@ -10,6 +10,8 @@ import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from './src/data/atsTargets';
 import { RoleSkillClassifier } from './src/services/roleSkillClassifier';
 import { logger } from './src/utils/logger';
 import { resolveCanonicalApplyUrl, sanitizeOpportunityUrls } from './src/utils/portalUrlResolver';
+import { HONEST_USER_AGENT, validateSafeTargetUrl, isHostnameAllowed, isPrivateOrLocalIp } from './src/services/linkAllowlistService';
+import { AtsClosureDetectionService } from './src/services/atsClosureDetectionService';
 
 const app = express();
 const PORT = 3000;
@@ -26,67 +28,159 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Link Health Sentinel: Fast proxy to probe external job/internship portal URL health
+// Prompt 41A: Hardened Link Health Sentinel: Strict allowlist, SSRF protection, honest User-Agent, safe redirect limits, and zero invented statuses
 app.get('/api/health/check-url', async (req, res) => {
   const targetUrl = req.query.url as string;
   if (!targetUrl || typeof targetUrl !== 'string') {
-    return res.status(400).json({ error: 'Missing target url parameter' });
+    return res.status(400).json({ error: 'Missing target url parameter', state: 'UNKNOWN' });
   }
 
+  // 1. Validate URL protocol, hostname allowlist, and resolve IP (reject private/loopback/link-local)
+  const validation = await validateSafeTargetUrl(targetUrl);
+  if (!validation.safe) {
+    return res.status(403).json({
+      url: targetUrl,
+      isAlive: false,
+      state: 'UNKNOWN',
+      error: validation.error || 'Target URL rejected by security policy',
+    });
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2500);
+
   try {
-    const parsed = new URL(targetUrl);
-    if (!['http:', 'https:'].includes(parsed.protocol)) {
-      return res.status(400).json({ error: 'Invalid URL protocol' });
-    }
+    let currentUrl = targetUrl;
+    let redirectCount = 0;
+    const MAX_REDIRECTS = 5;
+    let finalResponse: Response | null = null;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
-
-    let response = await fetch(targetUrl, {
-      method: 'HEAD',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
-      signal: controller.signal,
-      redirect: 'follow',
-    }).catch(() => null);
-
-    // If HEAD is not allowed (405 Method Not Allowed), retry with GET
-    if (response && response.status === 405) {
-      response = await fetch(targetUrl, {
-        method: 'GET',
+    while (redirectCount <= MAX_REDIRECTS) {
+      // Execute request with honest User-Agent and manual redirect handling
+      let response = await fetch(currentUrl, {
+        method: 'HEAD',
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'User-Agent': HONEST_USER_AGENT,
+          'Accept': '*/*',
         },
         signal: controller.signal,
-        redirect: 'follow',
+        redirect: 'manual',
       }).catch(() => null);
+
+      // If HEAD is not allowed (405 Method Not Allowed), retry with lightweight GET
+      if (response && response.status === 405) {
+        response = await fetch(currentUrl, {
+          method: 'GET',
+          headers: {
+            'User-Agent': HONEST_USER_AGENT,
+            'Accept': '*/*',
+            'Range': 'bytes=0-1024',
+          },
+          signal: controller.signal,
+          redirect: 'manual',
+        }).catch(() => null);
+      }
+
+      if (!response) {
+        break;
+      }
+
+      // Check for HTTP 3xx redirect status
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (!location) {
+          finalResponse = response;
+          break;
+        }
+
+        let nextUrl: URL;
+        try {
+          nextUrl = new URL(location, currentUrl);
+        } catch {
+          clearTimeout(timeout);
+          return res.json({
+            url: targetUrl,
+            isAlive: false,
+            state: 'UNKNOWN',
+            error: 'Malformed redirect location header',
+          });
+        }
+
+        // Validate redirect target: MUST belong to allowlisted host and NOT private/loopback IP
+        const redirectCheck = await validateSafeTargetUrl(nextUrl.toString());
+        if (!redirectCheck.safe) {
+          clearTimeout(timeout);
+          return res.json({
+            url: targetUrl,
+            isAlive: false,
+            state: 'UNKNOWN',
+            error: `Redirect to disallowed host: ${redirectCheck.error}`,
+          });
+        }
+
+        currentUrl = nextUrl.toString();
+        redirectCount++;
+        if (redirectCount > MAX_REDIRECTS) {
+          clearTimeout(timeout);
+          return res.json({
+            url: targetUrl,
+            isAlive: false,
+            state: 'UNKNOWN',
+            error: 'Maximum redirect limit exceeded',
+          });
+        }
+        continue;
+      }
+
+      finalResponse = response;
+      break;
     }
 
     clearTimeout(timeout);
 
-    if (response) {
-      const isDead = response.status === 404 || response.status === 410;
+    if (finalResponse) {
+      if (finalResponse.status >= 200 && finalResponse.status < 400) {
+        return res.json({
+          url: targetUrl,
+          isAlive: true,
+          state: 'ALIVE',
+          statusCode: finalResponse.status,
+        });
+      }
+
+      if (finalResponse.status === 404 || finalResponse.status === 410) {
+        return res.json({
+          url: targetUrl,
+          isAlive: false,
+          state: 'DEAD',
+          statusCode: finalResponse.status,
+        });
+      }
+
+      // Any other HTTP status (e.g. 403 bot-wall, 500 server down): return UNKNOWN
       return res.json({
         url: targetUrl,
-        isAlive: !isDead,
-        statusCode: response.status,
+        isAlive: false,
+        state: 'UNKNOWN',
+        statusCode: finalResponse.status,
       });
     }
 
-    // Network block / timeout: treat as potentially alive (due to corporate firewalls) rather than breaking UI
+    // On network failure or abort: NEVER invent a status!
     return res.json({
       url: targetUrl,
-      isAlive: true,
-      statusCode: 200,
-      note: 'Fallback optimistic reachability',
+      isAlive: false,
+      state: 'UNKNOWN',
+      error: 'Network failure or timeout probing external URL',
     });
   } catch (err: any) {
+    clearTimeout(timeout);
+    // Never invent a status on exception: return { state: 'UNKNOWN' }
     return res.json({
       url: targetUrl,
-      isAlive: true,
-      error: err?.message || 'Check timed out',
+      isAlive: false,
+      state: 'UNKNOWN',
+      error: err?.message || 'Check timed out or failed',
     });
   }
 });
@@ -2076,9 +2170,15 @@ async function getOrFetchCachedServerJobs(forceRefresh = false): Promise<{ jobs:
     }
 
     if (collected.length > 0) {
-      serverJobsCache.jobs = collected;
+      // Prompt 41B: Track consecutive missing fetches and mark possibly closed without auto-deleting
+      const { mergedOpportunities } = AtsClosureDetectionService.processFetchCycle(
+        serverJobsCache.jobs,
+        collected
+      );
+      serverJobsCache.jobs = mergedOpportunities;
       serverJobsCache.cachedAt = Date.now();
       serverJobsCache.expiresAt = Date.now() + SERVER_JOBS_CACHE_TTL_MS;
+      return mergedOpportunities;
     }
     return collected;
   })();

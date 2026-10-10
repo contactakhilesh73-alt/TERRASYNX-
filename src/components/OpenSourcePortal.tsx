@@ -14,6 +14,8 @@ import { UpcomingInternshipsService, detectNaturalSynonymHint } from '../service
 import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
+import { LinkHealthBadge } from './LinkHealthBadge';
+import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig } from '../utils/scholarshipBadges';
 import { getCountryFlag, createGoogleCalendarUrl, evaluateEligibilityMatrix, MatrixBadgeType } from './UpcomingInternshipsCalendar';
 import { 
   GitBranch, 
@@ -1063,12 +1065,36 @@ export const OpenSourcePortal: React.FC<OpenSourcePortalProps> = ({
                   </div>
                 </div>
 
-                {/* Remote Pill, Tier Badge, Stipend Tag */}
+                {/* Remote Pill, Study Level Badge, Coverage Type Badge, Tier Badge, Stipend Tag */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-3">
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-slate-800/90 text-purple-300 border border-purple-900/60 flex items-center gap-1 shadow-sm">
                     <MapPin className="w-2.5 h-2.5 text-purple-400" />
                     <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                   </span>
+
+                  {/* Prompt 37: Study Level Badge */}
+                  {cycle.studyLevel && (() => {
+                    const levelBadge = getStudyLevelBadgeConfig(cycle.studyLevel);
+                    const LevelIcon = levelBadge.icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${levelBadge.className}`}>
+                        <LevelIcon className="w-3 h-3" />
+                        <span>{levelBadge.label}</span>
+                      </span>
+                    );
+                  })()}
+
+                  {/* Prompt 37: Coverage Type Badge */}
+                  {cycle.coverageType && (() => {
+                    const covBadge = getCoverageTypeBadgeConfig(cycle.coverageType);
+                    const CovIcon = covBadge.icon;
+                    return (
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${covBadge.className}`}>
+                        <CovIcon className="w-3 h-3" />
+                        <span>{covBadge.label}</span>
+                      </span>
+                    );
+                  })()}
 
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-purple-950/80 text-purple-300 border border-purple-800/60 flex items-center gap-1">
                     <GitBranch className="w-3 h-3 text-purple-400" />
@@ -1203,15 +1229,18 @@ export const OpenSourcePortal: React.FC<OpenSourcePortalProps> = ({
                   </a>
                 </div>
 
-                <a
-                  href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-purple-950 group/btn"
-                >
-                  <span>Official Portal</span>
-                  <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                </a>
+                <div className="flex items-center gap-2">
+                  <LinkHealthBadge url={cycle.officialCareersUrl} companyDomain={cycle.companyDomain} compact />
+                  <a
+                    href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-mono font-black transition-all cursor-pointer flex items-center gap-1.5 shadow-sm shadow-purple-950 group/btn"
+                  >
+                    <span>Official Portal</span>
+                    <ExternalLink className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                  </a>
+                </div>
               </div>
             </div>
           );

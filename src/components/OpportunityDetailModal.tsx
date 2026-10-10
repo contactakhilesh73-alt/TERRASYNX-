@@ -6,6 +6,7 @@
 import React, { useMemo } from 'react';
 import { Opportunity } from '../types';
 import { CompanyLogo } from './CompanyLogo';
+import { LinkHealthBadge } from './LinkHealthBadge';
 import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { AppliedDossierService } from '../services/appliedDossierService';
 import { 
@@ -223,6 +224,26 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             <p className="text-xs text-slate-400 font-mono mt-1">
               Requisition ID: {opportunity.verification.requisitionId} • Root Domain: {opportunity.verification.rootDomain}
             </p>
+
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-[10px] font-mono text-slate-400">Portal Link:</span>
+              <LinkHealthBadge url={resolveCanonicalApplyUrl(opportunity)} companyDomain={opportunity.companyDomain} />
+            </div>
+
+            {/* Prompt 41B: ATS Closure Detection Advisory */}
+            {opportunity.possiblyClosed && (
+              <div className="mt-3 p-3 rounded-xl bg-amber-950/60 border border-amber-600/70 text-amber-200 flex items-start gap-2.5 shadow-sm">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div className="text-xs">
+                  <span className="font-bold text-amber-300 font-mono block">
+                    Possibly closed, verify on official page
+                  </span>
+                  <p className="text-[11px] text-amber-200/80 mt-0.5 leading-relaxed">
+                    This position was not detected in two consecutive fetches from its source ATS API ({opportunity.verification?.sourceType?.toUpperCase() || 'ATS'}). It is retained here for your review and has not been deleted automatically.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -126,13 +126,16 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
 
       // Switzerland filter
       const swissCycles = allCycles.filter(c => c.country === 'Switzerland');
-      expect(swissCycles.length).toBe(1);
-      expect(swissCycles[0].companyName).toBe('CERN');
-      expect(swissCycles[0].country).toBe('Switzerland');
+      expect(swissCycles.length).toBe(2);
+      expect(swissCycles.map(c => c.companyName)).toContain('CERN');
+      expect(swissCycles.map(c => c.companyName)).toContain('ETH Zurich');
+      for (const c of swissCycles) {
+        expect(c.country).toBe('Switzerland');
+      }
 
       // Japan filter
       const japanCycles = allCycles.filter(c => c.country === 'Japan');
-      expect(japanCycles.length).toBe(4);
+      expect(japanCycles.length).toBe(5);
       for (const c of japanCycles) {
         expect(c.country).toBe('Japan');
       }
@@ -146,7 +149,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
 
       // USA filter
       const usaCycles = allCycles.filter(c => c.country === 'USA');
-      expect(usaCycles.length).toBe(35);
+      expect(usaCycles.length).toBe(39);
       for (const c of usaCycles) {
         expect(c.country).toBe('USA');
       }
@@ -262,7 +265,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         portal: 'research',
         status: 'all'
       });
-      expect(researchCycles.length).toBe(20);
+      expect(researchCycles.length).toBe(21);
       for (const c of researchCycles) {
         expect(UpcomingInternshipsService.isCycleInPortal(c, 'research')).toBe(true);
       }
@@ -280,7 +283,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
     it('ensures every single scholarship has a high-stakes disclaimer requirement fulfilled', () => {
       const allCycles = UpcomingInternshipsService.getAllUpcomingCycles();
       const scholarshipCycles = allCycles.filter(c => UpcomingInternshipsService.isCycleInPortal(c, 'scholarships'));
-      expect(scholarshipCycles.length).toBe(35);
+      expect(scholarshipCycles.length).toBe(46);
 
       // Verify that every scholarship cycle is flagged as a scholarship or has disclaimer notice
       for (const c of scholarshipCycles) {

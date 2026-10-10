@@ -432,6 +432,17 @@ export const KanbanPipeline: React.FC<KanbanPipelineProps> = ({
                           {opp.compensation.range}
                         </div>
 
+                        {/* Prompt 41B: ATS Closure Detection Badge */}
+                        {opp.possiblyClosed && (
+                          <div
+                            className="mt-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40"
+                            title="Possibly closed, verify on official page"
+                          >
+                            <AlertTriangle className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                            <span>Possibly closed, verify on official page</span>
+                          </div>
+                        )}
+
                         {/* Submission Provenance Route Tag */}
                         {appliedRecord && (
                           <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono gap-1">

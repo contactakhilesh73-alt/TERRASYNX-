@@ -6,16 +6,20 @@
  * Ensures students NEVER land on 404 dead links.
  */
 
+export type UrlHealthState = 'ALIVE' | 'DEAD' | 'UNKNOWN';
+
 export interface UrlHealthStatus {
   url: string;
   isAlive: boolean;
+  state: UrlHealthState;
   statusCode?: number;
   checkedAt: number;
   resolvedSafeUrl: string;
+  displayText: string;
 }
 
 // In-memory cache for probed URLs (1 hour TTL) to prevent repeated network overhead
-const healthCache = new Map<string, { isAlive: boolean; statusCode?: number; timestamp: number }>();
+const healthCache = new Map<string, { isAlive: boolean; state: UrlHealthState; statusCode?: number; timestamp: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000;
 
 /**
@@ -151,6 +155,7 @@ export class UrlHealthResolver {
   /**
    * Asynchronously probes a URL via server proxy or client fetch.
    * Cached for 1 hour. Non-blocking; UI is never stalled.
+   * Never invents a 200/alive status on network failure or timeout.
    */
   public static async probeUrlHealth(url: string, companyDomain?: string): Promise<UrlHealthStatus> {
     const cached = healthCache.get(url);
@@ -160,9 +165,15 @@ export class UrlHealthResolver {
       return {
         url,
         isAlive: cached.isAlive,
+        state: cached.state,
         statusCode: cached.statusCode,
         checkedAt: cached.timestamp,
         resolvedSafeUrl: cached.isAlive ? url : this.resolveSafePortalUrl(url, companyDomain),
+        displayText: cached.state === 'ALIVE'
+          ? 'Verified Active'
+          : cached.state === 'DEAD'
+            ? 'Link Inactive (404)'
+            : 'Could not verify, check the official page',
       };
     }
 
@@ -174,26 +185,43 @@ export class UrlHealthResolver {
       
       if (response.ok) {
         const data = await response.json();
-        const isAlive = data.isAlive ?? (data.statusCode >= 200 && data.statusCode < 400);
-        healthCache.set(url, { isAlive, statusCode: data.statusCode, timestamp: now });
+        const state: UrlHealthState = data.state === 'ALIVE'
+          ? 'ALIVE'
+          : data.state === 'DEAD'
+            ? 'DEAD'
+            : 'UNKNOWN';
+        const isAlive = state === 'ALIVE';
+        const statusCode = data.statusCode;
+        healthCache.set(url, { isAlive, state, statusCode, timestamp: now });
         return {
           url,
           isAlive,
-          statusCode: data.statusCode,
+          state,
+          statusCode,
           checkedAt: now,
           resolvedSafeUrl: isAlive ? url : this.resolveSafePortalUrl(url, companyDomain),
+          displayText: state === 'ALIVE'
+            ? 'Verified Active'
+            : state === 'DEAD'
+              ? 'Link Inactive (404)'
+              : 'Could not verify, check the official page',
         };
       }
     } catch {
       // Graceful fallback on network timeout or offline
     }
 
-    // Default optimistic alive status with canonical fallback prepared
+    // Prompt 41A: Honest behavior on timeout or network failure:
+    // Return state: 'UNKNOWN' and displayText: "Could not verify, check the official page"
+    // NEVER return "Verified Active" or invent a status!
+    const fallbackState: UrlHealthState = 'UNKNOWN';
     return {
       url,
-      isAlive: true,
+      isAlive: false,
+      state: fallbackState,
       checkedAt: now,
       resolvedSafeUrl: this.resolveSafePortalUrl(url, companyDomain),
+      displayText: 'Could not verify, check the official page',
     };
   }
 }

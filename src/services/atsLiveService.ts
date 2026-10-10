@@ -11,6 +11,7 @@ import { VERIFIED_ATS_TARGETS, ATSCompanyTarget } from '../data/atsTargets';
 import { RoleSkillClassifier } from './roleSkillClassifier';
 import { logger } from '../utils/logger';
 import { sanitizeOpportunityUrls } from '../utils/portalUrlResolver';
+import { AtsClosureDetectionService } from './atsClosureDetectionService';
 
 export type { ATSCompanyTarget };
 export { VERIFIED_ATS_TARGETS };
@@ -626,13 +627,18 @@ export class AtsLiveService {
     });
 
     if (results.length > 0) {
-      this.cachedLiveJobs = results;
+      const { mergedOpportunities } = AtsClosureDetectionService.processFetchCycle(
+        this.cachedLiveJobs,
+        results
+      );
+      this.cachedLiveJobs = mergedOpportunities;
       try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(results));
+        localStorage.setItem(CACHE_KEY, JSON.stringify(mergedOpportunities));
         localStorage.setItem(CACHE_TIMESTAMP_KEY, now.toString());
       } catch (e) {
         logger.warn('AtsLiveService', 'Failed to cache live jobs to localStorage', e);
       }
+      return mergedOpportunities;
     }
 
     return results;

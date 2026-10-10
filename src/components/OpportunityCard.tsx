@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Opportunity } from '../types';
 import { CompanyLogo } from './CompanyLogo';
+import { LinkHealthBadge } from './LinkHealthBadge';
 import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { AppliedDossierService } from '../services/appliedDossierService';
 import { 
@@ -23,7 +24,8 @@ import {
   Info,
   Zap,
   FileEdit,
-  Mail
+  Mail,
+  AlertTriangle
 } from 'lucide-react';
 
 interface OpportunityCardProps {
@@ -224,6 +226,17 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </div>
         )}
 
+        {/* Prompt 41B: ATS Closure Detection Badge */}
+        {opportunity.possiblyClosed && (
+          <div
+            className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/40 text-[11px] font-mono font-bold shadow-sm"
+            title="This role was not detected in two consecutive fetches from its source ATS API. It is retained here for review. Please verify on the official application page."
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>Possibly closed, verify on official page</span>
+          </div>
+        )}
+
         {/* Tactical Badges & Compensation Matrix */}
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           {/* Compensation */}
@@ -253,6 +266,9 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
               </span>
             )}
           </div>
+
+          {/* Link Health Sentinel Badge */}
+          <LinkHealthBadge url={resolveCanonicalApplyUrl(opportunity)} companyDomain={opportunity.companyDomain} compact />
         </div>
 
         {/* Fitment Score Bar & Missing Skills Snapshot (Req #13 & #17) */}

@@ -42,6 +42,7 @@ export function evaluateInternshipCycle(
     startDay?: number;
     endMonth: number;
     endDay?: number;
+    exactWindowText?: string;
   },
   currentDate: Date = new Date()
 ): CycleEvaluation {
@@ -69,7 +70,7 @@ export function evaluateInternshipCycle(
 
   const startMonthName = MONTH_NAMES[cycle.startMonth - 1];
   const endMonthName = MONTH_NAMES[cycle.endMonth - 1];
-  const exactWindowText = `${startDay} ${startMonthName} – ${endDay} ${endMonthName}`;
+  const exactWindowText = cycle.exactWindowText || `${startDay} ${startMonthName} – ${endDay} ${endMonthName}`;
 
   const currentMs = currentDate.getTime();
   const startMs = startDate.getTime();
@@ -113,9 +114,11 @@ export function calculateInternshipCycleStatus(
  */
 export const NATURAL_SEARCH_SYNONYMS: Record<string, { aliases: string[]; label: string }> = {
   // Global Scientific Labs & Geography
-  'switzerland': { aliases: ['cern', 'geneva', 'swiss'], label: 'CERN European Nuclear Research Lab' },
+  'switzerland': { aliases: ['cern', 'geneva', 'swiss', 'eth', 'zurich', 'ssrf'], label: 'CERN & ETH Zurich Switzerland' },
   'geneva': { aliases: ['cern', 'swiss'], label: 'CERN Geneva' },
-  'swiss': { aliases: ['cern'], label: 'CERN Switzerland' },
+  'zurich': { aliases: ['eth', 'ssrf', 'swiss', 'switzerland'], label: 'ETH Zurich SSRF' },
+  'eth': { aliases: ['eth zurich', 'ssrf', 'switzerland', 'zurich'], label: 'ETH Zurich Summer Fellowship' },
+  'swiss': { aliases: ['cern', 'eth', 'zurich'], label: 'Swiss Research Labs' },
   'canada': { aliases: ['mitacs', 'globalink', 'vancouver', 'toronto'], label: 'Mitacs Globalink Research Canada' },
   'canadian': { aliases: ['mitacs', 'globalink'], label: 'Mitacs Canada' },
   'germany': { aliases: ['desy', 'daad', 'mpi', 'max planck', 'sws'], label: 'DESY / DAAD WISE / Max Planck Germany' },
@@ -296,6 +299,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 1. NEED-BLIND IVY+ ADMISSIONS
   {
     id: 'cycle_harvard_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Harvard University',
     companyLogo: 'https://logo.clearbit.com/harvard.edu',
@@ -339,6 +344,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mit_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Massachusetts Institute of Technology (MIT)',
     companyLogo: 'https://logo.clearbit.com/mit.edu',
@@ -382,6 +389,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_princeton_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Princeton University',
     companyLogo: 'https://logo.clearbit.com/princeton.edu',
@@ -425,6 +434,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_yale_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Yale University',
     companyLogo: 'https://logo.clearbit.com/yale.edu',
@@ -468,6 +479,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amherst_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Amherst College',
     companyLogo: 'https://logo.clearbit.com/amherst.edu',
@@ -511,6 +524,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_dartmouth_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Dartmouth College',
     companyLogo: 'https://logo.clearbit.com/dartmouth.edu',
@@ -554,6 +569,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_bowdoin_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Bowdoin College',
     companyLogo: 'https://logo.clearbit.com/bowdoin.edu',
@@ -597,6 +614,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_brown_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Brown University',
     companyLogo: 'https://logo.clearbit.com/brown.edu',
@@ -640,6 +659,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_notre_dame_need_blind_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'University of Notre Dame',
     companyLogo: 'https://logo.clearbit.com/nd.edu',
@@ -683,6 +704,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_washington_lee_johnson_full_ride',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Washington and Lee University',
     companyLogo: 'https://logo.clearbit.com/wlu.edu',
@@ -728,6 +751,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 2. NAMED SCHOLARSHIPS
   {
     id: 'cycle_tata_cornell_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Cornell University (Tata Trust)',
     companyLogo: 'https://logo.clearbit.com/cornell.edu',
@@ -771,6 +796,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_lester_b_pearson_utoronto',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'Canada',
     companyName: 'University of Toronto',
     companyLogo: 'https://logo.clearbit.com/utoronto.ca',
@@ -814,6 +841,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_karsh_international_duke',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Duke University',
     companyLogo: 'https://logo.clearbit.com/duke.edu',
@@ -857,6 +886,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jardine_oxbridge_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'UK',
     companyName: 'The Jardine Foundation (Oxford & Cambridge)',
     companyLogo: 'https://logo.clearbit.com/ox.ac.uk',
@@ -902,6 +933,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 3. INDIAN GOVERNMENT SCHEMES
   {
     id: 'cycle_national_overseas_scholarship_nos',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
     country: 'Global/Remote',
     companyName: 'Government of India (MSJE / MoTA)',
     companyLogo: 'https://logo.clearbit.com/india.gov.in',
@@ -945,6 +978,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_marang_gomke_jharkhand_scholarship',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
     country: 'UK',
     companyName: 'Government of Jharkhand',
     companyLogo: 'https://logo.clearbit.com/jharkhand.gov.in',
@@ -988,6 +1023,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rajarshi_shahu_maharashtra_scholarship',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
     country: 'Global/Remote',
     companyName: 'Government of Maharashtra (SJSA)',
     companyLogo: 'https://logo.clearbit.com/maharashtra.gov.in',
@@ -1031,6 +1068,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ambedkar_overseas_vidya_nidhi',
+    studyLevel: 'postgraduate',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Government of Andhra Pradesh & Telangana',
     companyLogo: 'https://logo.clearbit.com/telangana.gov.in',
@@ -1074,6 +1113,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_google_summer_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Google',
     companyLogo: 'https://logo.clearbit.com/google.com',
@@ -1104,6 +1145,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_explore_swe',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Microsoft',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
@@ -1134,6 +1177,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amazon_sde_summer',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Amazon',
     companyLogo: 'https://logo.clearbit.com/amazon.com',
@@ -1164,6 +1209,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_uber_star_swe',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Uber',
     companyLogo: 'https://logo.clearbit.com/uber.com',
@@ -1194,6 +1241,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_goldman_sachs_analyst',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Goldman Sachs',
     companyLogo: 'https://logo.clearbit.com/goldmansachs.com',
@@ -1229,6 +1278,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meta_swe_university',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Meta',
     companyLogo: 'https://logo.clearbit.com/meta.com',
@@ -1264,6 +1315,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_apple_summer_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Apple',
     companyLogo: 'https://logo.clearbit.com/apple.com',
@@ -1299,6 +1352,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_salesforce_futureforce',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Salesforce',
     companyLogo: 'https://logo.clearbit.com/salesforce.com',
@@ -1334,6 +1389,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_adobe_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Adobe',
     companyLogo: 'https://logo.clearbit.com/adobe.com',
@@ -1364,6 +1421,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_cisco_ideathon_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Cisco',
     companyLogo: 'https://logo.clearbit.com/cisco.com',
@@ -1401,6 +1460,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // 6 Additional Major Companies (Netflix, Nvidia, Oracle, IBM, SAP, Intel)
   {
     id: 'cycle_netflix_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Netflix',
     companyLogo: 'https://logo.clearbit.com/netflix.com',
@@ -1436,6 +1497,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_nvidia_swe_hardware_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Nvidia',
     companyLogo: 'https://logo.clearbit.com/nvidia.com',
@@ -1471,6 +1534,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_oracle_cloud_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Oracle',
     companyLogo: 'https://logo.clearbit.com/oracle.com',
@@ -1506,6 +1571,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ibm_extreme_blue_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'IBM',
     companyLogo: 'https://logo.clearbit.com/ibm.com',
@@ -1541,6 +1608,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_sap_intern_star',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'SAP',
     companyLogo: 'https://logo.clearbit.com/sap.com',
@@ -1576,6 +1645,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_intel_swe_firmware_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Intel',
     companyLogo: 'https://logo.clearbit.com/intel.com',
@@ -1611,6 +1682,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_stripe_systems_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Stripe',
     companyLogo: 'https://logo.clearbit.com/stripe.com',
@@ -1646,6 +1719,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_openai_research_eng_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'OpenAI',
     companyLogo: 'https://logo.clearbit.com/openai.com',
@@ -1676,6 +1751,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_anthropic_systems_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Anthropic',
     companyLogo: 'https://logo.clearbit.com/anthropic.com',
@@ -1706,6 +1783,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_databricks_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Databricks',
     companyLogo: 'https://logo.clearbit.com/databricks.com',
@@ -1736,6 +1815,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_snowflake_systems_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Snowflake',
     companyLogo: 'https://logo.clearbit.com/snowflake.com',
@@ -1766,6 +1847,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_palantir_fde_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Palantir Technologies',
     companyLogo: 'https://logo.clearbit.com/palantir.com',
@@ -1796,6 +1879,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jane_street_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Jane Street',
     companyLogo: 'https://logo.clearbit.com/janestreet.com',
@@ -1831,6 +1916,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_citadel_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Citadel',
     companyLogo: 'https://logo.clearbit.com/citadel.com',
@@ -1866,6 +1953,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_deshaw_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'D. E. Shaw',
     companyLogo: 'https://logo.clearbit.com/deshaw.com',
@@ -1901,6 +1990,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_two_sigma_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Two Sigma',
     companyLogo: 'https://logo.clearbit.com/twosigma.com',
@@ -1936,6 +2027,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_morgan_stanley_students_graduates',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Morgan Stanley',
     companyLogo: 'https://logo.clearbit.com/morganstanley.com',
@@ -1973,6 +2066,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jpmorgan_sep_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'JPMorgan Chase & Co.',
     companyLogo: 'https://logo.clearbit.com/jpmorgan.com',
@@ -2008,6 +2103,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_atlassian_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Atlassian',
     companyLogo: 'https://logo.clearbit.com/atlassian.com',
@@ -2043,6 +2140,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_spotify_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Spotify',
     companyLogo: 'https://logo.clearbit.com/spotify.com',
@@ -2073,6 +2172,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_linkedin_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'LinkedIn',
     companyLogo: 'https://logo.clearbit.com/linkedin.com',
@@ -2103,6 +2204,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_x_twitter_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'X (Twitter)',
     companyLogo: 'https://logo.clearbit.com/x.com',
@@ -2133,6 +2236,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_snap_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Snap Inc.',
     companyLogo: 'https://logo.clearbit.com/snap.com',
@@ -2163,6 +2268,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_pinterest_pintech_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Pinterest',
     companyLogo: 'https://logo.clearbit.com/pinterest.com',
@@ -2193,6 +2300,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_airbnb_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Airbnb',
     companyLogo: 'https://logo.clearbit.com/airbnb.com',
@@ -2223,6 +2332,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_doordash_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'DoorDash',
     companyLogo: 'https://logo.clearbit.com/doordash.com',
@@ -2253,6 +2364,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_robinhood_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Robinhood',
     companyLogo: 'https://logo.clearbit.com/robinhood.com',
@@ -2283,6 +2396,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_coinbase_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Coinbase',
     companyLogo: 'https://logo.clearbit.com/coinbase.com',
@@ -2313,6 +2428,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_figma_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Figma',
     companyLogo: 'https://logo.clearbit.com/figma.com',
@@ -2343,6 +2460,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_cloudflare_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Cloudflare',
     companyLogo: 'https://logo.clearbit.com/cloudflare.com',
@@ -2373,6 +2492,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_datadog_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Datadog',
     companyLogo: 'https://logo.clearbit.com/datadoghq.com',
@@ -2403,6 +2524,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_gitlab_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'GitLab',
     companyLogo: 'https://logo.clearbit.com/gitlab.com',
@@ -2433,6 +2556,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_qualcomm_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Qualcomm',
     companyLogo: 'https://logo.clearbit.com/qualcomm.com',
@@ -2468,6 +2593,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ti_embedded_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Texas Instruments',
     companyLogo: 'https://logo.clearbit.com/ti.com',
@@ -2498,6 +2625,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amd_compiler_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'AMD',
     companyLogo: 'https://logo.clearbit.com/amd.com',
@@ -2528,6 +2657,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_samsung_prism_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Samsung R&D',
     companyLogo: 'https://logo.clearbit.com/samsung.com',
@@ -2558,6 +2689,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_paypal_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'PayPal',
     companyLogo: 'https://logo.clearbit.com/paypal.com',
@@ -2588,6 +2721,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_intuit_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Intuit',
     companyLogo: 'https://logo.clearbit.com/intuit.com',
@@ -2618,6 +2753,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_twilio_swe_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Twilio',
     companyLogo: 'https://logo.clearbit.com/twilio.com',
@@ -2648,6 +2785,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_zoom_media_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Zoom Video Communications',
     companyLogo: 'https://logo.clearbit.com/zoom.us',
@@ -2683,6 +2822,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================
   {
     id: 'cycle_hcl_techbee_class12',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'HCLTech',
     companyLogo: 'https://logo.clearbit.com/hcltech.com',
@@ -2717,6 +2858,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_amazon_future_engineer_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Amazon',
     companyLogo: 'https://logo.clearbit.com/amazon.com',
@@ -2751,6 +2894,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_generation_google_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Google',
     companyLogo: 'https://logo.clearbit.com/google.com',
@@ -2785,6 +2930,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_adobe_wit_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Adobe',
     companyLogo: 'https://logo.clearbit.com/adobe.com',
@@ -2819,6 +2966,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_reliance_foundation_ug_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Reliance Foundation',
     companyLogo: 'https://logo.clearbit.com/reliancefoundation.org',
@@ -2853,6 +3002,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_wipro_wilp_program',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_TUITION',
     country: 'India',
     companyName: 'Wipro',
     companyLogo: 'https://logo.clearbit.com/wipro.com',
@@ -2887,6 +3038,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_loreal_young_women_science',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'L\'Oréal',
     companyLogo: 'https://logo.clearbit.com/loreal.com',
@@ -2921,6 +3074,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_palantir_future_scholars',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Palantir Technologies',
     companyLogo: 'https://logo.clearbit.com/palantir.com',
@@ -2955,6 +3110,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_tcs_smart_hiring_program',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Tata Consultancy Services',
     companyLogo: 'https://logo.clearbit.com/tcs.com',
@@ -2989,6 +3146,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_infosys_springboard_early_talent',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Infosys',
     companyLogo: 'https://logo.clearbit.com/infosys.com',
@@ -3028,6 +3187,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // =========================================================================
   {
     id: 'cycle_tata_scholarship_cornell',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Cornell University (Tata Trust)',
     companyLogo: 'https://logo.clearbit.com/cornell.edu',
@@ -3065,6 +3226,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jardine_scholarship_oxbridge',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'UK',
     companyName: 'Jardine Foundation (Oxford & Cambridge)',
     companyLogo: 'https://logo.clearbit.com/ox.ac.uk',
@@ -3102,6 +3265,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_robertson_scholars_leadership',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'Duke & UNC Chapel Hill',
     companyLogo: 'https://logo.clearbit.com/duke.edu',
@@ -3139,6 +3304,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rise_global_talent',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'Global/Remote',
     companyName: 'Schmidt Futures & Rhodes Trust',
     companyLogo: 'https://logo.clearbit.com/schmidtfutures.com',
@@ -3176,6 +3343,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_nyuad_full_ride_fellowship',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'UAE',
     companyName: 'New York University Abu Dhabi',
     companyLogo: 'https://logo.clearbit.com/nyu.edu',
@@ -3213,6 +3382,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_thiel_fellowship_class12',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'The Thiel Foundation',
     companyLogo: 'https://logo.clearbit.com/thielfellowship.org',
@@ -3250,6 +3421,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_morehead_cain_unc',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_RIDE',
     country: 'USA',
     companyName: 'UNC Chapel Hill (Morehead-Cain)',
     companyLogo: 'https://logo.clearbit.com/unc.edu',
@@ -3291,6 +3464,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ============================================================================
   {
     id: 'cycle_cern_summer_student',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Switzerland',
     companyName: 'CERN',
     companyLogo: 'https://logo.clearbit.com/cern.ch',
@@ -3326,8 +3501,54 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
       internshipStartMonth: 'June - September (8-13 Weeks in Geneva)',
     }
   },
+  // Prompt 40: ETH Zurich Student Summer Research Fellowship (SSRF)
+  {
+    id: 'cycle_eth_zurich_ssrf',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
+    country: 'Switzerland',
+    companyName: 'ETH Zurich',
+    companyLogo: 'https://logo.clearbit.com/ethz.ch',
+    companyDomain: 'inf.ethz.ch',
+    programTitle: 'ETH Zurich Student Summer Research Fellowship (Computer Science SSRF)',
+    hiringCycleType: 'scientific_lab',
+    programCategory: 'scientific_lab',
+    tierCategory: 'scientific_lab',
+    rateType: 'OFFICIAL_CONFIRMED',
+    eligibility: 'UG & Master CS students with at least 2 years of study completed',
+    eligibilityCriteria: 'Undergraduate and Master students in computer science or closely related fields who have completed at least two years of university study by the start of the programme. Requires strong academic performance and fluency in English.',
+    selectionCriteria: 'Academic transcripts, CV, statement of purpose specifying research interests and preferred ETH CS faculty labs, and 2 letters of recommendation.',
+    targetAudienceText: 'UG / Master students in CS (At least 2 years completed)',
+    expectedAnnouncementMonth: 'October - December',
+    startMonth: 10,
+    startDay: 1,
+    endMonth: 12,
+    endDay: 15,
+    expectedWindowDuration: 'Applications open in autumn, typically close mid-December',
+    exactWindowText: 'Mid-December (Annual Application Deadline)',
+    targetBatches: [2026, 2027],
+    annualRecurrencePattern: 'Annual 2-month summer research fellowship running in July and August hosted by the Department of Computer Science at ETH Zurich.',
+    officialCareersUrl: 'https://inf.ethz.ch/studies/summer-research-fellowship.html',
+    historicalCompensation: 'CHF 4,000 total stipend (2 months) + travel & visa reimbursed + housing assistance',
+    fundingAmountText: 'CHF 4,000 Total Stipend (July-August) + Travel & Visa Reimbursed + Housing Assistance',
+    coverageBreakdown: 'CHF 4,000 total stipend for 2 months (July-August) to cover local living costs + round-trip travel and visa expenses reimbursed + housing assistance provided (subsidized student accommodation organized, not free housing)',
+    historicalAssessmentPlatform: 'SiROP / ETH Zurich SSRF Online Application Portal + Departmental Faculty Review',
+    keyPreparationTopics: ['Algorithms, Systems, Machine Learning & CS Core Foundations', 'Statement of Purpose Aligned with ETH Computer Science Labs', 'Academic Transcripts Demonstrating at least 2 Years Completed', 'Two Academic Letters of Recommendation'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 2,
+    actionTip: 'Carefully review participating faculty members and research groups within the Department of Computer Science at ETH Zurich before submitting your preference list.',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: ETH Zurich SSRF requires online application submission with faculty lab selections and referee uploads by mid-December. Note: Housing assistance is provided to secure student accommodation, but accommodation is not free housing. Confirm details directly on the official inf.ethz.ch website.',
+    timelinePhases: {
+      announcementMonth: 'October',
+      assessmentMonth: 'Mid-December (Strict Application Deadline)',
+      interviewMonth: 'February - March (Selection Decisions Released)',
+      internshipStartMonth: 'July 1 - August 31 (2-Month Summer Fellowship in Zurich)',
+    }
+  },
   {
     id: 'cycle_desy_summer_student',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Germany',
     companyName: 'DESY',
     companyLogo: 'https://logo.clearbit.com/desy.de',
@@ -3365,6 +3586,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_riken_summer_program',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Japan',
     companyName: 'RIKEN',
     companyLogo: 'https://logo.clearbit.com/riken.jp',
@@ -3402,6 +3625,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mpi_sws_research_internship',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Germany',
     companyName: 'Max Planck Institute (MPI-SWS)',
     companyLogo: 'https://logo.clearbit.com/mpi-sws.org',
@@ -3439,6 +3664,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_weizmann_kupcinet_getz',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Israel',
     companyName: 'Weizmann Institute of Science',
     companyLogo: 'https://logo.clearbit.com/weizmann.ac.il',
@@ -3476,6 +3703,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_fermilab_sist_internship',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Fermilab',
     companyLogo: 'https://logo.clearbit.com/fnal.gov',
@@ -3518,6 +3747,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ============================================================================
   {
     id: 'cycle_outreachy_open_source',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Outreachy',
     companyLogo: 'https://logo.clearbit.com/outreachy.org',
@@ -3555,6 +3786,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_gsoc_open_source',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Google Summer of Code',
     companyLogo: 'https://logo.clearbit.com/google.com',
@@ -3592,6 +3825,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_lfx_mentorship',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Linux Foundation (LFX)',
     companyLogo: 'https://logo.clearbit.com/linuxfoundation.org',
@@ -3629,6 +3864,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mlh_fellowship',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Major League Hacking (MLH)',
     companyLogo: 'https://logo.clearbit.com/mlh.io',
@@ -3666,6 +3903,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_gsod_season_of_docs',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Google Season of Docs',
     companyLogo: 'https://logo.clearbit.com/google.com',
@@ -3708,6 +3947,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ============================================================================
   {
     id: 'cycle_mitacs_globalink_canada',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Canada',
     companyName: 'Mitacs Globalink',
     companyLogo: 'https://logo.clearbit.com/mitacs.ca',
@@ -3745,6 +3986,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_daad_wise_germany',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Germany',
     companyName: 'DAAD Germany',
     companyLogo: 'https://logo.clearbit.com/daad.de',
@@ -3782,6 +4025,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_kaist_snu_korea',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'South Korea',
     companyName: 'KAIST & SNU Korea',
     companyLogo: 'https://logo.clearbit.com/kaist.ac.kr',
@@ -3819,6 +4064,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_ntu_india_connect',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Singapore',
     companyName: 'NTU Singapore',
     companyLogo: 'https://logo.clearbit.com/ntu.edu.sg',
@@ -3856,6 +4103,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_charpak_lab_france',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'France',
     companyName: 'Campus France (Charpak)',
     companyLogo: 'https://logo.clearbit.com/campusfrance.org',
@@ -3898,6 +4147,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================================================
   {
     id: 'cycle_openai_residency',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'OpenAI',
     companyLogo: 'https://logo.clearbit.com/openai.com',
@@ -3935,6 +4186,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_deepmind_research',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Google DeepMind',
     companyLogo: 'https://logo.clearbit.com/deepmind.com',
@@ -3972,6 +4225,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meta_fair_ai',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Meta',
     companyLogo: 'https://logo.clearbit.com/meta.com',
@@ -4009,6 +4264,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_research_msr',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Microsoft Research',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
@@ -4051,6 +4308,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================================================
   {
     id: 'cycle_google_step',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Google',
     companyLogo: 'https://logo.clearbit.com/google.com',
@@ -4088,6 +4347,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_explore',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Microsoft',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
@@ -4125,6 +4386,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_uber_star',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Uber',
     companyLogo: 'https://logo.clearbit.com/uber.com',
@@ -4162,6 +4425,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meta_university',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'USA',
     companyName: 'Meta',
     companyLogo: 'https://logo.clearbit.com/meta.com',
@@ -4199,6 +4464,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_jane_street_first_year',
+    studyLevel: 'class12_ug',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Jane Street',
     companyLogo: 'https://logo.clearbit.com/janestreet.com',
@@ -4238,6 +4505,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // Tier 7: Global Tech/SaaS Giant - ServiceNow (Addition of missing enterprise giant)
   {
     id: 'cycle_servicenow_intern',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'ServiceNow',
     companyLogo: 'https://logo.clearbit.com/servicenow.com',
@@ -4279,6 +4548,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   // ==========================================================================
   {
     id: 'cycle_woven_by_toyota_internship',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Japan',
     companyName: 'Woven by Toyota',
     companyLogo: 'https://logo.clearbit.com/woven.toyota',
@@ -4316,6 +4587,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_max_planck_institute_cis_germany',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Germany',
     companyName: 'Max Planck Institute',
     companyLogo: 'https://logo.clearbit.com/mpg.de',
@@ -4353,6 +4626,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_nus_iris_singapore',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Singapore',
     companyName: 'National University of Singapore',
     companyLogo: 'https://logo.clearbit.com/nus.edu.sg',
@@ -4390,6 +4665,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_mycareersfuture_singapore_gov',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Singapore',
     companyName: 'MyCareersFuture Singapore (GovTech / WSG)',
     companyLogo: 'https://static.mycareersfuture.gov.sg/images/company/logos/govtech.jpg',
@@ -4427,6 +4704,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_oist_research_internship_japan',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Japan',
     companyName: 'OIST',
     companyLogo: 'https://logo.clearbit.com/oist.jp',
@@ -4464,6 +4743,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_academia_sinica_tiip_taiwan',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'Taiwan',
     companyName: 'Academia Sinica',
     companyLogo: 'https://logo.clearbit.com/sinica.edu.tw',
@@ -4501,6 +4782,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rbi_summer_placement',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Reserve Bank of India',
     companyLogo: 'https://logo.clearbit.com/rbi.org.in',
@@ -4538,6 +4821,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_rbi_research_internship',
+    studyLevel: 'postgraduate',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'Reserve Bank of India',
     companyLogo: 'https://logo.clearbit.com/rbi.org.in',
@@ -4575,6 +4860,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_microsoft_global_university_internship',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Microsoft',
     companyLogo: 'https://logo.clearbit.com/microsoft.com',
@@ -4612,6 +4899,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_deloitte_university_internship',
+    studyLevel: 'internship',
+    coverageType: 'STIPEND_ONLY',
     country: 'Global/Remote',
     companyName: 'Deloitte',
     companyLogo: 'https://logo.clearbit.com/deloitte.com',
@@ -4649,6 +4938,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_niti_aayog_internship',
+    studyLevel: 'summer_research',
+    coverageType: 'STIPEND_ONLY',
     country: 'India',
     companyName: 'NITI Aayog',
     companyLogo: 'https://logo.clearbit.com/niti.gov.in',
@@ -4686,6 +4977,8 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
   },
   {
     id: 'cycle_meti_japan_government_internship',
+    studyLevel: 'summer_research',
+    coverageType: 'TRAVEL_ONLY',
     country: 'Japan',
     companyName: 'METI Japan',
     companyLogo: 'https://logo.clearbit.com/meti.go.jp',
@@ -4719,6 +5012,484 @@ export const RECURRING_ANNUAL_INTERNSHIPS: UpcomingInternshipCycle[] = [
       assessmentMonth: 'July (Document Screening & Web Interviews)',
       interviewMonth: 'August (Host Company Matching)',
       internshipStartMonth: 'September - December (2-3 Months Full-Time Internship in Japan)',
+    }
+  },
+  // ==========================================
+  // Prompt 38: POSTGRADUATE SCHOLARSHIPS BATCH
+  // StudyLevel: 'postgraduate'
+  // rateType: 'MARKET_ESTIMATED' with ranges (no exact figures)
+  // deadlines: month only
+  // official-domain links only
+  // high-stakes disclaimer on every card
+  // ==========================================
+  {
+    id: 'cycle_rhodes_scholarship_india',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'UK',
+    companyName: 'Rhodes Trust',
+    companyLogo: 'https://logo.clearbit.com/rhodeshouse.ox.ac.uk',
+    companyDomain: 'rhodeshouse.ox.ac.uk',
+    programTitle: 'Rhodes Scholarship (India) - University of Oxford Postgraduate Fellowship',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Indian citizens with completed or graduating undergraduate degree with first-class honours',
+    targetAudienceText: 'Postgraduate Scholars (Oxford Master’s & DPhil Degree Courses)',
+    fundingAmountText: '₹1.1 - ₹1.5 Crore (£100,000 - £140,000 Estimated Total Value)',
+    coverageBreakdown: '100% Oxford University & College Fees + Annual Living Stipend (£19,000 - £22,000/yr) + Return Economy Flights + Visa Fees & IHS Health Surcharge',
+    eligibilityCriteria: 'Indian citizenship and completed undergraduate degree with first-class honours or equivalent; age strictly between 19 and 25 years at matriculation.',
+    selectionCriteria: 'Literary and scholastic attainments, energy to use talents to the full, truth, courage, devotion to duty, and moral force of character; shortlisted candidates undergo preliminary and final selection committee interviews in India.',
+    seatQuotaInfo: '5 Scholarships allocated for India annually (Varies year to year, check official page)',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Rhodes selection involves rigorous academic criteria, institutional endorsements, and personal interviews. Confirm exact annual portal opening and submission deadlines directly on the official rhodeshouse.ox.ac.uk website — this schedule serves as an advisory guide.',
+    expectedAnnouncementMonth: 'June - July',
+    startMonth: 6,
+    endMonth: 8,
+    expectedWindowDuration: 'Online portal open June through August',
+    exactWindowText: 'Deadline: August (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual flagship Oxford postgraduate scholarship cycle for India, opening in June with deadline in August.',
+    officialCareersUrl: 'https://www.rhodeshouse.ox.ac.uk/scholarships/the-rhodes-scholarship/',
+    historicalCompensation: '£19,000 - £22,000/yr living allowance + 100% Oxford fees & international flights',
+    historicalAssessmentPlatform: 'Rhodes Trust Online Application Portal (rhodeshouse.ox.ac.uk) + National Selection Committee Interview Panel',
+    keyPreparationTopics: ['First-Class Honours Academic Track Record', 'Rigorous Statement of Purpose & Oxford Course Selection', 'Six Formal Academic & Character Reference Letters', 'Leadership Impact & Extracurricular Dedication', 'National Selection Panel Interview Preparation'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 2,
+    actionTip: 'Securing five to six strong academic references and crafting an intellectually compelling study proposal for Oxford are prerequisites. Start 6 months before the June portal opening.',
+    timelinePhases: {
+      announcementMonth: 'June',
+      assessmentMonth: 'August (Application Dossier Deadline)',
+      interviewMonth: 'October - November (Final National Interviews in Delhi)',
+      internshipStartMonth: 'October (Oxford Michaelmas Term Commencement)',
+    }
+  },
+  {
+    id: 'cycle_gates_cambridge_scholarship',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'UK',
+    companyName: 'Gates Cambridge Trust',
+    companyLogo: 'https://logo.clearbit.com/gatescambridge.org',
+    companyDomain: 'gatescambridge.org',
+    programTitle: 'Gates Cambridge Scholarship (Postgraduate at University of Cambridge)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Citizens of any country outside the United Kingdom applying to Cambridge postgraduate degrees',
+    targetAudienceText: 'International Postgraduate Scholars (Cambridge PhD, MSc, MLitt, or 1-Year Master’s)',
+    fundingAmountText: '₹95 Lakhs - ₹1.4 Crore (£90,000 - £130,000 Estimated Total Value)',
+    coverageBreakdown: 'Full University Composition Fee + Maintenance Allowance (£20,000 - £23,000/yr) + Inbound Visa & IHS Costs + Return Economy Airfare',
+    eligibilityCriteria: 'Outstanding intellectual ability, reasons for choice of course, commitment to improving the lives of others, and leadership capacity; applying to a full-time residential postgraduate degree at University of Cambridge.',
+    selectionCriteria: 'Joint application via Cambridge Graduate Application Portal; departmental ranking followed by Gates Cambridge Trust Shortlisting and Interview Committees.',
+    seatQuotaInfo: '~80 full-cost scholarships awarded globally each year (~55 for International / Non-US)',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Gates Cambridge applications must be submitted concurrently with your Cambridge University graduate application through the Applicant Portal. Deadlines strictly match departmental course funding deadlines in December or January. Verify official course dates on gatescambridge.org.',
+    expectedAnnouncementMonth: 'September - October',
+    startMonth: 9,
+    endMonth: 12,
+    expectedWindowDuration: 'Application window open September through December/January',
+    exactWindowText: 'Deadline: December (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual prestigious international scholarship cycle funded by Bill and Melinda Gates Foundation for Cambridge graduate study.',
+    officialCareersUrl: 'https://www.gatescambridge.org/apply/',
+    historicalCompensation: '£20,000 - £23,000/yr maintenance stipend + 100% Cambridge composition fee & travel',
+    historicalAssessmentPlatform: 'University of Cambridge Graduate Applicant Portal (postgraduate.study.cam.ac.uk) + Gates Trust Panels',
+    keyPreparationTopics: ['Intellectual Excellence & Academic Transcripts', 'Commitment to Improving Lives of Others Essay', 'Gates Cambridge Reference Letter', 'University Departmental Application Alignment'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 3,
+    actionTip: 'Check the specific funding deadline for your academic course at Cambridge, which is usually in December or January. Tick the Gates Cambridge funding box in the student portal.',
+    timelinePhases: {
+      announcementMonth: 'September',
+      assessmentMonth: 'December (Graduate Course & Funding Deadline)',
+      interviewMonth: 'March (International Selection Interviews)',
+      internshipStartMonth: 'October (Cambridge Michaelmas Term Commencement)',
+    }
+  },
+  {
+    id: 'cycle_knight_hennessy_scholars',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'USA',
+    companyName: 'Stanford University (Knight-Hennessy)',
+    companyLogo: 'https://logo.clearbit.com/stanford.edu',
+    companyDomain: 'knight-hennessy.stanford.edu',
+    programTitle: 'Knight-Hennessy Scholars (Stanford Graduate Degree Program)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Graduates with undergraduate degree earned within last 7 years applying to any Stanford graduate program',
+    targetAudienceText: 'Multidisciplinary Leaders (Stanford JD, MA, MBA, MD, MFA, MS, or PhD)',
+    fundingAmountText: '₹1.6 - ₹2.4 Crore ($190,000 - $280,000 Estimated Total Value)',
+    coverageBreakdown: 'Full Stanford graduate tuition and required fees + Living & academic stipend ($45,000 - $55,000/yr) + Economy return airfare to/from Stanford',
+    eligibilityCriteria: 'First, you must apply separately to a full-time Stanford graduate degree program; undergraduate degree received within prior 7 years; demonstrable independence of thought, purposeful leadership, and civic mindset.',
+    selectionCriteria: 'Holistic evaluation based on independence of thought, purposeful leadership, and civic mindset, followed by Immersion Weekend for finalists.',
+    seatQuotaInfo: 'Up to 100 high-achieving scholars selected globally each cohort',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Applying to Knight-Hennessy requires two completely separate applications: one to KHS by October and one to your Stanford graduate degree program by its departmental deadline. Review official instructions and deadlines at knight-hennessy.stanford.edu.',
+    expectedAnnouncementMonth: 'June - July',
+    startMonth: 6,
+    endMonth: 10,
+    expectedWindowDuration: 'Application window open June through October',
+    exactWindowText: 'Deadline: October (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual multidisciplinary graduate leadership scholarship at Stanford University, opening in June with deadline in October.',
+    officialCareersUrl: 'https://knight-hennessy.stanford.edu/admission/planning-apply',
+    historicalCompensation: '$45,000 - $55,000/yr living & academic stipend + 100% Stanford tuition & economy airfare',
+    historicalAssessmentPlatform: 'Knight-Hennessy Online Application Portal + Video Statement + Immersion Weekend Finalist Interviews',
+    keyPreparationTopics: ['Independence of Thought & Original Perspectives', 'Purposeful Leadership & Community Impact', 'Stanford Graduate Department Admissions Alignment', 'Video Essay & Personal Reflections'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 4,
+    actionTip: 'KHS deadline is always in October, which is usually earlier than most Stanford departmental graduate program deadlines. Complete your KHS materials early in the summer.',
+    timelinePhases: {
+      announcementMonth: 'June',
+      assessmentMonth: 'October (KHS Online Application Deadline)',
+      interviewMonth: 'February - March (Finalist Immersion Weekend at Stanford)',
+      internshipStartMonth: 'September (Stanford Autumn Quarter Matriculation)',
+    }
+  },
+  {
+    id: 'cycle_schwarzman_scholars',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'China',
+    companyName: 'Schwarzman Scholars',
+    companyLogo: 'https://logo.clearbit.com/schwarzmanscholars.org',
+    companyDomain: 'schwarzmanscholars.org',
+    programTitle: 'Schwarzman Scholars (Tsinghua University Master of Global Affairs)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Graduates aged 18-28 with an accredited undergraduate degree and high English proficiency',
+    targetAudienceText: 'Future Global Leaders (1-Year Master of Global Affairs at Tsinghua University, Beijing)',
+    fundingAmountText: '₹75 - ₹95 Lakhs ($85,000 - $115,000 Estimated Total Value)',
+    coverageBreakdown: '100% Tuition & Fees + Room & Board in Beijing + Travel to/from Beijing + In-country Study Tour + Required Course Books + Living Stipend ($4,500 - $6,000/yr) + Health Insurance',
+    eligibilityCriteria: 'Undergraduate degree completed prior to orientation; age 18 to 28 as of August of matriculation year; exceptional English language proficiency and proven leadership potential.',
+    selectionCriteria: 'Rigorous evaluation of leadership capability, academic aptitude, and exemplary character, followed by regional interview panels in London, Bangkok, New York, or virtual.',
+    seatQuotaInfo: 'Up to 200 scholars chosen globally per annual class',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Candidates with Chinese passports apply under a distinct timeline (May deadline); all international applicants apply under the Global cycle closing in September. Confirm exact portal dates on the official schwarzmanscholars.org website.',
+    expectedAnnouncementMonth: 'April - May',
+    startMonth: 4,
+    endMonth: 9,
+    expectedWindowDuration: 'Application portal open April through September',
+    exactWindowText: 'Deadline: September (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual fully-funded 1-year master degree in Global Affairs at Tsinghua University in Beijing designed to prepare the next generation of global leaders.',
+    officialCareersUrl: 'https://www.schwarzmanscholars.org/admissions/',
+    historicalCompensation: '$4,500 - $6,000 personal stipend + full tuition, room & board, travel & health insurance',
+    historicalAssessmentPlatform: 'Schwarzman Scholars Portal + Video Introduction + Regional In-Person / Virtual Interview Panels',
+    keyPreparationTopics: ['Demonstrated Leadership Exemplars', 'Essays on Current Global Challenges & Geopolitics', 'Institutional Recommendation Letters', 'Video Self-Introduction & Impromptu Responses'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 3,
+    actionTip: 'Schwarzman places immense weight on concrete leadership experience. Frame your essays around specific moments where you took initiative and achieved measurable outcomes.',
+    timelinePhases: {
+      announcementMonth: 'April',
+      assessmentMonth: 'September (Global Application Deadline)',
+      interviewMonth: 'October - November (Regional Selection Interviews)',
+      internshipStartMonth: 'August (Schwarzman College Orientation in Beijing)',
+    }
+  },
+  {
+    id: 'cycle_fulbright_nehru_fellowships',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'USA',
+    companyName: 'USIEF (Fulbright Commission)',
+    companyLogo: 'https://logo.clearbit.com/usief.org.in',
+    companyDomain: 'usief.org.in',
+    programTitle: 'Fulbright-Nehru Master’s Fellowships',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Indian citizens with minimum 3 years of work experience and equivalent to a US bachelor degree',
+    targetAudienceText: 'Indian Professionals & Graduates (Selected Master’s Degrees at Top US Universities)',
+    fundingAmountText: '₹70 - ₹95 Lakhs ($80,000 - $115,000 Estimated Grant Value)',
+    coverageBreakdown: 'J-1 Visa Support + Round-Trip Economy Airfare + 100% Tuition & University Fees + Living & Incidental Stipend ($1,800 - $2,600/mo) + Accident & Sickness Health Benefit Plan',
+    eligibilityCriteria: 'Indian citizens with substantial community service commitment; minimum 55% in undergraduate degree; at least 3 years of full-time professional work experience by application deadline; must return to India for minimum 2 years post-degree.',
+    selectionCriteria: 'Academic credentials, professional achievement, leadership, compelling project proposal, and interview with national selection committee in New Delhi.',
+    seatQuotaInfo: 'Selective cohort of Indian master’s fellows selected annually',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Fulbright-Nehru awards are governed by strict bilateral treaty guidelines including mandatory two-year home residency (Section 212(e)). Verify official annual competition notifications at usief.org.in.',
+    expectedAnnouncementMonth: 'January - February',
+    startMonth: 1,
+    endMonth: 5,
+    expectedWindowDuration: 'Application cycle open January through mid-May',
+    exactWindowText: 'Deadline: May (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Flagship bilateral US-India academic exchange fellowship enabling outstanding Indian scholars to pursue master’s degree programs at premier American universities.',
+    officialCareersUrl: 'https://www.usief.org.in/Fulbright-Nehru-Fellowships.aspx',
+    historicalCompensation: '$1,800 - $2,600/mo living allowance + 100% US tuition & round-trip international flights',
+    historicalAssessmentPlatform: 'USIEF Online Embark Portal + National Subject Scrutiny Committees + Final Interview Panels',
+    keyPreparationTopics: ['Professional Experience & Leadership Track Record', 'Study Objective & Personal Statement Essay', 'Community Leadership & Commitment to Returning to India', 'Confidential Letters of Reference'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 1,
+    actionTip: 'A minimum of three years of full-time work experience in your field of study is mandatory. Highlight how your US graduate education will directly benefit Indian development.',
+    timelinePhases: {
+      announcementMonth: 'January',
+      assessmentMonth: 'May (Annual Dossier Submission Deadline)',
+      interviewMonth: 'August - September (National Selection Interviews)',
+      internshipStartMonth: 'August (U.S. University Fall Semester Matriculation)',
+    }
+  },
+  {
+    id: 'cycle_commonwealth_scholarship_uk',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'UK',
+    companyName: 'Commonwealth Scholarship Commission',
+    companyLogo: 'https://logo.clearbit.com/fcdo.gov.uk',
+    companyDomain: 'cscuk.fcdo.gov.uk',
+    programTitle: 'Commonwealth Scholarship (UK) - Master’s Fellowships',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Citizens of eligible Commonwealth countries (including India) who cannot afford to study in the UK without scholarship',
+    targetAudienceText: 'High-Aptitude Indian Graduates (1-Year Taught Master’s Degrees at UK Universities)',
+    fundingAmountText: '₹60 - ₹85 Lakhs (£55,000 - £80,000 Estimated Total Value)',
+    coverageBreakdown: 'Approved Return Economy Airfare from home country to UK + Full Tuition & Exam Fees + Monthly Living Allowance (£1,340 - £1,650/mo) + Warm Clothing Allowance + Study Travel Grant',
+    eligibilityCriteria: 'Permanent resident of eligible Commonwealth country; hold first-class undergraduate degree; cannot afford UK study without funding; must provide at least two references and apply via national nominating agency.',
+    selectionCriteria: 'Academic merit of the candidate, quality of the study plan, and potential impact on the development of the candidate’s home country under CSC development themes.',
+    seatQuotaInfo: 'Generous annual intake funded by UK Foreign, Commonwealth & Development Office (FCDO)',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Candidates in India must apply to both the CSC electronic application system AND the nominating agency (Ministry of Education, Government of India). Confirm official requirements on cscuk.fcdo.gov.uk.',
+    expectedAnnouncementMonth: 'September - October',
+    startMonth: 9,
+    endMonth: 10,
+    expectedWindowDuration: 'Application window open September through October',
+    exactWindowText: 'Deadline: October (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual scholarship funded by the UK government FCDO enabling talented individuals from Commonwealth countries to gain 1-year master’s degrees in the UK.',
+    officialCareersUrl: 'https://cscuk.fcdo.gov.uk/apply/',
+    historicalCompensation: '£1,340 - £1,650/mo maintenance stipend + 100% approved UK university tuition & flights',
+    historicalAssessmentPlatform: 'CSC Online Application System (OAS) + National Nominating Agency Portal (proposal.sakshat.ac.in)',
+    keyPreparationTopics: ['Development Impact Statement (CSC 6 Key Themes)', 'Detailed Study Plan & University Preferences', 'Academic Reference Letters on Institutional Letterhead', 'Proof of Financial Need & Citizenship Documentation'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 3,
+    actionTip: 'Your Development Impact statement is critical: link your course choice explicitly to one of the six CSC development themes and describe the long-term impact on your home nation.',
+    timelinePhases: {
+      announcementMonth: 'September',
+      assessmentMonth: 'October (CSC & Nominating Agency Filing Deadline)',
+      interviewMonth: 'December - February (Nominating Agency Scrutiny)',
+      internshipStartMonth: 'September (UK Academic Year Commencement)',
+    }
+  },
+  {
+    id: 'cycle_inlaks_scholarships',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_TUITION',
+    country: 'Global/Remote',
+    companyName: 'Inlaks Shivdasani Foundation',
+    companyLogo: 'https://logo.clearbit.com/inlaksfoundation.org',
+    companyDomain: 'inlaksfoundation.org',
+    programTitle: 'Inlaks Scholarships (Postgraduate Study Abroad)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Indian passport holders with first-class undergraduate degree from recognized Indian university applying abroad',
+    targetAudienceText: 'Exceptional Indian Talent (Top Universities in Europe, America, and the UK)',
+    fundingAmountText: 'Up to ₹85 Lakhs ($100,000 Max Estimated Grant)',
+    coverageBreakdown: 'Up to $100,000 maximum funding covering tuition fees, reasonable living allowance, healthcare, and one-way travel expenses',
+    eligibilityCriteria: 'Indian citizens holding a continuous first-class degree from an Indian university; maximum 30 years of age; must have secured admission into top-tier overseas university before final interview.',
+    selectionCriteria: 'Extraordinary intellectual potential, personal dynamism, broad vision, and distinctive leadership; two rounds of interviews (preliminary and final panel in Mumbai/Delhi).',
+    seatQuotaInfo: 'Selective cohort of outstanding Indian scholars each year',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Inlaks award is strictly capped at $100,000 USD. If course tuition and living costs exceed $100,000, candidates must show verified proof of matched funding for the remaining balance. See full criteria on official inlaksfoundation.org website.',
+    expectedAnnouncementMonth: 'February - March',
+    startMonth: 2,
+    endMonth: 3,
+    expectedWindowDuration: 'Portal open February through March',
+    exactWindowText: 'Deadline: March (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual philanthropic foundation grant supporting young Indians of exceptional talent to pursue graduate degrees at premier global institutions.',
+    officialCareersUrl: 'https://www.inlaksfoundation.org/scholarships/',
+    historicalCompensation: 'Up to $100,000 grant (covers tuition, living allowance & one-way travel)',
+    historicalAssessmentPlatform: 'Inlaks Online Application Portal + Preliminary Selection Committee + Final Selection Panel',
+    keyPreparationTopics: ['Demonstrated Exceptional Academic & Creative Record', 'Proof of Admission Offer to Top-Ranked University', 'Secured Match-Funding Evidence if Total Cost > $100k', 'Broad Vision & Deep Domain Expertise'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 1,
+    actionTip: 'Inlaks prioritizes candidates who show uniqueness of thought and purpose. You must show how you plan to cover any costs exceeding the $100,000 award cap.',
+    timelinePhases: {
+      announcementMonth: 'February',
+      assessmentMonth: 'March (Online Application Closes)',
+      interviewMonth: 'May - June (Two Tiers of Selection Interviews in India)',
+      internshipStartMonth: 'September (Overseas Graduate Program Commencement)',
+    }
+  },
+  {
+    id: 'cycle_erasmus_mundus_joint_masters',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'Europe',
+    companyName: 'European Commission (Erasmus+)',
+    companyLogo: 'https://logo.clearbit.com/europa.eu',
+    companyDomain: 'erasmus-plus.ec.europa.eu',
+    programTitle: 'Erasmus Mundus Joint Masters Scholarship (EMJM)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Graduates worldwide with accredited bachelor degree or equivalent (last-year undergraduates eligible)',
+    targetAudienceText: 'Global Scholars (Integrated Master’s Degree Across At Least 2 European Universities)',
+    fundingAmountText: '₹45 - ₹65 Lakhs (€50,000 - €70,000 Estimated Grant Value)',
+    coverageBreakdown: '100% Student Participation Costs (Tuition, Library, Lab Fees) + Monthly Subsistence Allowance (€1,400/month for up to 24 months) + Full Comprehensive Health Insurance',
+    eligibilityCriteria: 'Bachelor’s degree or enrolled in final year of higher education; proficiency in English or host languages; apply directly to chosen master consortium from official EMJM catalogue.',
+    selectionCriteria: 'Academic excellence, relevant background, statement of purpose, reference letters, and research potential evaluated by international academic consortium consortiums.',
+    seatQuotaInfo: 'Over 2,500 fully-funded EU scholarships across ~150 joint master programmes annually',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Each Erasmus Mundus master consortium operates its own independent admissions portal and application window (typically closing in January or February). Browse the official EMJM catalogue and apply on consortium websites directly.',
+    expectedAnnouncementMonth: 'October - November',
+    startMonth: 10,
+    endMonth: 1,
+    expectedWindowDuration: 'Consortium portals open October through January/February',
+    exactWindowText: 'Deadline: January (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026, 2027],
+    annualRecurrencePattern: 'Flagship European Union postgraduate programme where students study in at least two different European countries, leading to a joint or multiple degree.',
+    officialCareersUrl: 'https://erasmus-plus.ec.europa.eu/opportunities/opportunities-for-individuals/students/erasmus-mundus-joint-masters',
+    historicalCompensation: '€1,400/mo subsistence allowance + 100% consortium tuition & travel insurance',
+    historicalAssessmentPlatform: 'Direct Consortium Online Application Portals (Listed in EMJM Catalogue) + Academic Board Scrutiny',
+    keyPreparationTopics: ['Selecting 1 to 3 Compatible EMJM Master Programmes', 'English Language Certificate (IELTS / TOEFL)', 'Consortium-Specific Motivation Letter & CV (Europass Format)', 'Academic Recommendation Letters'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 4,
+    actionTip: 'You can apply to up to three different Erasmus Mundus master programmes in the same year. Search the EMJM catalogue early and tailor each motivation letter to the specific consortium curriculum.',
+    timelinePhases: {
+      announcementMonth: 'October',
+      assessmentMonth: 'January (Consortium Scholarship Application Deadline)',
+      interviewMonth: 'March - April (Consortium Results & Ranking Lists Released)',
+      internshipStartMonth: 'September (European Semester 1 Orientation)',
+    }
+  },
+  {
+    id: 'cycle_mext_postgraduate_scholarship',
+    studyLevel: 'postgraduate',
+    coverageType: 'FULL_RIDE',
+    country: 'Japan',
+    companyName: 'MEXT (Government of Japan)',
+    companyLogo: 'https://logo.clearbit.com/mext.go.jp',
+    companyDomain: 'studyinjapan.go.jp',
+    programTitle: 'MEXT Postgraduate & Research Student Scholarship (Government of Japan)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'MARKET_ESTIMATED',
+    eligibility: 'Indian nationals under 35 years of age with bachelor’s degree in relevant discipline',
+    targetAudienceText: 'Research Students & Postgraduate Scholars (Japanese Universities Master’s & PhD)',
+    fundingAmountText: '₹35 - ₹55 Lakhs (¥5,000,000 - ¥8,000,000 Estimated Total Award)',
+    coverageBreakdown: '100% University Examination, Admission & Tuition Fees + Monthly Stipend (¥143,000 - ¥148,000/mo) + Round-Trip Economy Airfare India-Japan + 6-Month Intensive Japanese Language Course',
+    eligibilityCriteria: 'Indian nationality; born on or after April 2, 1990 (under 35 years); minimum 65% aggregate in qualifying degree; clear screening by Embassy of Japan in India.',
+    selectionCriteria: 'Document scrutiny, preliminary written exams (English & Japanese), Embassy interview in New Delhi, followed by Letter of Acceptance from Japanese university professor.',
+    seatQuotaInfo: 'Prestigious quota for Indian scholars awarded annually by the Government of Japan',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Embassy Recommendation track requires physical or proctored written examinations and interviews at the Embassy of Japan in New Delhi or regional consulates. Check official notifications at in.emb-japan.go.jp.',
+    expectedAnnouncementMonth: 'April - May',
+    startMonth: 4,
+    endMonth: 5,
+    expectedWindowDuration: 'Embassy application window open April through May',
+    exactWindowText: 'Deadline: May (Annual Cycle)',
+    targetBatches: [2024, 2025, 2026],
+    annualRecurrencePattern: 'Annual premier Japanese government scholarship for graduate researchers to study at world-renowned Japanese national universities.',
+    officialCareersUrl: 'https://www.studyinjapan.go.jp/en/planning/scholarship/mext-scholarship/',
+    historicalCompensation: '¥143,000 - ¥148,000/mo living allowance + 100% Japanese tuition & round-trip airfare',
+    historicalAssessmentPlatform: 'Embassy of Japan in India Application Dossier + Written Language Exams + Embassy Selection Board Interview',
+    keyPreparationTopics: ['Clear Japanese University Field of Study & Research Plan', 'Academic Transcripts with Minimum 65% Marks', 'English & Japanese Language Proficiency Preparation', 'Contacting Japanese Professors for Provisional Acceptance (Post-First Screening)'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 1,
+    actionTip: 'The Research Plan (Field of Study and Study Program) is the single most decisive factor. It must explain why your specific research can only or best be conducted in Japan.',
+    timelinePhases: {
+      announcementMonth: 'April',
+      assessmentMonth: 'May (Embassy Document Submission Deadline)',
+      interviewMonth: 'June - July (Written Examinations & Embassy Interviews)',
+      internshipStartMonth: 'April or October (Departure to Japan & University Matriculation)',
+    }
+  },
+  // ==========================================
+  // Prompt 39: UNDERGRAD MERIT BATCH (SIRF VERIFIED)
+  // 1. Cornelius Vanderbilt Scholarship (FULL_TUITION, plus a one-time summer stipend)
+  // 2. USC Trustee / Mork (FULL_TUITION)
+  // Strictly NOT adding Emory Woodruff, BU Trustee, or NYU Shanghai yet (international eligibility unverified).
+  // ==========================================
+  {
+    id: 'cycle_cornelius_vanderbilt_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_TUITION',
+    country: 'USA',
+    companyName: 'Vanderbilt University',
+    companyLogo: 'https://logo.clearbit.com/vanderbilt.edu',
+    companyDomain: 'vanderbilt.edu',
+    programTitle: 'Cornelius Vanderbilt Scholarship (Full Tuition + Summer Stipend)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'OFFICIAL_CONFIRMED',
+    isClass12Eligible: true,
+    eligibility: 'Class 12 / High School Seniors applying for Fall First-Year Admission (Domestic & International)',
+    targetAudienceText: 'Class 12th / Pre-University Students (Verified International Eligibility)',
+    fundingAmountText: 'Full Tuition (~$65,000/yr) + $6,000 Summer Experience Stipend (~$265,000 total)',
+    coverageBreakdown: '100% Full Tuition for 4 undergraduate years + One-time $6,000 stipend for summer research, internship, or study abroad experience',
+    eligibilityCriteria: 'First-year undergraduate applicants of exceptional academic achievement and intellectual leadership; verified open to international applicants without restriction.',
+    selectionCriteria: 'Academic achievement, intellectual promise, and leadership and contribution to community; requires Cornelius Vanderbilt Scholarship application via MyAppVU portal.',
+    seatQuotaInfo: 'Awarded to top 1% of applicant pool annually (Varies year to year, check official page)',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: Cornelius Vanderbilt Scholarship requires submission of the Common Application followed by the separate scholarship application via MyAppVU by December 1. Verify official scholarship deadlines on vanderbilt.edu.',
+    expectedAnnouncementMonth: 'August - December',
+    startMonth: 8,
+    endMonth: 12,
+    expectedWindowDuration: 'Application opens August with admission, priority merit deadline December 1',
+    exactWindowText: 'Deadline: December (Annual Cycle)',
+    targetBatches: [12, 2028, 2029],
+    annualRecurrencePattern: 'Annual premier merit scholarship established in 1979 in honor of Vanderbilt University founder, awarding full tuition plus summer experience stipend.',
+    officialCareersUrl: 'https://www.vanderbilt.edu/scholarships/signature-scholarships/cornelius-vanderbilt/',
+    historicalCompensation: 'Full Tuition (~$65,000/yr) + $6,000 one-time summer stipend (~$265,000 4-year award)',
+    historicalAssessmentPlatform: 'Common App + MyAppVU Scholarship Portal Supplement + Faculty Selection Committee',
+    keyPreparationTopics: ['Unweighted Academic GPA and Rigorous Course Load', 'Cornelius Vanderbilt Scholarship Essay Response', 'Evidence of Distinctive Creative or Intellectual Leadership', 'High School Counselor & Teacher Recommendations'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 2,
+    actionTip: 'Apply for admission early so your MyAppVU account is active in time to submit the scholarship application before the strict December 1 deadline.',
+    timelinePhases: {
+      announcementMonth: 'August',
+      assessmentMonth: 'December (Strict Merit Application Deadline)',
+      interviewMonth: 'February - March (Award Decisions Announced)',
+      internshipStartMonth: 'August (Fall Undergraduate Matriculation)',
+    }
+  },
+  {
+    id: 'cycle_usc_trustee_mork_scholarship',
+    studyLevel: 'class12_ug',
+    coverageType: 'FULL_TUITION',
+    country: 'USA',
+    companyName: 'University of Southern California (USC)',
+    companyLogo: 'https://logo.clearbit.com/usc.edu',
+    companyDomain: 'usc.edu',
+    programTitle: 'USC Trustee & Mork Family Scholarships (Full Tuition)',
+    hiringCycleType: 'scholarship',
+    programCategory: 'scholarship',
+    tierCategory: 'scholarship',
+    rateType: 'OFFICIAL_CONFIRMED',
+    isClass12Eligible: true,
+    eligibility: 'Class 12 / High School Seniors applying for Fall First-Year Admission (Domestic & International)',
+    targetAudienceText: 'Class 12th / High School Seniors (Verified International Eligibility)',
+    fundingAmountText: 'Full Tuition (~$68,000/yr / ~$272,000 4-year total tuition award)',
+    coverageBreakdown: '100% Full Tuition for 4 undergraduate years (Mork Family Scholars also receive an additional $5,000/yr living stipend)',
+    eligibilityCriteria: 'First-year applicants of extraordinary academic achievement, leadership, and community service; verified open to all applicants regardless of nationality.',
+    selectionCriteria: 'Holistic review of Common Application, academic transcripts, recommendations, followed by invitation to on-campus/virtual USC Scholarship Interviews in February.',
+    seatQuotaInfo: '~100 Trustee and ~10 Mork Family full-tuition scholarships awarded annually',
+    disclaimerNotice: 'MANDATORY HIGH-STAKES ADVISORY: To be considered for the USC Trustee or Mork Family full-tuition scholarships, applicants must submit the Common Application by the strict December 1 scholarship deadline. Finalists must complete interview rounds in February. Confirm details on official admission.usc.edu.',
+    expectedAnnouncementMonth: 'August - December',
+    startMonth: 8,
+    endMonth: 12,
+    expectedWindowDuration: 'Common App opens August, strict scholarship priority deadline December 1',
+    exactWindowText: 'Deadline: December (Annual Cycle)',
+    targetBatches: [12, 2028, 2029],
+    annualRecurrencePattern: 'Annual premier undergraduate merit scholarship at USC awarding full tuition to top incoming first-year students worldwide.',
+    officialCareersUrl: 'https://admission.usc.edu/apply/scholarships/',
+    historicalCompensation: 'Full Tuition (~$68,000/yr / ~$272,000 4-year award; Mork includes $5k/yr living stipend)',
+    historicalAssessmentPlatform: 'Common Application (December 1 Merit Deadline) + USC Faculty Interview Committee',
+    keyPreparationTopics: ['Near-Perfect High School Academic Coursework and Rigor', 'Compelling Common App Essays & Activity Dossier', 'Demonstrated Community Impact and School Leadership', 'Finalist Scholarship Panel Interview Preparation'],
+    authenticityStatus: 'OFFICIALLY_SCHEDULED',
+    prepTimeRemainingMonths: 2,
+    actionTip: 'No separate scholarship application is required beyond the Common Application, but you MUST submit your complete Common App by December 1 to be considered.',
+    timelinePhases: {
+      announcementMonth: 'August',
+      assessmentMonth: 'December (Strict December 1 Merit Application Deadline)',
+      interviewMonth: 'February (Trustee & Mork Finalist Selection Interviews)',
+      internshipStartMonth: 'August (USC Fall Semester Matriculation)',
     }
   }
 ];
@@ -4778,7 +5549,7 @@ export class UpcomingInternshipsService {
         rateType: guaranteedRateType,
         currentStatus: evaluation.status,
         daysRemaining: evaluation.daysRemaining,
-        exactWindowText: evaluation.exactWindowText,
+        exactWindowText: cycle.exactWindowText || evaluation.exactWindowText,
       };
     });
   }

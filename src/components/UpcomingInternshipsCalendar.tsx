@@ -20,6 +20,8 @@ import { UpcomingInternshipsService, RECURRING_ANNUAL_INTERNSHIPS, detectNatural
 import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
+import { LinkHealthBadge } from './LinkHealthBadge';
+import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig } from '../utils/scholarshipBadges';
 import { 
   Calendar, 
   Clock, 
@@ -78,6 +80,9 @@ export function getCountryFlag(country?: string): string {
     case 'South Korea': return '🇰🇷';
     case 'Taiwan': return '🇹🇼';
     case 'UAE': return '🇦🇪';
+    case 'China': return '🇨🇳';
+    case 'Europe':
+    case 'European Union': return '🇪🇺';
     case 'Global/Remote': return '🌐';
     default: return '📍';
   }
@@ -1699,7 +1704,32 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                               [MARKET ESTIMATED RANGE]
                             </span>
                           )}
-                          {cycle.isGlobalFullRide && (
+
+                          {/* Prompt 37: Study Level Badge */}
+                          {cycle.studyLevel && (() => {
+                            const levelBadge = getStudyLevelBadgeConfig(cycle.studyLevel);
+                            const LevelIcon = levelBadge.icon;
+                            return (
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${levelBadge.className}`}>
+                                <LevelIcon className="w-3 h-3" />
+                                <span>{levelBadge.label}</span>
+                              </span>
+                            );
+                          })()}
+
+                          {/* Prompt 37: Coverage Type Badge */}
+                          {cycle.coverageType && (() => {
+                            const covBadge = getCoverageTypeBadgeConfig(cycle.coverageType);
+                            const CovIcon = covBadge.icon;
+                            return (
+                              <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold flex items-center gap-1 shadow-sm ${covBadge.className}`}>
+                                <CovIcon className="w-3 h-3" />
+                                <span>{covBadge.label}</span>
+                              </span>
+                            );
+                          })()}
+
+                          {cycle.coverageType === 'FULL_RIDE' && cycle.isGlobalFullRide && (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold bg-gradient-to-r from-emerald-500/25 via-teal-500/25 to-cyan-500/25 text-emerald-300 border border-emerald-500/40 flex items-center gap-1 shadow-sm shadow-emerald-500/10">
                               <Crown className="w-3 h-3 text-amber-400" />
                               ₹3-4 Cr Global Full-Ride
@@ -1723,7 +1753,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                               Early IT Career + Degree
                             </span>
                           )}
-                          {(cycle.tierCategory === 'pre_university_full_ride' || cycle.isPreUniversityFullRide) && (
+                          {cycle.coverageType === 'FULL_RIDE' && (cycle.tierCategory === 'pre_university_full_ride' || cycle.isPreUniversityFullRide) && (
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1 shadow-sm shadow-rose-500/10">
                               <Award className="w-3 h-3 text-rose-400" />
                               Early Runway: Pre-Univ Full-Ride
@@ -2016,6 +2046,11 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
 
                 {/* Footer Action Buttons: Prominent Official Careers Link + 1-Click Track Opportunity (Bookmark & Alert) */}
                 <div className="mt-5 pt-3.5 border-t border-slate-800/80 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2 px-1">
+                    <span className="text-[10px] font-mono text-slate-400">Portal Link:</span>
+                    <LinkHealthBadge url={cycle.officialCareersUrl} companyDomain={cycle.companyDomain} compact />
+                  </div>
+
                   {/* Primary Link: Official Careers Portal (Prominent) */}
                   <a
                     href={UrlHealthResolver.resolveSafePortalUrl(cycle.officialCareersUrl, cycle.companyDomain, cycle.companyName)}

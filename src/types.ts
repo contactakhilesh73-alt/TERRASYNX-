@@ -120,6 +120,10 @@ export interface Opportunity {
   fitment: FitmentEvaluation;
   assessmentIntel: AssessmentIntelligence;
 
+  // Study Level & Coverage Type (Prompt 37)
+  studyLevel?: StudyLevel;
+  coverageType?: CoverageType;
+
   // Insider & Referral Signals (Req #15)
   alumniPresenceCount?: number;       // e.g. 14 college alumni currently work here (optional if not verified/available)
   recruiterPresenceCount?: number;    // optional if not verified/available
@@ -129,6 +133,12 @@ export interface Opportunity {
   appliedAt?: number;
   customNotes?: string;
   followUpDeadlineAt?: number;        // 7-day follow-up reminder date (Req #3)
+
+  // Prompt 41B: API-based Closure Detection for ATS Jobs (Greenhouse, Lever, SmartRecruiters, Workable)
+  possiblyClosed?: boolean;
+  closureStatus?: 'ACTIVE' | 'POSSIBLY_CLOSED';
+  consecutiveMissingFetches?: number;
+  lastSeenInApiAt?: number;
 
   // Funded Company Discovery Signals (Prompt 27)
   isNewlyFunded?: boolean;
@@ -192,6 +202,9 @@ export interface StudentProject {
 // Predictable Annual Recurring Internship Cycle (Truth-Anchored Seasonal Calendar)
 export type InternshipCycleCurrentStatus = 'OPEN_NOW' | 'UPCOMING' | 'PASSED_THIS_CYCLE';
 
+export type StudyLevel = 'class12_ug' | 'postgraduate' | 'summer_research' | 'internship';
+export type CoverageType = 'FULL_RIDE' | 'FULL_TUITION' | 'STIPEND_ONLY' | 'TRAVEL_ONLY';
+
 export interface UpcomingInternshipCycle {
   id: string;
   companyName: string;
@@ -202,6 +215,8 @@ export interface UpcomingInternshipCycle {
   hiringCycleType: 'summer' | 'fall' | 'winter' | 'spring' | 'off_campus_drive' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'pre_university_full_ride';
   programCategory?: 'internship' | 'scholarship' | 'early_career_12th' | 'global_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'pre_university_full_ride';
   tierCategory?: 'pre_university_full_ride' | 'scientific_lab' | 'open_source_grant' | 'academic_fellowship' | 'frontier_ai' | 'early_undergrad_exclusive' | 'quant_hft' | 'tech_giant' | 'industry_tech' | 'global_full_ride' | 'scholarship';
+  studyLevel?: StudyLevel;
+  coverageType?: CoverageType;
   rateType?: 'OFFICIAL_CONFIRMED' | 'MARKET_ESTIMATED'; // 'OFFICIAL_CONFIRMED' if exact stipend is verified, 'MARKET_ESTIMATED' if stipend is estimated/variable
   eligibility?: string; // e.g. "UG 2nd/3rd/4th yr", "UG 3rd/4th yr", or "No Degree Barrier"
   selectionCriteria?: string; // Formal selection parameters (e.g. GPA cutoff, PR history, research proposal, interview)
