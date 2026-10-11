@@ -45,7 +45,7 @@ describe('Prompt 38: Postgraduate Scholarships Batch', () => {
       id: 'cycle_inlaks_scholarships',
       nameMatch: 'Inlaks',
       domain: 'inlaksfoundation.org',
-      expectedCoverage: 'FULL_TUITION',
+      expectedCoverage: 'PARTIAL_GRANT',
     },
     {
       id: 'cycle_erasmus_mundus_joint_masters',
@@ -151,10 +151,11 @@ describe('Prompt 38: Postgraduate Scholarships Batch', () => {
       expect(found.coverageType).toBe(target.expectedCoverage);
     });
 
-    // Inlaks is conservatively capped, must NOT be mislabeled as FULL_RIDE
+    // Inlaks is conservatively capped, must NOT be mislabeled as FULL_RIDE or FULL_TUITION
     const inlaks = allCycles.find(c => c.id === 'cycle_inlaks_scholarships')!;
-    expect(inlaks.coverageType).toBe('FULL_TUITION');
+    expect(inlaks.coverageType).toBe('PARTIAL_GRANT');
     expect(inlaks.coverageType).not.toBe('FULL_RIDE');
+    expect(inlaks.coverageType).not.toBe('FULL_TUITION');
   });
 
   it('allows postgraduate filtering in the scholarships portal dataset', () => {

@@ -10,7 +10,7 @@ describe('Prompt 37: Coverage and Level Badges & Scholarships Level Filter', () 
     expect(allCycles.length).toBeGreaterThan(0);
 
     const validStudyLevels: StudyLevel[] = ['class12_ug', 'postgraduate', 'summer_research', 'internship'];
-    const validCoverageTypes: CoverageType[] = ['FULL_RIDE', 'FULL_TUITION', 'STIPEND_ONLY', 'TRAVEL_ONLY'];
+    const validCoverageTypes: CoverageType[] = ['FULL_RIDE', 'FULL_TUITION', 'STIPEND_ONLY', 'TRAVEL_ONLY', 'PARTIAL_GRANT'];
 
     allCycles.forEach(cycle => {
       expect(cycle.studyLevel, `Missing studyLevel in ${cycle.id}`).toBeDefined();
@@ -97,7 +97,7 @@ describe('Prompt 37: Coverage and Level Badges & Scholarships Level Filter', () 
       expect(badge.className).toContain('border');
     });
 
-    const coverageTypes: CoverageType[] = ['FULL_RIDE', 'FULL_TUITION', 'STIPEND_ONLY', 'TRAVEL_ONLY'];
+    const coverageTypes: CoverageType[] = ['FULL_RIDE', 'FULL_TUITION', 'STIPEND_ONLY', 'TRAVEL_ONLY', 'PARTIAL_GRANT'];
     coverageTypes.forEach(cov => {
       const badge = getCoverageTypeBadgeConfig(cov);
       expect(badge.label.length).toBeGreaterThan(0);
@@ -109,6 +109,7 @@ describe('Prompt 37: Coverage and Level Badges & Scholarships Level Filter', () 
     expect(getCoverageTypeBadgeConfig('FULL_TUITION').label).toBe('Full Tuition');
     expect(getCoverageTypeBadgeConfig('STIPEND_ONLY').label).toBe('Stipend Only');
     expect(getCoverageTypeBadgeConfig('TRAVEL_ONLY').label).toBe('Travel Only');
+    expect(getCoverageTypeBadgeConfig('PARTIAL_GRANT').label).toBe('Partial Grant, capped');
   });
 
   it('tests study level filtering on the Scholarships dataset', () => {

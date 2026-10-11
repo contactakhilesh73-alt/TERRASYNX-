@@ -85,4 +85,12 @@ describe('Prompt 34B: InternshipsPortal (Corporate Internships Only)', () => {
     expect(counts['India']).toBeGreaterThan(0);
     expect(counts['Global/Remote']).toBeGreaterThan(0);
   });
+
+  it('assigns Robinhood to the default corporate tier (tech_giant) and NOT quant_hft', () => {
+    const raw = UpcomingInternshipsService.getAllUpcomingCycles();
+    const robinhood = raw.find(c => c.id.includes('robinhood'));
+    expect(robinhood).toBeDefined();
+    expect(robinhood?.companyName).toBe('Robinhood');
+    expect(robinhood?.tierCategory).toBe('tech_giant');
+  });
 });

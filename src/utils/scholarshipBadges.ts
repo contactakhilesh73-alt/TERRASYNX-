@@ -67,6 +67,12 @@ export function getCoverageTypeBadgeConfig(coverageType?: CoverageType): BadgeCo
         icon: Plane,
         className: 'bg-indigo-950/80 text-indigo-300 border border-indigo-600/70 font-black',
       };
+    case 'PARTIAL_GRANT':
+      return {
+        label: 'Partial Grant, capped',
+        icon: Coins,
+        className: 'bg-teal-950/80 text-teal-300 border border-teal-600/70 font-black',
+      };
     case 'STIPEND_ONLY':
     default:
       return {

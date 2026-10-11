@@ -1348,25 +1348,48 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
                   </div>
                 </div>
 
-                {/* Prompt 34C: MANDATORY HIGH-STAKES DISCLAIMER ON EVERY CARD */}
-                <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-red-950/90 via-red-900/50 to-slate-950 border-2 border-red-500 shadow-lg shadow-red-950/60 flex items-start gap-2.5">
-                  <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                  <div className="space-y-1 w-full">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase tracking-wider bg-red-600 text-white shadow-sm">
-                        ⚠️ Mandatory High-Stakes Disclaimer
-                      </span>
-                      {cycle.seatQuotaInfo && (
-                        <span className="text-[10px] font-mono font-bold text-red-300">
-                          Seats Quota: {cycle.seatQuotaInfo}
+                {/* Schedule Verification: Show verified badge when confirmed against official portal; show alert ONLY when unverified */}
+                {(() => {
+                  const isVerified = cycle.authenticityStatus === 'OFFICIALLY_SCHEDULED' || cycle.rateType === 'OFFICIAL_CONFIRMED';
+
+                  if (isVerified) {
+                    return (
+                      <div className="mt-3 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800/70 flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <div>
+                            <span className="text-[11px] font-mono font-bold text-emerald-300">
+                              Official Portal Verified Schedule
+                            </span>
+                            <p className="text-[10px] text-emerald-400/80 font-mono">
+                              Dates & quota verified directly from {cycle.companyName} official portal
+                            </p>
+                          </div>
+                        </div>
+                        {cycle.seatQuotaInfo && (
+                          <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700/80 shrink-0">
+                            Quota: {cycle.seatQuotaInfo}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Only show alert advisory if dates/schedule could NOT be verified by the portal
+                  return (
+                    <div className="mt-3 p-2.5 rounded-xl bg-amber-950/30 border border-amber-800/60 flex items-start gap-2">
+                      <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5 w-full">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-300">
+                          Estimated Schedule • Live Verification Pending
                         </span>
-                      )}
+                        <p className="text-[11px] font-mono text-amber-200/90 leading-snug">
+                          {cycle.disclaimerNotice || 'Exact dates unconfirmed by live portal for this cycle. Please verify on official page.'}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs font-mono font-black text-red-100 leading-snug tracking-tight">
-                      &ldquo;{cycle.disclaimerNotice || 'Confirm exact dates, application deadlines, and opening quotas directly on the official host scholarship/institution website — this schedule serves as an advisory guide.'}&rdquo;
-                    </p>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
 
               {/* Bottom Actions Bar */}

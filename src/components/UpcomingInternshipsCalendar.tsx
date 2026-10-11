@@ -479,7 +479,7 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
       academic_fellowship: allCycles.filter(c => c.tierCategory === 'academic_fellowship' || c.programCategory === 'academic_fellowship').length,
       internship: allCycles.filter(c => !c.isClass12Eligible && c.programCategory !== 'scholarship' && c.programCategory !== 'early_career_12th' && c.programCategory !== 'global_full_ride' && c.tierCategory !== 'scientific_lab' && c.tierCategory !== 'open_source_grant' && c.tierCategory !== 'academic_fellowship' && c.tierCategory !== 'frontier_ai' && c.tierCategory !== 'early_undergrad_exclusive' && c.tierCategory !== 'quant_hft' && c.tierCategory !== 'tech_giant').length,
       scholarship_12th: allCycles.filter(c => (c.isClass12Eligible || c.programCategory === 'scholarship' || c.programCategory === 'early_career_12th') && !c.isGlobalFullRide && !c.isPreUniversityFullRide).length,
-      global_full_ride_3cr: allCycles.filter(c => c.isGlobalFullRide || c.programCategory === 'global_full_ride' || (c.fundingAmountText && c.fundingAmountText.toLowerCase().includes('crore'))).length,
+      global_full_ride_3cr: allCycles.filter(c => c.isGlobalFullRide || c.programCategory === 'global_full_ride' || (c.fundingAmountText && (c.fundingAmountText.toLowerCase().includes('crore') || c.fundingAmountText.toLowerCase().includes('cr')))).length,
       pre_university_full_ride: allCycles.filter(c => c.tierCategory === 'pre_university_full_ride' || c.isPreUniversityFullRide || c.programCategory === 'pre_university_full_ride').length,
     };
   }, [allCycles]);
@@ -1771,27 +1771,48 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                     </div>
                   </div>
 
-                  {/* EXTRA PROMINENT (Normal se zyada bold / red-bordered) MANDATORY DISCLAIMER FOR SCHOLARSHIP CARDS & PRE-UNIVERSITY FULL-RIDE TIER */}
-                  {(portalType === 'scholarships' || UpcomingInternshipsService.isCycleInPortal(cycle, 'scholarships') || cycle.isPreUniversityFullRide || cycle.tierCategory === 'pre_university_full_ride' || cycle.disclaimerNotice) && (
-                    <div className="mt-3 p-3 rounded-xl bg-gradient-to-r from-red-950/90 via-red-900/50 to-slate-950 border-2 border-red-500 shadow-lg shadow-red-950/60 flex items-start gap-2.5 animate-pulse-slow">
-                      <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                      <div className="space-y-1 w-full">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase tracking-wider bg-red-600 text-white shadow-sm">
-                            ⚠️ OFFICIAL CONFIRMATION MANDATE
-                          </span>
+                  {/* Schedule Verification: Show verified badge when confirmed against official portal; show alert ONLY when unverified */}
+                  {(() => {
+                    const isVerified = cycle.authenticityStatus === 'OFFICIALLY_SCHEDULED' || cycle.rateType === 'OFFICIAL_CONFIRMED';
+                    
+                    if (isVerified) {
+                      return (
+                        <div className="mt-3 p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-800/70 flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <div>
+                              <span className="text-[11px] font-mono font-bold text-emerald-300">
+                                Official Portal Verified Schedule
+                              </span>
+                              <p className="text-[10px] text-emerald-400/80 font-mono">
+                                Dates & timeline verified directly against {cycle.companyName} official portal
+                              </p>
+                            </div>
+                          </div>
                           {cycle.seatQuotaInfo && (
-                            <span className="text-[10px] font-mono font-bold text-red-300 bg-red-950/80 px-2 py-0.5 rounded border border-red-800">
-                              Seats Quota: {cycle.seatQuotaInfo}
+                            <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded border border-emerald-700/80 shrink-0">
+                              Quota: {cycle.seatQuotaInfo}
                             </span>
                           )}
                         </div>
-                        <p className="text-xs font-mono font-black text-red-100 leading-snug tracking-tight">
-                          &ldquo;{cycle.disclaimerNotice || 'Confirm exact dates, application deadlines, and opening quotas directly on the official host scholarship/institution website — this schedule serves as an advisory guide.'}&rdquo;
-                        </p>
+                      );
+                    }
+
+                    // Only show alert advisory if dates/schedule could NOT be verified by the portal
+                    return (
+                      <div className="mt-3 p-2.5 rounded-xl bg-amber-950/30 border border-amber-800/60 flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-0.5 w-full">
+                          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-300">
+                            Estimated Schedule • Live Verification Pending
+                          </span>
+                          <p className="text-[11px] font-mono text-amber-200/90 leading-snug">
+                            {cycle.disclaimerNotice || 'Exact dates unconfirmed by live portal for this cycle. Please verify on official page.'}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* 4-Badge Eligibility Matrix Banner for Active Student Batch */}
                   <div className={`mt-3 p-3 rounded-xl border flex items-center justify-between gap-3 transition-all ${matrixEvaluation.containerClass}`}>
@@ -2059,7 +2080,9 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                     onClick={(e) => e.stopPropagation()}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-mono font-bold transition-all shadow-md shadow-indigo-950 cursor-pointer"
                   >
-                    <span>Official Careers Portal ↗ (Confirm on {cycle.companyName})</span>
+                    <span>
+                      Official Portal ↗ {cycle.authenticityStatus === 'OFFICIALLY_SCHEDULED' ? `(Verified on ${cycle.companyName})` : `(${cycle.companyName})`}
+                    </span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
 

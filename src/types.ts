@@ -203,7 +203,7 @@ export interface StudentProject {
 export type InternshipCycleCurrentStatus = 'OPEN_NOW' | 'UPCOMING' | 'PASSED_THIS_CYCLE';
 
 export type StudyLevel = 'class12_ug' | 'postgraduate' | 'summer_research' | 'internship';
-export type CoverageType = 'FULL_RIDE' | 'FULL_TUITION' | 'STIPEND_ONLY' | 'TRAVEL_ONLY';
+export type CoverageType = 'FULL_RIDE' | 'FULL_TUITION' | 'STIPEND_ONLY' | 'TRAVEL_ONLY' | 'PARTIAL_GRANT';
 
 export interface UpcomingInternshipCycle {
   id: string;

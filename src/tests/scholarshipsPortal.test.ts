@@ -124,4 +124,28 @@ describe('Prompt 34C: ScholarshipsPortal (Scholarships Only)', () => {
       expect(disclaimer).toContain('official');
     }
   });
+
+  it('verifies fixed Crore titles are replaced with flexible cost wording and MARKET_ESTIMATED rateType', () => {
+    const raw = UpcomingInternshipsService.getAllUpcomingCycles();
+
+    // 1. Zero fixed Crore ranges in any program titles
+    for (const cycle of raw) {
+      expect(cycle.programTitle).not.toMatch(/₹[0-9.]+\s*-\s*₹?[0-9.]+\s*crore/i);
+    }
+
+    // 2. Rise Global Talent Initiative specifies flexible wording and MARKET_ESTIMATED
+    const rise = raw.find(c => c.id === 'cycle_rise_global_talent');
+    expect(rise).toBeDefined();
+    expect(rise?.programTitle).toContain('Approx. cost covered, up to ₹3.6 Cr');
+    expect(rise?.programTitle).toContain('depends on family income/need');
+    expect(rise?.rateType).toBe('MARKET_ESTIMATED');
+
+    // 3. Need-blind Ivy+ institutions maintain MARKET_ESTIMATED rateType
+    const harvard = raw.find(c => c.id === 'cycle_harvard_need_blind_full_ride');
+    expect(harvard?.rateType).toBe('MARKET_ESTIMATED');
+    expect(harvard?.fundingAmountText).toContain('depends on family income/need');
+
+    const mit = raw.find(c => c.id === 'cycle_mit_need_blind_full_ride');
+    expect(mit?.rateType).toBe('MARKET_ESTIMATED');
+  });
 });
