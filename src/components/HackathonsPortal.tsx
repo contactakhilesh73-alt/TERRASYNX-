@@ -38,8 +38,13 @@ import {
   AlertCircle,
   AlertTriangle,
   Info,
-  RefreshCw
+  RefreshCw,
+  FileText,
+  Printer
 } from 'lucide-react';
+import { HackathonFastApplyModal } from './HackathonFastApplyModal';
+import { HackathonWhitePageModal } from './HackathonWhitePageModal';
+import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
 
 interface HackathonsPortalProps {
   onNavigateToCalendar?: () => void;
@@ -80,6 +85,18 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
       return [];
     }
   });
+
+  // Modals state for Fast Apply Assistant & Official White Page
+  const [fastApplyHackathon, setFastApplyHackathon] = useState<Hackathon | null>(null);
+  const [whitePageHackathon, setWhitePageHackathon] = useState<Hackathon | null>(null);
+
+  // Tracked Hackathon Application Records from HackathonTrackingService
+  const [hackathonApplications, setHackathonApplications] = useState<HackathonApplicationRecord[]>(() => {
+    return HackathonTrackingService.getApplications(studentProfile?.email);
+  });
+
+  // Filter toggle to view only user's tracked hackathons
+  const [filterOnlyTracked, setFilterOnlyTracked] = useState<boolean>(false);
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -141,6 +158,23 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
     const timer = setTimeout(() => setToastMessage(null), 3500);
     return () => clearTimeout(timer);
   }, [toastMessage]);
+
+  // Sync application tracking records across events
+  useEffect(() => {
+    const refreshApplications = () => {
+      setHackathonApplications(HackathonTrackingService.getApplications(studentProfile?.email));
+    };
+
+    window.addEventListener('terrasynx_hackathon_tracked', refreshApplications);
+    window.addEventListener('terrasynx_hackathon_status_updated', refreshApplications);
+    window.addEventListener('terrasynx_hackathon_removed', refreshApplications);
+
+    return () => {
+      window.removeEventListener('terrasynx_hackathon_tracked', refreshApplications);
+      window.removeEventListener('terrasynx_hackathon_status_updated', refreshApplications);
+      window.removeEventListener('terrasynx_hackathon_removed', refreshApplications);
+    };
+  }, [studentProfile?.email]);
 
   const toggleTrackHackathon = (id: string, name: string) => {
     setTrackedHackathonIds(prev => {
@@ -215,7 +249,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   // Filtered hackathons
   // STRICT RULE: Never hide a hackathon because of eligibility!
   const filteredHackathons = useMemo(() => {
-    return HackathonsService.filterHackathons(
+    const list = HackathonsService.filterHackathons(
       allHackathons,
       {
         mode: selectedMode,
@@ -227,7 +261,13 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
       },
       referenceDate
     );
-  }, [allHackathons, selectedMode, selectedCountry, selectedTheme, selectedStatus, activeStatusTab, searchQuery, referenceDate]);
+
+    if (!filterOnlyTracked) return list;
+    return list.filter(h => 
+      HackathonTrackingService.isHackathonTracked(h.id, studentProfile?.email) ||
+      trackedHackathonIds.includes(h.id)
+    );
+  }, [allHackathons, selectedMode, selectedCountry, selectedTheme, selectedStatus, activeStatusTab, searchQuery, referenceDate, filterOnlyTracked, hackathonApplications, studentProfile?.email, trackedHackathonIds]);
 
   // Reset all filters
   const handleResetFilters = () => {
@@ -335,10 +375,23 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
               <div className="text-[10px] font-mono uppercase text-slate-400">Passed</div>
               <div className="text-lg font-mono font-bold text-slate-400">{statusCounts.passed}</div>
             </div>
-            <div className="px-3.5 py-2.5 rounded-xl bg-slate-900/80 border border-orange-500/20 text-center">
-              <div className="text-[10px] font-mono uppercase text-slate-400">Tracked</div>
-              <div className="text-lg font-mono font-bold text-amber-300">{trackedHackathonIds.length}</div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setFilterOnlyTracked(prev => !prev)}
+              className={`px-3.5 py-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                filterOnlyTracked 
+                  ? 'bg-amber-500/25 border-amber-500 text-amber-200 ring-2 ring-amber-500/40' 
+                  : 'bg-slate-900/80 border-orange-500/20 hover:border-orange-500/50'
+              }`}
+              title="Click to toggle filter for only your tracked hackathons"
+            >
+              <div className="text-[10px] font-mono uppercase text-slate-400">
+                Tracked {filterOnlyTracked ? '✓ (Active)' : ''}
+              </div>
+              <div className="text-lg font-mono font-bold text-amber-300">
+                {Math.max(hackathonApplications.length, trackedHackathonIds.length)}
+              </div>
+            </button>
           </div>
         </div>
       </div>
@@ -694,6 +747,30 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                     <h3 className="text-lg font-bold text-white group-hover:text-orange-200 transition-colors leading-snug">
                       {hackathon.name}
                     </h3>
+
+                    {/* Active Tracked Application Indicator (Fast Apply / Direct Official Portal Tracked) */}
+                    {(() => {
+                      const trackedApp = HackathonTrackingService.getApplicationForHackathon(hackathon.id, studentProfile?.email);
+                      if (!trackedApp) return null;
+                      return (
+                        <div 
+                          onClick={() => setWhitePageHackathon(hackathon)}
+                          className="mt-2 p-2 px-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 flex items-center justify-between gap-2 text-xs font-mono cursor-pointer hover:bg-emerald-950/60 transition-colors"
+                          title="Click to view application dossier and official white page"
+                        >
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                            <span className="truncate">
+                              Tracked: <strong className="text-emerald-200">{trackedApp.confirmationId}</strong>
+                            </span>
+                          </div>
+                          <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            {trackedApp.status}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
                     {hackathon.description && (
                       <p className="mt-1.5 text-xs text-slate-400 leading-relaxed line-clamp-2">
                         {hackathon.description}
@@ -906,15 +983,37 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
 
                 {/* Card Action Footers */}
                 <div className="mt-5 pt-3.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2.5">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Fast Apply Assistant Button */}
+                    <button
+                      type="button"
+                      onClick={() => setFastApplyHackathon(hackathon)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono font-bold text-xs transition-all shadow-md shadow-orange-950/50 cursor-pointer"
+                      title="Open Fast Apply form pre-fill assistant & requirement checker"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Fast Apply</span>
+                    </button>
+
+                    {/* Official White Page & PDF Button */}
+                    <button
+                      type="button"
+                      onClick={() => setWhitePageHackathon(hackathon)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-orange-300 border border-slate-700 font-mono text-xs transition-colors cursor-pointer"
+                      title="View verified official white page dossier & export PDF"
+                    >
+                      <FileText className="w-3.5 h-3.5 text-orange-400" />
+                      <span>White Page &amp; PDF</span>
+                    </button>
+
                     {/* Official Portal Link */}
                     <a
                       href={hackathon.officialUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono font-bold text-xs transition-all shadow-md shadow-orange-950/50 cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-orange-300 border border-slate-800 font-mono text-xs transition-colors cursor-pointer"
                     >
-                      <span>Official Register</span>
+                      <span>Official Portal</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
 
@@ -943,6 +1042,31 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
             );
           })}
         </div>
+      )}
+
+      {/* Fast Apply Assistant Modal */}
+      {fastApplyHackathon && (
+        <HackathonFastApplyModal
+          hackathon={fastApplyHackathon}
+          studentProfile={studentProfile}
+          isOpen={Boolean(fastApplyHackathon)}
+          onClose={() => setFastApplyHackathon(null)}
+          onApplicationTracked={(rec) => {
+            setToastMessage(`Application successfully tracked: ${rec.confirmationId}`);
+            setHackathonApplications(HackathonTrackingService.getApplications(studentProfile?.email));
+          }}
+        />
+      )}
+
+      {/* Official White Page & PDF Modal */}
+      {whitePageHackathon && (
+        <HackathonWhitePageModal
+          hackathon={whitePageHackathon}
+          studentProfile={studentProfile}
+          isOpen={Boolean(whitePageHackathon)}
+          onClose={() => setWhitePageHackathon(null)}
+          applicationRecord={HackathonTrackingService.getApplicationForHackathon(whitePageHackathon.id, studentProfile?.email)}
+        />
       )}
     </div>
   );
