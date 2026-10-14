@@ -11,6 +11,8 @@ interface CompanyLogoProps {
   name?: string;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  logoUrl?: string;
+  logo?: string;
 }
 
 export const CompanyLogo: React.FC<CompanyLogoProps> = ({
@@ -18,9 +20,41 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({
   name = '',
   className = '',
   size = 'md',
+  logoUrl = '',
+  logo = '',
 }) => {
   const [imageError, setImageError] = useState<boolean>(false);
-  const cleanDomain = (domain || '').toLowerCase().trim();
+  const directLogo = logoUrl || logo;
+
+  // Infer domain from known names if domain is missing
+  const inferDomainFromName = (n: string): string => {
+    const s = n.toLowerCase();
+    if (s.includes('devpost')) return 'devpost.com';
+    if (s.includes('major league hacking') || s.includes('mlh')) return 'mlh.io';
+    if (s.includes('ethglobal')) return 'ethglobal.com';
+    if (s.includes('solana')) return 'solana.com';
+    if (s.includes('github')) return 'github.com';
+    if (s.includes('digitalocean')) return 'digitalocean.com';
+    if (s.includes('cloudflare')) return 'cloudflare.com';
+    if (s.includes('nasa')) return 'nasa.gov';
+    if (s.includes('aicte') || s.includes('smart india')) return 'aicte-india.org';
+    if (s.includes('mit')) return 'mit.edu';
+    if (s.includes('stanford')) return 'stanford.edu';
+    if (s.includes('berkeley')) return 'berkeley.edu';
+    if (s.includes('pennapps') || s.includes('pennsylvania')) return 'upenn.edu';
+    if (s.includes('waterloo')) return 'uwaterloo.ca';
+    if (s.includes('chainlink')) return 'chain.link';
+    if (s.includes('junction')) return 'hackjunction.com';
+    if (s.includes('kaggle')) return 'kaggle.com';
+    if (s.includes('hackerearth')) return 'hackerearth.com';
+    if (s.includes('unstop')) return 'unstop.com';
+    if (s.includes('google') || s.includes('gdg')) return 'google.com';
+    if (s.includes('microsoft')) return 'microsoft.com';
+    if (s.includes('amazon') || s.includes('aws')) return 'aws.amazon.com';
+    return '';
+  };
+
+  const cleanDomain = (domain || inferDomainFromName(name)).toLowerCase().trim();
   const cleanName = (name || '').toLowerCase().trim();
 
   const sizeClasses = {
@@ -28,6 +62,24 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({
     md: 'w-10 h-10',
     lg: 'w-14 h-14',
   }[size];
+
+  // If a direct high-res official logo image URL is passed, prioritize it without change
+  if (directLogo && !imageError) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-white/95 border border-slate-700/80 flex items-center justify-center p-1 shadow-md flex-shrink-0 overflow-hidden ${className}`}
+        title={`${name || cleanDomain} Official Logo`}
+      >
+        <img
+          src={directLogo}
+          alt={name || cleanDomain || 'Company Logo'}
+          className="w-full h-full object-contain"
+          onError={() => setImageError(true)}
+          loading="lazy"
+        />
+      </div>
+    );
+  }
 
   // Helper matching check
   const isMatch = (term: string) => cleanDomain.includes(term) || cleanName.includes(term);
@@ -61,6 +113,21 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({
           <rect x="12.8" y="1" width="10.2" height="10.2" fill="#7FBA00"/>
           <rect x="1" y="12.8" width="10.2" height="10.2" fill="#00A4EF"/>
           <rect x="12.8" y="12.8" width="10.2" height="10.2" fill="#FFB900"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // Devpost: Official Signature Teal / Aquamarine Hexagon 'D'
+  if (isMatch('devpost')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#003E54] border border-cyan-400/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Devpost Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="none">
+          <polygon points="12,2 21,7.2 21,16.8 12,22 3,16.8 3,7.2" fill="#0086A8"/>
+          <path d="M8 7h4c2.8 0 5 1.8 5 5s-2.2 5-5 5H8V7zm2.5 7.5h1.5c1.4 0 2.5-.9 2.5-2.5s-1.1-2.5-2.5-2.5h-1.5v5z" fill="#FFFFFF"/>
         </svg>
       </div>
     );
@@ -506,6 +573,277 @@ export const CompanyLogo: React.FC<CompanyLogoProps> = ({
       >
         <svg viewBox="0 0 24 24" className="w-full h-full" fill="#76B900">
           <path d="M8.7 7.2c2.1-1.1 4.5-1.2 6.6-.3 2.1.9 3.5 2.6 3.9 4.8.4 2.2-.1 4.4-1.4 6.1-1.3 1.7-3.2 2.6-5.3 2.6-.7 0-1.4-.1-2.1-.3l.7-2.3c.5.1.9.2 1.4.2 1.4 0 2.7-.6 3.6-1.8.9-1.2 1.2-2.7.9-4.1-.3-1.4-1.2-2.6-2.6-3.2-1.4-.6-2.9-.5-4.3.2L8.7 7.2z"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 32. Major League Hacking (MLH): Official Crimson Red (#DF2427) Badge with White Banner & Typography
+  if (isMatch('major league hacking') || isMatch('mlh')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#DF2427] border border-red-400/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Major League Hacking Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="none">
+          <path d="M3 4h18v11.5a4.5 4.5 0 0 1-4.5 4.5H7.5A4.5 4.5 0 0 1 3 15.5V4z" fill="#B3191C"/>
+          <path d="M5 6h14v8a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V6z" fill="#FFFFFF"/>
+          <path d="M7 8h2.2l1.8 3.5L12.8 8H15v6h-1.8v-3.4L11.5 13h-.9L8.8 10.6V14H7V8z" fill="#DF2427"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 33. ETHGlobal & Ethereum: Official Prismatic Faceted Diamond on Deep Space Glass
+  if (isMatch('ethglobal') || isMatch('ethereum') || isMatch('eth')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#0B0E17] border border-indigo-500/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="ETHGlobal Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <polygon points="12,2 4.5,12 12,16 19.5,12" fill="#627EEA"/>
+          <polygon points="12,2 12,16 19.5,12" fill="#8A92B2"/>
+          <polygon points="12,17.5 4.5,13.5 12,22 19.5,13.5" fill="#627EEA"/>
+          <polygon points="12,17.5 12,22 19.5,13.5" fill="#8A92B2"/>
+        </svg>
+      </div>
+    );
+  }
+
+
+  // 35. Solana & Solana Foundation: Official 3 Gradient Beams (Green #14F195 to Purple #9945FF)
+  if (isMatch('solana')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#000000] border border-[#14F195]/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Solana Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <defs>
+            <linearGradient id="solanaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#14F195"/>
+              <stop offset="100%" stopColor="#9945FF"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#solanaGrad)" d="M5.5 18.5l2.2-2.2h12.8l-2.2 2.2H5.5zm13-5.2l-2.2-2.2H3.5l2.2 2.2h12.8zm-13-5.2l2.2-2.2h12.8l-2.2 2.2H5.5z"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 36. GitHub: Official Octocat Silhouette on Solid Charcoal Obsidian
+  if (isMatch('github')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#161B22] border border-slate-700 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="GitHub Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="#FFFFFF">
+          <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 37. DigitalOcean: Oceanic Blue (#0080FF) Geometric Shark Fin & Cloud Block
+  if (isMatch('digitalocean')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#0080FF] border border-blue-400/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="DigitalOcean Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="#FFFFFF">
+          <path d="M12 2c5.52 0 10 4.48 10 10s-4.48 10-10 10a9.98 9.98 0 0 1-7.07-2.93l2.83-2.83A6 6 0 1 0 12 6V2zm-4 12v3H5v-3h3zm-3-4v3H2v-3h3z"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 38. NASA & Space Agencies: Official NASA Blue Meatball Sphere with Red Chevron & Vector
+  if (isMatch('nasa') || isMatch('space apps')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#0B3D91] border border-red-500/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="NASA Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <circle cx="12" cy="12" r="10" fill="#0B3D91"/>
+          {/* White stars */}
+          <circle cx="6" cy="8" r="0.7" fill="#FFFFFF"/>
+          <circle cx="18" cy="7" r="0.6" fill="#FFFFFF"/>
+          <circle cx="8" cy="16" r="0.5" fill="#FFFFFF"/>
+          <circle cx="17" cy="15" r="0.7" fill="#FFFFFF"/>
+          {/* Red Chevron Vector */}
+          <path d="M3 13.5L12 8l9 5.5-2 1.5-7-4.5-7 4.5z" fill="#FC3D21"/>
+          {/* Orbital path */}
+          <ellipse cx="12" cy="12" rx="9" ry="3.5" fill="none" stroke="#FFFFFF" strokeWidth="0.8" transform="rotate(-25 12 12)"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 39. Smart India Hackathon & AICTE / Ministry of Education: Official Tricolor Wheel Emblem
+  if (isMatch('aicte') || isMatch('smart india') || isMatch('ministry of education')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-slate-900 border border-orange-500/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Government of India and AICTE Official Emblem"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <circle cx="12" cy="12" r="10" fill="#0A192F" stroke="#FF9933" strokeWidth="1.5"/>
+          <circle cx="12" cy="12" r="6" fill="#FFFFFF"/>
+          <circle cx="12" cy="12" r="3.5" fill="none" stroke="#000080" strokeWidth="1"/>
+          <line x1="12" y1="8.5" x2="12" y2="15.5" stroke="#000080" strokeWidth="0.8"/>
+          <line x1="8.5" y1="12" x2="15.5" y2="12" stroke="#000080" strokeWidth="0.8"/>
+          <path d="M4 6h16v1.5H4z" fill="#FF9933"/>
+          <path d="M4 16.5h16V18H4z" fill="#138808"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 40. Chainlink Labs: Official Blue (#375BD2) Hexagon Chainlink
+  if (isMatch('chainlink')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#0C162C] border border-[#375BD2]/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Chainlink Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="none">
+          <polygon points="12,2 21,7.2 21,16.8 12,22 3,16.8 3,7.2" stroke="#375BD2" strokeWidth="2.5" fill="#0C162C"/>
+          <polygon points="12,6.5 17.5,9.7 17.5,14.3 12,17.5 6.5,14.3 6.5,9.7" fill="#375BD2"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 41. UC Berkeley (Cal Hacks): Official Berkeley Blue (#003262) & California Gold (#FDB515)
+  if (isMatch('berkeley') || isMatch('cal hacks')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#003262] border border-[#FDB515]/60 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 text-[#FDB515] font-black font-serif text-xs ${className}`}
+        title="UC Berkeley Cal Hacks Official Logo"
+      >
+        <span className="tracking-tighter italic text-sm">Cal</span>
+      </div>
+    );
+  }
+
+  // 42. Stanford University (TreeHacks): Official Cardinal Red (#8C1515) with Redwood Tree Emblem
+  if (isMatch('stanford') || isMatch('treehacks')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#8C1515] border border-red-400/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 text-white font-black text-xs ${className}`}
+        title="Stanford University Official Emblem"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="none">
+          <path d="M6 5h12v3h-4.5v11h-3V8H6V5z" fill="#FFFFFF"/>
+          <path d="M12 9l2 3h-1.2l2.2 4h-1.5l2.5 4H8l2.5-4H9l2.2-4H10l2-3z" fill="#2E7D32"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 43. MIT TechX (HackMIT): Official MIT Cardinal Red (#A31F34) & Tech Bars
+  if (isMatch('mit') || isMatch('hackmit')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#A31F34] border border-red-300/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 text-white ${className}`}
+        title="MIT Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="#FFFFFF">
+          <rect x="3" y="4" width="2.8" height="16"/>
+          <rect x="7.3" y="4" width="2.8" height="11"/>
+          <rect x="11.6" y="4" width="2.8" height="5"/>
+          <rect x="11.6" y="11" width="2.8" height="9"/>
+          <rect x="15.9" y="4" width="2.8" height="16"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 44. Junction: Electric Neon Purple/Blue Geometric Fold
+  if (isMatch('junction')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#130E26] border border-purple-500/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Junction Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <polygon points="12,2 22,8 18,20 6,20 2,8" fill="#7C3AED"/>
+          <polygon points="12,6 18,10 15,18 9,18 6,10" fill="#06B6D4"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 45. University of Pennsylvania (PennApps): Penn Blue & Red Shield
+  if (isMatch('pennapps') || isMatch('pennsylvania') || isMatch('upenn')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#011F5B] border border-red-500/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 text-white font-serif font-bold text-xs ${className}`}
+        title="PennApps & University of Pennsylvania Official Logo"
+      >
+        <span className="tracking-widest text-[#990000] font-black text-xs bg-white px-1 rounded">PENN</span>
+      </div>
+    );
+  }
+
+  // 46. University of Waterloo (Hack the North): Gold & Black Crest
+  if (isMatch('waterloo') || isMatch('hack the north')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#111111] border border-amber-400/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 text-[#FFD54F] font-black text-xs ${className}`}
+        title="University of Waterloo Official Emblem"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <polygon points="12,2 14.5,9.5 22,12 14.5,14.5 12,22 9.5,14.5 2,12 9.5,9.5" fill="#FFD54F"/>
+          <circle cx="12" cy="12" r="3" fill="#111111"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 47. Unstop: Signature Electric Cyan & Yellow Rocket
+  if (isMatch('unstop')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#0D1829] border border-cyan-400/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Unstop Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#00B4D8" strokeWidth="2"/>
+          <polygon points="12,5 17,17 12,14 7,17" fill="#FDB813"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 48. HackerEarth: Electric Green Terminal Square
+  if (isMatch('hackerearth')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#1C2024] border border-emerald-500/50 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="HackerEarth Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full">
+          <rect x="3" y="3" width="18" height="18" rx="4" fill="#2C3437"/>
+          <path d="M7 8v8h2.5v-3h3v3H15V8h-2.5v3h-3V8H7z" fill="#2ECC71"/>
+        </svg>
+      </div>
+    );
+  }
+
+  // 49. Kaggle: Signature Cyan Lowercase 'k'
+  if (isMatch('kaggle')) {
+    return (
+      <div 
+        className={`${sizeClasses} rounded-xl bg-[#18202A] border border-cyan-400/40 flex items-center justify-center p-1.5 shadow-md flex-shrink-0 ${className}`}
+        title="Kaggle Official Logo"
+      >
+        <svg viewBox="0 0 24 24" className="w-full h-full" fill="#20BEFF">
+          <path d="M6 3h3.5v18H6V3zm12 18h-4.2l-4.3-6.2L16.2 3H20l-5.4 9.1L20 21z"/>
         </svg>
       </div>
     );

@@ -16,6 +16,8 @@
 import React, { useState } from 'react';
 import { Hackathon, StudentProfile } from '../types';
 import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
+import { HackathonBlueprintService } from '../services/hackathonBlueprintService';
+import { CompanyLogo } from './CompanyLogo';
 import { 
   X, 
   Printer, 
@@ -34,7 +36,11 @@ import {
   Sparkles,
   Info,
   Copy,
-  Check
+  Check,
+  Award,
+  Zap,
+  Target,
+  Code2
 } from 'lucide-react';
 
 interface HackathonWhitePageModalProps {
@@ -64,6 +70,7 @@ export const HackathonWhitePageModal: React.FC<HackathonWhitePageModalProps> = (
     month: 'long',
     day: 'numeric',
   });
+  const blueprint = HackathonBlueprintService.getBlueprint(hackathon);
 
   // Handle PDF Export / Print
   const handlePrintPdf = () => {
@@ -158,21 +165,29 @@ export const HackathonWhitePageModal: React.FC<HackathonWhitePageModalProps> = (
         {/* Scrollable Document Area: Pristine White Paper */}
         <div className="p-4 sm:p-8 overflow-y-auto bg-slate-900/60 flex-1 flex justify-center">
           <div className="w-full max-w-3xl bg-white text-slate-900 border border-slate-300 rounded-xl shadow-xl p-6 sm:p-10 font-sans space-y-6">
-            {/* Document Header */}
+            {/* Document Header with Official Host Logo */}
             <div className="border-b-2 border-slate-900 pb-5 flex flex-col sm:flex-row justify-between sm:items-start gap-4">
-              <div>
-                <div className="inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-extrabold tracking-wider uppercase bg-orange-600 text-white mb-2">
-                  Official Opportunity Circular
-                </div>
-                <h1 id="white-page-title" className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-tight">
-                  {hackathon.name}
-                </h1>
-                <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1 flex flex-wrap items-center gap-2">
-                  <span>Host Organization: <strong className="text-slate-900">{hackathon.organizer}</strong></span>
-                  <span>•</span>
-                  <span>Mode: <strong className="text-slate-900">{hackathon.mode.toUpperCase()}</strong></span>
-                  <span>•</span>
-                  <span>Region: <strong className="text-slate-900">{hackathon.country}</strong></span>
+              <div className="flex items-start gap-3.5">
+                <CompanyLogo
+                  name={hackathon.organizer}
+                  domain={hackathon.officialUrl ? (() => { try { return new URL(hackathon.officialUrl).hostname.replace(/^www\./, ''); } catch { return ''; } })() : ''}
+                  size="lg"
+                  className="shrink-0 mt-1"
+                />
+                <div>
+                  <div className="inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-extrabold tracking-wider uppercase bg-orange-600 text-white mb-2">
+                    Official Opportunity Circular
+                  </div>
+                  <h1 id="white-page-title" className="text-2xl sm:text-3xl font-black text-slate-950 tracking-tight leading-tight">
+                    {hackathon.name}
+                  </h1>
+                  <div className="text-xs sm:text-sm text-slate-600 font-medium mt-1 flex flex-wrap items-center gap-2">
+                    <span>Host Organization: <strong className="text-slate-900">{hackathon.organizer}</strong></span>
+                    <span>•</span>
+                    <span>Mode: <strong className="text-slate-900">{hackathon.mode.toUpperCase()}</strong></span>
+                    <span>•</span>
+                    <span>Region: <strong className="text-slate-900">{hackathon.country}</strong></span>
+                  </div>
                 </div>
               </div>
 

@@ -269,6 +269,7 @@ export class OfficialPageWatcherService {
   private static snapshots: Map<string, WatcherSnapshot> = new Map();
   private static schedulerIntervalId: NodeJS.Timeout | null = null;
   private static robotsCache: Map<string, { allowed: (path: string) => boolean; expiresAt: number }> = new Map();
+  private static geminiQuotaExhaustedUntil: number = 0;
 
   /**
    * Returns all watchlist items.
@@ -382,6 +383,11 @@ export class OfficialPageWatcherService {
       return this.literalFallbackExtraction(pageText, organizer);
     }
 
+    // If Gemini quota was recently exhausted, smoothly use deterministic literal parsing without repeated failing API calls
+    if (OfficialPageWatcherService.geminiQuotaExhaustedUntil > Date.now()) {
+      return this.literalFallbackExtraction(pageText, organizer);
+    }
+
     try {
       const ai = new GoogleGenAI({ apiKey });
       const prompt = `You are a strict data extraction engine for official hackathon listing pages.
@@ -428,7 +434,15 @@ ${pageText.slice(0, 8000)}
         fee: typeof parsed.fee === 'string' && parsed.fee.trim() ? parsed.fee.trim() : null,
       };
     } catch (err: any) {
-      logger.error('OfficialPageWatcher', `Gemini extraction failed for ${organizer}: ${err?.message}`);
+      const msg = err?.message || String(err);
+      const isQuotaOrRateLimit = /429|RESOURCE_EXHAUSTED|quota exceeded|rate limit|quota/i.test(msg);
+      if (isQuotaOrRateLimit) {
+        // Backoff for 15 minutes before retrying Gemini calls
+        OfficialPageWatcherService.geminiQuotaExhaustedUntil = Date.now() + 15 * 60 * 1000;
+        logger.warn('OfficialPageWatcher', `Gemini API quota reached for ${organizer}. Switched to deterministic extraction.`);
+      } else {
+        logger.warn('OfficialPageWatcher', `Gemini extraction notice for ${organizer}: ${msg}. Falling back to deterministic literal parsing.`);
+      }
       return this.literalFallbackExtraction(pageText, organizer);
     }
   }
@@ -592,7 +606,7 @@ ${pageText.slice(0, 8000)}
 
         this.snapshots.set(item.organizer, newSnapshot);
       } catch (err: any) {
-        logger.error('OfficialPageWatcher', `Error watching ${item.organizer}: ${err?.message}`);
+        logger.warn('OfficialPageWatcher', `Watcher check notice for ${item.organizer}: ${err?.message}`);
         // If a fetch fails, keep the last verified snapshot and label it stale
         if (previousSnapshot && previousSnapshot.status === 'ANNOUNCED_VERIFIED') {
           this.snapshots.set(item.organizer, {
@@ -621,13 +635,13 @@ ${pageText.slice(0, 8000)}
     // Run first scan in background after initial delay
     setTimeout(() => {
       this.runWatcher().catch(err => {
-        logger.error('OfficialPageWatcher', 'Initial watcher run failed', err);
+        logger.warn('OfficialPageWatcher', `Initial watcher run encountered issue: ${err?.message || err}`);
       });
     }, 5000);
 
     this.schedulerIntervalId = setInterval(() => {
       this.runWatcher().catch(err => {
-        logger.error('OfficialPageWatcher', 'Scheduled 24h watcher run failed', err);
+        logger.warn('OfficialPageWatcher', `Scheduled 24h watcher run notice: ${err?.message || err}`);
       });
     }, intervalMs);
   }

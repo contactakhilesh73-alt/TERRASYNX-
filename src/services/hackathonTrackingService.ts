@@ -7,6 +7,7 @@
  */
 
 import { Hackathon, StudentProfile } from '../types';
+import { HackathonBlueprintService } from './hackathonBlueprintService';
 
 export interface HackathonApplicationRecord {
   confirmationId: string;       // e.g. HACK-CONF-2026-DEVPOST-AB12C
@@ -192,6 +193,7 @@ export class HackathonTrackingService {
 
     const docSerial = `CIRCULAR-HACK-${new Date().getFullYear()}-${hackathon.id.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10)}`;
     const shaHash = application?.sha256Proof || `VERIFIED-SNAPSHOT-${Date.now().toString(16).toUpperCase()}`;
+    const blueprint = HackathonBlueprintService.getBlueprint(hackathon);
 
     return `
 <!DOCTYPE html>
@@ -202,7 +204,7 @@ export class HackathonTrackingService {
   <style>
     @page {
       size: A4 portrait;
-      margin: 14mm 16mm;
+      margin: 12mm 14mm;
     }
     * {
       box-sizing: border-box;
@@ -213,12 +215,12 @@ export class HackathonTrackingService {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       color: #0f172a;
       background: #ffffff;
-      line-height: 1.5;
-      font-size: 10.5pt;
+      line-height: 1.45;
+      font-size: 10pt;
     }
     .page-container {
       width: 100%;
-      max-width: 820px;
+      max-width: 840px;
       margin: 0 auto;
     }
     .header-bar {
@@ -227,7 +229,7 @@ export class HackathonTrackingService {
       align-items: flex-start;
       border-bottom: 2px solid #0f172a;
       padding-bottom: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .doc-badge {
       display: inline-block;
@@ -242,13 +244,13 @@ export class HackathonTrackingService {
       margin-bottom: 4px;
     }
     .doc-title {
-      font-size: 18pt;
+      font-size: 17pt;
       font-weight: 900;
       color: #0f172a;
       line-height: 1.2;
     }
     .doc-sub {
-      font-size: 9pt;
+      font-size: 8.5pt;
       color: #475569;
       font-weight: 600;
       margin-top: 3px;
@@ -267,12 +269,12 @@ export class HackathonTrackingService {
       background: #fff7ed;
       border: 1px solid #fdba74;
       border-radius: 6px;
-      padding: 8px 12px;
-      margin-bottom: 16px;
+      padding: 7px 12px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 8.5pt;
+      font-size: 8pt;
       color: #9a3412;
       font-weight: 600;
     }
@@ -280,17 +282,17 @@ export class HackathonTrackingService {
     .key-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 8px;
+      margin-bottom: 14px;
     }
     .grid-cell {
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
-      padding: 8px 10px;
+      padding: 7px 9px;
     }
     .grid-label {
-      font-size: 7.5pt;
+      font-size: 7pt;
       font-weight: 700;
       color: #64748b;
       text-transform: uppercase;
@@ -298,14 +300,14 @@ export class HackathonTrackingService {
       margin-bottom: 2px;
     }
     .grid-val {
-      font-size: 9.5pt;
+      font-size: 9pt;
       font-weight: 700;
       color: #0f172a;
       word-break: break-word;
     }
 
     .section-block {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
       overflow: hidden;
@@ -314,30 +316,79 @@ export class HackathonTrackingService {
       background: #f1f5f9;
       border-bottom: 1px solid #e2e8f0;
       padding: 6px 10px;
-      font-size: 8.5pt;
+      font-size: 8pt;
       font-weight: 800;
       color: #1e293b;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
     .section-body {
-      padding: 10px 12px;
-      font-size: 9.5pt;
+      padding: 9px 12px;
+      font-size: 9pt;
       color: #334155;
+    }
+
+    /* Prize Table */
+    .prize-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 8.5pt;
+    }
+    .prize-table th {
+      background: #f8fafc;
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid #cbd5e1;
+      font-weight: 700;
+      color: #475569;
+    }
+    .prize-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+
+    .edge-card {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .edge-title {
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #6b21a8;
+      margin-bottom: 3px;
+    }
+
+    .rubric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .rubric-cell {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 5px;
+      padding: 6px 8px;
+      font-size: 8pt;
     }
 
     .theme-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 5px;
       margin-top: 4px;
     }
     .theme-tag {
       background: #e2e8f0;
       color: #334155;
-      font-size: 8pt;
+      font-size: 7.5pt;
       font-weight: 600;
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 4px;
     }
 
@@ -345,43 +396,43 @@ export class HackathonTrackingService {
       background: #f0fdf4;
       border: 1px solid #bbf7d0;
       border-radius: 6px;
-      padding: 10px 12px;
-      margin-bottom: 16px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
     }
     .tracking-title {
-      font-size: 8.5pt;
+      font-size: 8pt;
       font-weight: 800;
       color: #166534;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .tracking-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      font-size: 8.5pt;
+      gap: 6px;
+      font-size: 8pt;
     }
 
     .footer-seal {
-      margin-top: 20px;
-      padding-top: 12px;
+      margin-top: 16px;
+      padding-top: 10px;
       border-top: 1px solid #cbd5e1;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 7.5pt;
+      font-size: 7pt;
       color: #64748b;
     }
     .seal-box {
       border: 1px dashed #94a3b8;
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 4px;
       text-align: center;
       font-family: monospace;
       font-weight: bold;
       color: #334155;
-      font-size: 7pt;
+      font-size: 6.5pt;
     }
 
     @media print {
@@ -400,21 +451,21 @@ export class HackathonTrackingService {
     <!-- Header -->
     <div class="header-bar">
       <div>
-        <span class="doc-badge">Official Opportunity Circular</span>
+        <span class="doc-badge">Official Opportunity Circular & Winning Blueprint</span>
         <h1 class="doc-title">${escapeHtml(hackathon.name)}</h1>
-        <div class="doc-sub">Host / Organizer: <strong>${escapeHtml(hackathon.organizer)}</strong> • Mode: <strong>${escapeHtml(hackathon.mode.toUpperCase())}</strong></div>
+        <div class="doc-sub">Official Host: <strong>${escapeHtml(hackathon.organizer)}</strong> • Mode: <strong>${escapeHtml(hackathon.mode.toUpperCase())}</strong> • Region: <strong>${escapeHtml(hackathon.country)}</strong></div>
       </div>
       <div class="meta-box">
-        <div>Document Ref: <strong>${escapeHtml(docSerial)}</strong></div>
+        <div>Ref: <strong>${escapeHtml(docSerial)}</strong></div>
         <div>Date: <strong>${escapeHtml(reportDate)}</strong></div>
-        <div>Zero-Fee Verification: <strong>100% Free Guarantee</strong></div>
+        <div>Entry: <strong>100% Free Verified</strong></div>
       </div>
     </div>
 
     <!-- Official Guarantee Ribbon -->
     <div class="status-ribbon">
       <div>
-        🔒 Verified Official Publication: Data directly retrieved from host domain. Zero third-party fees.
+        🔒 Verified Official Publication: Data directly synchronized from host portal. Zero third-party fees.
       </div>
       <div>
         Status: <strong>${escapeHtml(hackathon.status)}</strong>
@@ -424,7 +475,7 @@ export class HackathonTrackingService {
     <!-- Key Metrics Grid -->
     <div class="key-grid">
       <div class="grid-cell">
-        <div class="grid-label">Prize Pool / Rewards</div>
+        <div class="grid-label">Total Prize Pool</div>
         <div class="grid-val">${escapeHtml(hackathon.prizeText || 'Recognition & Prizes')}</div>
       </div>
       <div class="grid-cell">
@@ -436,27 +487,27 @@ export class HackathonTrackingService {
         <div class="grid-val">${escapeHtml(hackathon.dates || 'Announced on Portal')}</div>
       </div>
       <div class="grid-cell">
-        <div class="grid-label">Location / Mode</div>
+        <div class="grid-label">Format / Country</div>
         <div class="grid-val">${escapeHtml(hackathon.country || 'Global / Online')} (${escapeHtml(hackathon.mode)})</div>
       </div>
     </div>
 
-    <!-- Official Eligibility & Participation Need -->
+    <!-- SECTION 1: OFFICIAL ELIGIBILITY & RULES -->
     <div class="section-block">
       <div class="section-title">1. Official Eligibility Criteria & Participation Rules</div>
       <div class="section-body">
         <p><strong>Eligibility as Listed by Host:</strong> ${escapeHtml(hackathon.eligibilityText)}</p>
-        <p style="margin-top: 6px; font-size: 8.5pt; color: #64748b; font-style: italic;">
+        <p style="margin-top: 4px; font-size: 8pt; color: #64748b; font-style: italic;">
           Mandatory Safety Rule: Check the event's own official rules and handbook on the host portal for specific terms.
         </p>
-        ${hackathon.spocNote ? `<p style="margin-top: 6px; color: #b45309; font-weight: 600;">⚠️ ${escapeHtml(hackathon.spocNote)}</p>` : ''}
-        ${hackathon.datesNote ? `<p style="margin-top: 6px; color: #475569;">ℹ️ ${escapeHtml(hackathon.datesNote)}</p>` : ''}
+        ${hackathon.spocNote ? `<p style="margin-top: 4px; color: #b45309; font-weight: 600;">⚠️ ${escapeHtml(hackathon.spocNote)}</p>` : ''}
+        ${hackathon.datesNote ? `<p style="margin-top: 4px; color: #475569;">ℹ️ ${escapeHtml(hackathon.datesNote)}</p>` : ''}
       </div>
     </div>
 
-    <!-- Themes & Technology Focus -->
+    <!-- SECTION 2: APPROVED THEMES & PROBLEM FOCUS -->
     <div class="section-block">
-      <div class="section-title">2. Competition Themes & Approved Focus Tracks</div>
+      <div class="section-title">2. Approved Competition Themes & Focus Tracks</div>
       <div class="section-body">
         <p>Participants may build and submit solutions within the following approved thematic areas:</p>
         <div class="theme-tags">
@@ -467,35 +518,128 @@ export class HackathonTrackingService {
       </div>
     </div>
 
-    <!-- Pay Rate, Perks & Incentives Breakdown -->
+    <!-- SECTION 3: RANK-WISE PRIZE BREAKDOWN (WINNER KO KYA MILEGA) -->
     <div class="section-block">
-      <div class="section-title">3. Compensation, Stipend & Prize Structure</div>
+      <div class="section-title">3. Official Compensation & Rank-Wise Prize Matrix (Rank 1, Runners-Up & Category Awards)</div>
       <div class="section-body">
-        <p><strong>Primary Rewards:</strong> ${escapeHtml(hackathon.prizeText)}</p>
-        <p style="margin-top: 4px;"><strong>Entry Fee:</strong> ${escapeHtml(hackathon.entryFeeText || 'Free Entry (Verified Zero Fee)')}</p>
-        <p style="margin-top: 4px; font-size: 9pt; color: #475569;">
-          Includes digital certificates of participation, mentor office hours, potential interview opportunities with sponsor organizations, and platform credits where applicable.
-        </p>
+        <p style="margin-bottom: 6px;"><strong>Cumulative Prize Pool:</strong> <span style="color: #ea580c; font-weight: bold;">${escapeHtml(blueprint.overallPrizePool)}</span> • <strong>Entry Fee:</strong> <span style="color: #166534; font-weight: bold;">${escapeHtml(hackathon.entryFeeText || '100% Free Entry')}</span></p>
+        <table class="prize-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Rank / Category</th>
+              <th style="width: 25%;">Direct Award / Purse</th>
+              <th style="width: 50%;">Career Perks, Fast-Tracks & Mentorship</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${blueprint.prizeTiers.map(tier => `
+              <tr>
+                <td><strong>${escapeHtml(tier.rankTitle)}</strong></td>
+                <td style="color: #b45309; font-weight: bold;">${escapeHtml(tier.prizeAmount)}</td>
+                <td>
+                  <ul style="padding-left: 14px; margin: 0;">
+                    ${tier.perks.map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+                  </ul>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Submission & Deliverables Needed -->
+    <!-- SECTION 4: WHAT PROJECT TO BUILD & DELIVERABLES NEEDED -->
     <div class="section-block">
-      <div class="section-title">4. Submission Deliverables & Technical Requirements</div>
+      <div class="section-title">4. Project Blueprint: What to Build & Mandatory Deliverables</div>
       <div class="section-body">
-        <ul style="padding-left: 18px; margin-top: 2px;">
-          <li><strong>Working Source Code:</strong> Public or private Git repository link (GitHub/GitLab) with setup instructions.</li>
-          <li><strong>Demo Video:</strong> 2 to 3 minute video walkthrough demonstration hosted on YouTube/Loom.</li>
-          <li><strong>Pitch Presentation / Readme:</strong> Comprehensive write-up outlining problem statement, architecture, technologies utilized, and impact.</li>
-          <li><strong>Originality & Zero-Fee Shield:</strong> Only original work authored during the hacking window is accepted. Zero application or submission charges.</li>
-        </ul>
+        <p><strong>Target Problem Scope:</strong> ${escapeHtml(blueprint.strategy.projectScope.whatToBuild)}</p>
+        
+        <div style="margin-top: 8px;">
+          <strong>Target Problem Statements to Address:</strong>
+          <ul style="padding-left: 16px; margin-top: 3px;">
+            ${blueprint.strategy.projectScope.targetProblemStatements.map(ps => `<li>${escapeHtml(ps)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div style="margin-top: 8px;">
+          <strong>Mandatory Submission Deliverables:</strong>
+          <table class="prize-table" style="margin-top: 4px;">
+            <tbody>
+              ${blueprint.strategy.projectScope.mandatoryDeliverables.map(d => `
+                <tr>
+                  <td style="width: 28%; font-weight: 700; color: #0f172a;">${escapeHtml(d.title)}</td>
+                  <td>${escapeHtml(d.requirement)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: HOW TO BUILD & TECHNICAL EXECUTION STANDARDS -->
+    <div class="section-block">
+      <div class="section-title">5. Technical Architecture Standards & Performance SLAs</div>
+      <div class="section-body">
+        <p><strong>Recommended Modern Stack:</strong> ${escapeHtml(blueprint.strategy.architecturalGuidance.recommendedStack.join(' • '))}</p>
+        
+        <div style="margin-top: 6px;">
+          <strong>Core Architectural Capabilities Needed:</strong>
+          <ul style="padding-left: 16px; margin-top: 2px;">
+            ${blueprint.strategy.architecturalGuidance.coreCapabilities.map(c => `<li>${escapeHtml(c)}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div style="margin-top: 6px;">
+          <strong>Performance & Latency SLAs:</strong>
+          <ul style="padding-left: 16px; margin-top: 2px;">
+            ${blueprint.strategy.architecturalGuidance.performanceAndSlas.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6: THE WINNING EDGE & JUDGING RUBRIC STRATEGY -->
+    <div class="section-block">
+      <div class="section-title">6. The Winning Edge: Features Beyond Baseline Requirements to Outrank Competitors</div>
+      <div class="section-body">
+        <p style="margin-bottom: 6px; font-size: 8.5pt; color: #475569;">
+          To place Rank 1 over hundreds of competing teams, implement capabilities that rise above basic prompt wrappers or crude clones:
+        </p>
+
+        ${blueprint.strategy.winningEdgeFeatures.map(f => `
+          <div class="edge-card">
+            <div class="edge-title">★ ${escapeHtml(f.featureName)}</div>
+            <div style="font-size: 8pt; color: #334155; margin-bottom: 2px;">
+              <strong>Strategic Advantage:</strong> ${escapeHtml(f.whyItOutranksCompetitors)}
+            </div>
+            <div style="font-size: 7.5pt; color: #64748b; font-family: monospace;">
+              Technical Depth: ${escapeHtml(f.technicalDepthDescription)}
+            </div>
+          </div>
+        `).join('')}
+
+        <div style="margin-top: 8px;">
+          <strong>Judging Rubric Allocation & Maximum Score Strategy:</strong>
+          <div class="rubric-grid">
+            ${blueprint.strategy.judgingRubricBreakdown.map(r => `
+              <div class="rubric-cell">
+                <div style="font-weight: 800; color: #0f172a; display: flex; justify-content: space-between;">
+                  <span>${escapeHtml(r.criteria)}</span>
+                  <span style="color: #ea580c;">${r.weightPercentage}%</span>
+                </div>
+                <div style="color: #475569; margin-top: 2px; font-size: 7.5pt;">${escapeHtml(r.howToScoreMax)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Tracking Record (if applied/tracked) -->
     ${application ? `
     <div class="tracking-dossier">
-      <div class="tracking-title">Student Application Tracking Dossier</div>
+      <div class="tracking-title">Candidate Application Tracking Dossier</div>
       <div class="tracking-grid">
         <div><strong>Record ID:</strong> ${escapeHtml(application.confirmationId)}</div>
         <div><strong>Registered Email:</strong> ${escapeHtml(application.applicantEmail)}</div>
@@ -509,10 +653,10 @@ export class HackathonTrackingService {
 
     <!-- Official Portal Link & Source Verification -->
     <div class="section-block">
-      <div class="section-title">5. Official Portal Verification & Access</div>
+      <div class="section-title">7. Official Portal Access & Verification Link</div>
       <div class="section-body">
         <p><strong>Canonical Portal URL:</strong> <a href="${escapeHtml(hackathon.officialUrl)}" target="_blank" style="color: #ea580c; word-break: break-all;">${escapeHtml(hackathon.officialUrl)}</a></p>
-        ${hackathon.detectedOn ? `<p style="margin-top: 4px; font-size: 8.5pt; color: #0284c7;">✓ Verified on official source page on ${escapeHtml(hackathon.detectedOn)}</p>` : ''}
+        ${hackathon.detectedOn ? `<p style="margin-top: 4px; font-size: 8pt; color: #0284c7;">✓ Verified on official source page on ${escapeHtml(hackathon.detectedOn)}</p>` : ''}
       </div>
     </div>
 
@@ -521,11 +665,11 @@ export class HackathonTrackingService {
       <div>
         <strong>TERRASYNX AUTONOMOUS STUDENT ENGINE</strong><br>
         Direct official portal synchronization. Zero third-party fees. Immutable integrity proof.<br>
-        This official document is generated for candidate records, college approval, and team distribution.
+        This official dossier is generated for candidate strategic preparation, college SPOC approval, and team distribution.
       </div>
       <div class="seal-box">
         [CRYPTOGRAPHIC VERIFICATION SEAL]<br>
-        SHA-256: ${escapeHtml(shaHash.slice(0, 20))}...<br>
+        SHA-256: ${escapeHtml(shaHash.slice(0, 24))}...<br>
         TIMESTAMP: ${new Date().toISOString()}
       </div>
     </div>
@@ -540,7 +684,7 @@ export class HackathonTrackingService {
   </script>
 </body>
 </html>
-`;
+    `;
   }
 
   /**

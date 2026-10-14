@@ -28,6 +28,7 @@ import { AppliedDossierService, AppliedJobRecord } from '../services/appliedDoss
 import { DossierPdfService } from '../services/dossierPdfService';
 import { StudentProfile, Opportunity } from '../types';
 import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { CompanyLogo } from './CompanyLogo';
 
 interface AppliedDossierVaultModalProps {
   isOpen: boolean;
@@ -299,27 +300,34 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                     key={record.opportunityId}
                     className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60 hover:border-slate-600 transition-all space-y-3"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                          <span className="font-bold text-white text-base">
-                            {record.companyName}
-                          </span>
-                          <span className="text-xs text-slate-400">({record.companyDomain})</span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                            {record.portalType}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            record.submissionRoute === 'direct_official_ats'
-                              ? 'bg-blue-950 text-blue-300 border border-blue-800'
-                              : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
-                          }`}>
-                            {record.submissionRoute === 'direct_official_ats' ? '🏢 Official ATS Portal' : '⚡ TERRASYNX Assistant'}
-                          </span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
-                            {record.currentStage.replace('_', ' ')}
-                          </span>
-                        </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        <CompanyLogo
+                          name={record.companyName}
+                          domain={record.companyDomain}
+                          size="md"
+                          className="shrink-0 mt-0.5"
+                        />
+                        <div>
+                          <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                            <span className="font-bold text-white text-base">
+                              {record.companyName}
+                            </span>
+                            <span className="text-xs text-slate-400">({record.companyDomain})</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                              {record.portalType}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                              record.submissionRoute === 'direct_official_ats'
+                                ? 'bg-blue-950 text-blue-300 border border-blue-800'
+                                : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                            }`}>
+                              {record.submissionRoute === 'direct_official_ats' ? '🏢 Official ATS Portal' : '⚡ TERRASYNX Assistant'}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-300 border border-slate-700">
+                              {record.currentStage.replace('_', ' ')}
+                            </span>
+                          </div>
                         <div className="text-xs text-slate-300 font-medium mt-0.5 flex items-center gap-2 flex-wrap">
                           <span>{record.jobTitle}</span>
                           {record.applicantEmail && (
@@ -329,6 +337,7 @@ export const AppliedDossierVaultModal: React.FC<AppliedDossierVaultModalProps> =
                           )}
                         </div>
                       </div>
+                    </div>
 
                       <div className="flex items-center space-x-2 shrink-0">
                         {(() => {

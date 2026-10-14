@@ -12,6 +12,7 @@
 import React, { useState, useMemo } from 'react';
 import { Hackathon, StudentProfile } from '../types';
 import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
+import { CompanyLogo } from './CompanyLogo';
 import { 
   X, 
   Sparkles, 
@@ -211,15 +212,19 @@ ${customPitch}
         aria-modal="true"
         aria-labelledby="modal-headline"
       >
-        {/* Header */}
+        {/* Header with Official Host Logo */}
         <div className="px-6 py-4.5 bg-gradient-to-r from-orange-950/40 via-slate-900 to-slate-900 border-b border-orange-500/20 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
+            <CompanyLogo
+              name={hackathon.organizer}
+              domain={hackathon.officialUrl ? (() => { try { return new URL(hackathon.officialUrl).hostname.replace(/^www\./, ''); } catch { return ''; } })() : ''}
+              size="md"
+              className="shrink-0"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30 font-semibold">
+                <span className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30 font-semibold flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-orange-400" />
                   Fast Apply Assistant
                 </span>
                 <span className="text-[10px] uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
@@ -230,7 +235,7 @@ ${customPitch}
                 {hackathon.name}
               </h2>
               <p className="text-xs text-slate-400 flex items-center gap-2">
-                <span>Host: <strong className="text-slate-300">{hackathon.organizer}</strong></span>
+                <span>Official Host: <strong className="text-slate-200">{hackathon.organizer}</strong></span>
                 <span>•</span>
                 <span>Prize: <strong className="text-orange-300">{hackathon.prizeText}</strong></span>
               </p>

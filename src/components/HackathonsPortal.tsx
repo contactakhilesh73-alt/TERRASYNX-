@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { HackathonFastApplyModal } from './HackathonFastApplyModal';
 import { HackathonWhitePageModal } from './HackathonWhitePageModal';
+import { CompanyLogo } from './CompanyLogo';
 import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
 
 interface HackathonsPortalProps {
@@ -738,15 +739,25 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                     </button>
                   </div>
 
-                  {/* Hackathon Name & Organizer */}
+                  {/* Hackathon Name & Organizer with Official Host/Company Logo */}
                   <div>
-                    <div className="flex items-center gap-1 text-[11px] font-mono text-orange-400/90 font-semibold mb-0.5">
-                      <Building2 className="w-3 h-3 shrink-0" />
-                      <span>{hackathon.organizer}</span>
+                    <div className="flex items-start gap-3">
+                    <CompanyLogo
+                      name={hackathon.organizer}
+                      domain={getDomainFromUrl(hackathon.officialUrl)}
+                      size="md"
+                      className="shrink-0 mt-0.5"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 text-[11px] font-mono text-orange-400/90 font-semibold mb-0.5">
+                        <Building2 className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{hackathon.organizer}</span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white group-hover:text-orange-200 transition-colors leading-snug">
+                        {hackathon.name}
+                      </h3>
                     </div>
-                    <h3 className="text-lg font-bold text-white group-hover:text-orange-200 transition-colors leading-snug">
-                      {hackathon.name}
-                    </h3>
+                  </div>
 
                     {/* Active Tracked Application Indicator (Fast Apply / Direct Official Portal Tracked) */}
                     {(() => {
