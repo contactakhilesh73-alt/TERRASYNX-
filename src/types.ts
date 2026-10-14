@@ -1110,6 +1110,7 @@ export interface CompanyRedFlagReport {
 export type HackathonMode = 'online' | 'in-person' | 'hybrid';
 export type HackathonSource = 'devpost-live' | 'recurring-series';
 export type HackathonStatusTab = 'OPEN_NOW' | 'UPCOMING' | 'PASSED';
+export type HackathonStatus = 'NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED' | 'UNKNOWN';
 
 export interface Hackathon {
   id: string;
@@ -1121,13 +1122,21 @@ export interface Hackathon {
   eligibilityText: string;
   entryFeeText: string;
   prizeText: string;
-  startDate: string;
-  endDate: string;
+  dates: string;
+  startDate?: string;
+  endDate?: string;
   registrationDeadline: string;
   officialUrl: string;
   source: HackathonSource;
+  status: HackathonStatus;
   description?: string;
   locationDetails?: string;
   datesNote?: string; // Prompt 44: "Dates change every edition, confirm on the official page"
   spocNote?: string; // Prompt 44: "Show the SPOC note on the SIH card"
+  lastEditionNote?: string; // Prompt 44: Last-edition facts for recurring entries
+  sourceUrl?: string; // Prompt 46: Official source URL where extraction was detected
+  detectedOn?: string; // Prompt 46: "Detected on the official page on <date>"
+  isStale?: boolean; // Prompt 46: Labeled stale if a fetch fails but keeping last verified snapshot
 }
+
+

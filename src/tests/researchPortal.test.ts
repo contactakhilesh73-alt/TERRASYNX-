@@ -31,17 +31,17 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     });
   };
 
-  it('shows ONLY scientific_lab and academic_fellowship entries (count: 21 with ETH Zurich SSRF)', () => {
+  it('shows ONLY scientific_lab and academic_fellowship entries (count: 23 with Caltech SURF & S.N. Bose)', () => {
     const research = getResearchCycles();
 
-    expect(research.length).toBe(21);
+    expect(research.length).toBe(23);
 
     const scientificLabs = research.filter(c => c.tierCategory === 'scientific_lab');
     const academicFellowships = research.filter(c => c.tierCategory === 'academic_fellowship');
 
-    expect(scientificLabs.length).toBe(13);
-    expect(academicFellowships.length).toBe(8);
-    expect(scientificLabs.length + academicFellowships.length).toBe(21);
+    expect(scientificLabs.length).toBe(14);
+    expect(academicFellowships.length).toBe(9);
+    expect(scientificLabs.length + academicFellowships.length).toBe(23);
   });
 
   it('contains premier scientific institutes: CERN, RIKEN, OIST, Max Planck, MITACS, DAAD, and similar', () => {
@@ -102,7 +102,7 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     expect(gsoc).toBeUndefined();
   });
 
-  it('builds strong country-based filter containing all 11 scientific research jurisdictions', () => {
+  it('builds strong country-based filter containing all scientific research jurisdictions', () => {
     const research = getResearchCycles();
 
     const countryCounts: Record<string, number> = {};
@@ -116,11 +116,12 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     expect(countryCounts['Singapore']).toBe(3);
     expect(countryCounts['India']).toBe(3);
     expect(countryCounts['Switzerland']).toBe(2);
+    expect(countryCounts['USA']).toBe(2); // Fermilab + Caltech SURF
     expect(countryCounts['Israel']).toBe(1);
-    expect(countryCounts['USA']).toBe(1);
     expect(countryCounts['Canada']).toBe(1);
     expect(countryCounts['South Korea']).toBe(1);
     expect(countryCounts['France']).toBe(1);
     expect(countryCounts['Taiwan']).toBe(1);
+    expect(countryCounts['India to USA']).toBe(1); // S.N. Bose Scholars Program
   });
 });

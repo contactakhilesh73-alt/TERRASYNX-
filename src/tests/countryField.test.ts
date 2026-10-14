@@ -147,9 +147,9 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         expect(c.country).toBe('Germany');
       }
 
-      // USA filter
+      // USA filter (39 standard + Caltech SURF)
       const usaCycles = allCycles.filter(c => c.country === 'USA');
-      expect(usaCycles.length).toBe(39);
+      expect(usaCycles.length).toBe(40);
       for (const c of usaCycles) {
         expect(c.country).toBe('USA');
       }
@@ -265,7 +265,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         portal: 'research',
         status: 'all'
       });
-      expect(researchCycles.length).toBe(21);
+      expect(researchCycles.length).toBe(23);
       for (const c of researchCycles) {
         expect(UpcomingInternshipsService.isCycleInPortal(c, 'research')).toBe(true);
       }

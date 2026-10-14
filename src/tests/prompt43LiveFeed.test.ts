@@ -3,12 +3,16 @@ import { isHostnameAllowed } from '../services/linkAllowlistService';
 import { Hackathon } from '../types';
 
 describe('Prompt 43: Live Hackathon Feed & Security Allowlist', () => {
-  it('adds devpost.com, mlh.io, mlh.com, and sih.gov.in to the link allowlist', () => {
-    // Exact domains
+  it('adds devpost.com, mlh.io, mlh.com, ghw.mlh.com, sih.gov.in, ethglobal.com, hackmit.org, hackthenorth.com to the link allowlist', () => {
+    // Exact domains explicitly specified in Prompt 43
     expect(isHostnameAllowed('devpost.com')).toBe(true);
     expect(isHostnameAllowed('mlh.io')).toBe(true);
     expect(isHostnameAllowed('mlh.com')).toBe(true);
+    expect(isHostnameAllowed('ghw.mlh.com')).toBe(true);
     expect(isHostnameAllowed('sih.gov.in')).toBe(true);
+    expect(isHostnameAllowed('ethglobal.com')).toBe(true);
+    expect(isHostnameAllowed('hackmit.org')).toBe(true);
+    expect(isHostnameAllowed('hackthenorth.com')).toBe(true);
 
     // Subdomains of allowlisted platforms
     expect(isHostnameAllowed('api.devpost.com')).toBe(true);

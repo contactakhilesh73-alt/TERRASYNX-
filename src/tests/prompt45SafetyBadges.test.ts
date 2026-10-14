@@ -62,6 +62,9 @@ describe('Prompt 45: Safety Badges & Honest Hackathon Labeling', () => {
     expect(HackathonsService.isFeeRequired('Paid ticket required ($50)')).toBe(true);
     expect(HackathonsService.isFeeRequired('€15 Student Delegate Pass')).toBe(true);
     expect(HackathonsService.isFeeRequired('100 USD participation cost')).toBe(true);
+    expect(HackathonsService.isFeeRequired('0.05 ETH Stake required')).toBe(true);
+    expect(HackathonsService.isFeeRequired('Participation stake exists ($20)')).toBe(true);
+    expect(HackathonsService.isFeeRequired('50 USDC deposit stake')).toBe(true);
 
     // All default database hackathons are verified free entry
     for (const h of allHackathons) {

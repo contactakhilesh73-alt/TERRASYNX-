@@ -40,6 +40,10 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
       expect(typeof h.prizeText).toBe('string');
       expect(h.prizeText.length).toBeGreaterThan(0);
 
+      // Prompt 42: dates
+      expect(typeof h.dates).toBe('string');
+      expect(h.dates.length).toBeGreaterThan(0);
+
       expect(typeof h.startDate).toBe('string');
       expect(typeof h.endDate).toBe('string');
       expect(typeof h.registrationDeadline).toBe('string');
@@ -49,7 +53,24 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
 
       // Prompt 42 requirement: source ('devpost-live' | 'recurring-series')
       expect(['devpost-live', 'recurring-series']).toContain(h.source);
+
+      // Prompt 42 requirement: status ('NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED')
+      expect(['NOT_ANNOUNCED', 'ANNOUNCED_UNCONFIRMED', 'ANNOUNCED_VERIFIED', 'PASSED']).toContain(h.status);
     }
+  });
+
+  it('contains hackathons across all 4 statuses and filters by status', () => {
+    const verified = HackathonsService.filterHackathons(allHackathons, { status: 'ANNOUNCED_VERIFIED' });
+    const unconfirmed = HackathonsService.filterHackathons(allHackathons, { status: 'ANNOUNCED_UNCONFIRMED' });
+    const notAnnounced = HackathonsService.filterHackathons(allHackathons, { status: 'NOT_ANNOUNCED' });
+    const passed = HackathonsService.filterHackathons(allHackathons, { status: 'PASSED' });
+
+    expect(verified.length).toBeGreaterThan(0);
+    expect(unconfirmed.length).toBeGreaterThan(0);
+    expect(notAnnounced.length).toBeGreaterThan(0);
+    expect(passed.length).toBeGreaterThan(0);
+
+    expect(verified.length + unconfirmed.length + notAnnounced.length + passed.length).toBe(allHackathons.length);
   });
 
   it('contains hackathons across both devpost-live and recurring-series sources', () => {

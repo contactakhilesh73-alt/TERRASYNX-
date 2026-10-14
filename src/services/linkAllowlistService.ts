@@ -137,7 +137,17 @@ function buildProgramAllowlist(): { allowedHostnames: Set<string>; allowedRoots:
     'devpost.com',
     'mlh.io',
     'mlh.com',
+    'ghw.mlh.com',
     'sih.gov.in',
+    'ethglobal.com',
+    'hackmit.org',
+    'hackthenorth.com',
+    'developers.google.com',
+    // Prompt 47: Official Research Program domains
+    'caltech.edu',
+    'sfp.caltech.edu',
+    'iusstf.org.in',
+    'iusstf.org',
   ];
   for (const h of coreAtsHostnames) {
     ingest(h);

@@ -83,6 +83,7 @@ export function getCountryFlag(country?: string): string {
     case 'China': return '🇨🇳';
     case 'Europe':
     case 'European Union': return '🇪🇺';
+    case 'India to USA': return '🇮🇳 ✈️ 🇺🇸';
     case 'Global/Remote': return '🌐';
     default: return '📍';
   }

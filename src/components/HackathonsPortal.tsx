@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Hackathon, HackathonMode, HackathonStatusTab, StudentProfile } from '../types';
+import { Hackathon, HackathonMode, HackathonStatusTab, HackathonStatus, StudentProfile } from '../types';
 import { HackathonsService } from '../services/hackathonsService';
 import { LinkHealthBadge } from './LinkHealthBadge';
 import { 
@@ -61,13 +61,14 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Status Tab: 'OPEN_NOW' | 'UPCOMING' | 'PASSED'
-  const [activeStatusTab, setActiveStatusTab] = useState<HackathonStatusTab>('OPEN_NOW');
+  // Status Tab: 'ALL' | 'OPEN_NOW' | 'UPCOMING' | 'PASSED'
+  const [activeStatusTab, setActiveStatusTab] = useState<HackathonStatusTab | 'ALL'>('ALL');
 
   // Filters
   const [selectedMode, setSelectedMode] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const [selectedTheme, setSelectedTheme] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Tracked Hackathons state (persisted in localStorage)
@@ -86,6 +87,9 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   const [liveHackathons, setLiveHackathons] = useState<Hackathon[]>([]);
   const [isLiveFeedLoading, setIsLiveFeedLoading] = useState<boolean>(true);
   const [liveFeedMessage, setLiveFeedMessage] = useState<string | null>(null);
+
+  // Official Page Watcher Snapshots (Prompt 46)
+  const [watcherSnapshots, setWatcherSnapshots] = useState<Record<string, any>>({});
 
   const fetchLiveFeed = async (force: boolean = false) => {
     setIsLiveFeedLoading(true);
@@ -109,8 +113,27 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
     }
   };
 
+  const fetchWatcherSnapshots = async () => {
+    try {
+      const res = await fetch('/api/hackathons/watcher/status');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.snapshots)) {
+        const map: Record<string, any> = {};
+        for (const snap of json.snapshots) {
+          if (snap.organizer) {
+            map[snap.organizer.toLowerCase().trim()] = snap;
+          }
+        }
+        setWatcherSnapshots(map);
+      }
+    } catch {
+      // Ignore background failure
+    }
+  };
+
   useEffect(() => {
     fetchLiveFeed();
+    fetchWatcherSnapshots();
   }, []);
 
   useEffect(() => {
@@ -138,13 +161,31 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   // STRICT RULE: Never add hardcoded fallback hackathons if live feed fails.
   const allHackathons = useMemo(() => {
     const staticList = HackathonsService.getAllHackathons();
+
+    // Enrich static recurring hackathons with watcher snapshots if available (Prompt 46)
+    const enrichedStatic = staticList.map(item => {
+      const snap = watcherSnapshots[item.organizer.toLowerCase().trim()];
+      if (!snap) return item;
+
+      return {
+        ...item,
+        sourceUrl: snap.sourceUrl || item.sourceUrl || item.officialUrl,
+        detectedOn: snap.detectedOn || item.detectedOn,
+        isStale: typeof snap.isStale === 'boolean' ? snap.isStale : item.isStale,
+        status: snap.status || item.status,
+        dates: snap.grounded?.dates || item.dates,
+        registrationDeadline: snap.grounded?.deadline || item.registrationDeadline,
+        name: snap.grounded?.name || item.name,
+      };
+    });
+
     if (liveHackathons.length > 0) {
-      const seenUrls = new Set(staticList.map(h => h.officialUrl.toLowerCase().trim()));
+      const seenUrls = new Set(enrichedStatic.map(h => h.officialUrl.toLowerCase().trim()));
       const uniqueLive = liveHackathons.filter(h => !seenUrls.has(h.officialUrl.toLowerCase().trim()));
-      return [...uniqueLive, ...staticList];
+      return [...uniqueLive, ...enrichedStatic];
     }
-    return staticList;
-  }, [liveHackathons]);
+    return enrichedStatic;
+  }, [liveHackathons, watcherSnapshots]);
 
   // Compute status counts for the tabs
   const statusCounts = useMemo(() => {
@@ -180,18 +221,20 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
         mode: selectedMode,
         country: selectedCountry,
         theme: selectedTheme,
-        statusTab: activeStatusTab,
+        status: selectedStatus,
+        statusTab: selectedStatus === 'all' && activeStatusTab !== 'ALL' ? (activeStatusTab as HackathonStatusTab) : undefined,
         query: searchQuery
       },
       referenceDate
     );
-  }, [allHackathons, selectedMode, selectedCountry, selectedTheme, activeStatusTab, searchQuery, referenceDate]);
+  }, [allHackathons, selectedMode, selectedCountry, selectedTheme, selectedStatus, activeStatusTab, searchQuery, referenceDate]);
 
   // Reset all filters
   const handleResetFilters = () => {
     setSelectedMode('all');
     setSelectedCountry('all');
     setSelectedTheme('all');
+    setSelectedStatus('all');
     setSearchQuery('');
   };
 
@@ -337,9 +380,24 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
         </div>
       ) : null}
 
-      {/* Status Tabs (Open Now / Upcoming / Passed) */}
+      {/* Status Tabs (All / Open Now / Upcoming / Passed) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            onClick={() => setActiveStatusTab('ALL')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap ${
+              activeStatusTab === 'ALL'
+                ? 'bg-orange-500/20 text-orange-200 border border-orange-500/60 shadow-md shadow-orange-950/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-orange-400" />
+            <span>All Hackathons</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-800 text-slate-300 border border-slate-700">
+              {allHackathons.length}
+            </span>
+          </button>
+
           <button
             onClick={() => setActiveStatusTab('OPEN_NOW')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all cursor-pointer whitespace-nowrap ${
@@ -462,8 +520,24 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
           </select>
         </div>
 
+        {/* Status Filter ('NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED') */}
+        <div className="flex items-center gap-1.5">
+          <label className="text-slate-400 text-[11px]">Status:</label>
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-orange-500/50"
+          >
+            <option value="all">All Statuses</option>
+            <option value="ANNOUNCED_VERIFIED">Announced &amp; Verified</option>
+            <option value="ANNOUNCED_UNCONFIRMED">Announced (Unconfirmed)</option>
+            <option value="NOT_ANNOUNCED">Not Announced</option>
+            <option value="PASSED">Passed</option>
+          </select>
+        </div>
+
         {/* Reset button if any filter is dirty */}
-        {(selectedMode !== 'all' || selectedCountry !== 'all' || selectedTheme !== 'all' || searchQuery) && (
+        {(selectedMode !== 'all' || selectedCountry !== 'all' || selectedTheme !== 'all' || selectedStatus !== 'all' || searchQuery) && (
           <button
             onClick={handleResetFilters}
             className="ml-auto flex items-center gap-1 text-[11px] text-orange-400 hover:text-orange-300 transition-colors cursor-pointer"
@@ -497,6 +571,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
             {selectedMode !== 'all' && <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Mode: {selectedMode}</span>}
             {selectedCountry !== 'all' && <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Country: {selectedCountry}</span>}
             {selectedTheme !== 'all' && <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Theme: {selectedTheme}</span>}
+            {selectedStatus !== 'all' && <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Status: {selectedStatus}</span>}
             {searchQuery && <span className="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">Query: "{searchQuery}"</span>}
           </div>
 
@@ -554,7 +629,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                         {HackathonsService.getSourceBadgeText(hackathon.source)}
                       </span>
 
-                      {/* Status Tag */}
+                      {/* Status Tag (Open Now / Upcoming / Passed) */}
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${
                         computedStatus === 'OPEN_NOW'
                           ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-800'
@@ -563,6 +638,25 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                           : 'bg-slate-800 text-slate-400 border border-slate-700'
                       }`}>
                         {computedStatus === 'OPEN_NOW' ? 'Open Now' : computedStatus === 'UPCOMING' ? 'Upcoming' : 'Passed'}
+                      </span>
+
+                      {/* Prompt 42 Lifecycle Status Badge */}
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold border ${
+                        hackathon.status === 'ANNOUNCED_VERIFIED'
+                          ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800/60'
+                          : hackathon.status === 'ANNOUNCED_UNCONFIRMED'
+                          ? 'bg-amber-950/80 text-amber-300 border-amber-800/60'
+                          : hackathon.status === 'NOT_ANNOUNCED'
+                          ? 'bg-blue-950/80 text-blue-300 border-blue-800/60'
+                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}>
+                        {hackathon.status === 'ANNOUNCED_VERIFIED'
+                          ? 'Verified'
+                          : hackathon.status === 'ANNOUNCED_UNCONFIRMED'
+                          ? 'Unconfirmed'
+                          : hackathon.status === 'NOT_ANNOUNCED'
+                          ? 'Not Announced'
+                          : 'Concluded'}
                       </span>
 
                       {/* Link-Health Badge in header (Prompt 45) */}
@@ -641,7 +735,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                           </div>
                         </div>
 
-                        {/* Entry Fee (flag clearly if a fee exists) */}
+                        {/* Entry Fee (flag clearly if a fee or stake exists) */}
                         <div 
                           data-testid="hackathon-fee-box"
                           className={`p-2.5 rounded-xl border flex items-center gap-2 transition-all ${
@@ -658,11 +752,11 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-1 text-[10px] uppercase font-semibold">
                               <span className={feeExists ? 'text-rose-400 font-bold flex items-center gap-1' : 'text-slate-400'}>
-                                {feeExists ? '⚠️ Entry Fee' : 'Entry Fee'}
+                                {feeExists ? (hackathon.entryFeeText.toLowerCase().includes('stake') ? '⚠️ Fee / Stake' : '⚠️ Entry Fee') : 'Entry Fee (as listed)'}
                               </span>
                               {feeExists ? (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-rose-900/80 text-rose-200 border border-rose-600 shadow-sm">
-                                  Fee Exists
+                                  {hackathon.entryFeeText.toLowerCase().includes('stake') ? 'Stake Exists' : 'Fee Exists'}
                                 </span>
                               ) : (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded font-mono bg-emerald-950/60 text-emerald-300 border border-emerald-800/50">
@@ -680,12 +774,14 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                   })()}
 
                   {/* Dates Matrix or Schedule Note (Prompt 44) */}
-                  {hackathon.datesNote ? (
+                  {(hackathon.datesNote || !hackathon.startDate) ? (
                     <div className="p-2.5 rounded-xl bg-orange-950/20 border border-orange-500/30 flex items-start gap-2 text-[11px] font-mono">
                       <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
                       <div>
                         <span className="text-orange-400 font-semibold">Schedule Note: </span>
-                        <span className="text-slate-300">{hackathon.datesNote}</span>
+                        <span className="text-slate-300">
+                          {hackathon.datesNote || 'Confirm on the official page'}
+                        </span>
                       </div>
                     </div>
                   ) : (
@@ -708,6 +804,20 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                         <span className="font-semibold text-amber-300">
                           {formatDateDisplay(hackathon.registrationDeadline)}
                         </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Previous Edition Facts & Confirmation Note (Prompt 44) */}
+                  {hackathon.lastEditionNote && (
+                    <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] font-mono text-slate-300 flex items-start gap-2">
+                      <Info className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
+                      <div className="leading-relaxed min-w-0">
+                        <span className="text-orange-400 font-semibold">Last Edition: </span>
+                        <span>{hackathon.lastEditionNote}</span>
+                        <div className="text-[10px] text-amber-300/90 font-sans italic mt-0.5">
+                          Confirm on the official page
+                        </div>
                       </div>
                     </div>
                   )}
@@ -736,6 +846,40 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                     ))}
                   </div>
 
+                  {/* PROMPT 46: Official Page Watcher Provenance & Stale Snapshot Badge */}
+                  {/* Always store sourceUrl and detectedOn and show "Detected on the official page on <date>". If a fetch fails, keep the last verified snapshot and label it stale. */}
+                  {hackathon.detectedOn && (
+                    <div 
+                      data-testid="hackathon-detected-box"
+                      className="p-2.5 rounded-xl bg-cyan-950/20 border border-cyan-500/30 flex items-center justify-between gap-2 text-[11px] font-mono text-cyan-300"
+                    >
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Globe className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="truncate">
+                          Detected on the official page on {hackathon.detectedOn}
+                        </span>
+                      </div>
+                      {hackathon.isStale && (
+                        <span 
+                          data-testid="hackathon-stale-badge"
+                          className="px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 text-amber-300 border border-amber-500/40 shrink-0 uppercase tracking-wider font-semibold"
+                        >
+                          Stale
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {hackathon.isStale && !hackathon.detectedOn && (
+                    <div 
+                      data-testid="hackathon-stale-box"
+                      className="p-2 rounded-xl bg-amber-950/20 border border-amber-500/30 flex items-center gap-2 text-[11px] font-mono text-amber-300"
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Stale (upstream page fetch temporarily unavailable)</span>
+                    </div>
+                  )}
+
                   {/* STRICT MANDATE (Prompt 45): Eligibility text as listed with the line "Check the event's own rules". Never write that the student is eligible. */}
                   <div 
                     data-testid="hackathon-eligibility-box"
@@ -743,9 +887,14 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                   >
                     <div className="flex items-start gap-2">
                       <Users className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-                      <div className="leading-relaxed min-w-0">
-                        <span className="text-cyan-300 font-semibold">Eligibility: </span>
-                        <span>{hackathon.eligibilityText}</span>
+                      <div className="leading-relaxed min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                          <span className="text-cyan-300 font-semibold">Eligibility: </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">
+                            as listed
+                          </span>
+                        </div>
+                        <span className="text-slate-200">{hackathon.eligibilityText}</span>
                       </div>
                     </div>
                     <div className="pt-1.5 border-t border-slate-800/70 flex items-center gap-1.5 text-[10px] text-amber-300/90 font-sans">

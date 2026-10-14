@@ -12,7 +12,8 @@ import { logger } from './src/utils/logger';
 import { resolveCanonicalApplyUrl, sanitizeOpportunityUrls } from './src/utils/portalUrlResolver';
 import { HONEST_USER_AGENT, validateSafeTargetUrl, isHostnameAllowed, isPrivateOrLocalIp } from './src/services/linkAllowlistService';
 import { AtsClosureDetectionService } from './src/services/atsClosureDetectionService';
-import { Hackathon, HackathonMode } from './src/types';
+import { Hackathon, HackathonMode, HackathonStatus } from './src/types';
+import { OfficialPageWatcherService, groundExtractedData, WatcherExtractedData } from './src/services/officialPageWatcherService';
 
 const app = express();
 const PORT = 3000;
@@ -314,6 +315,9 @@ app.get('/api/hackathons/live', async (req, res) => {
           ? item.themes.map((t: any) => (typeof t === 'string' ? t : t?.name)).filter(Boolean)
           : [];
 
+        const isPassed = new Date(parsedDates.endDate + 'T23:59:59Z').getTime() < Date.now();
+        const status: HackathonStatus = isPassed ? 'PASSED' : 'ANNOUNCED_VERIFIED';
+
         const hackathon: Hackathon = {
           id: `devpost_${item.id || Math.random().toString(36).slice(2, 9)}`,
           name: item.title.trim(),
@@ -326,11 +330,13 @@ app.get('/api/hackathons/live', async (req, res) => {
             : (item.invite_only ? 'Invite Only' : 'Open to all eligible participants on Devpost'),
           entryFeeText: '100% Free Entry',
           prizeText,
+          dates: item.submission_period_dates.trim(),
           startDate: parsedDates.startDate,
           endDate: parsedDates.endDate,
           registrationDeadline: parsedDates.registrationDeadline,
           officialUrl: item.url.trim(),
           source: 'devpost-live',
+          status,
           description: typeof item.analytics_identifier === 'string' ? item.analytics_identifier : undefined,
         };
 
@@ -372,6 +378,81 @@ app.get('/api/hackathons/live', async (req, res) => {
     });
   }
 });
+
+// PROMPT 46: Official Page Watcher AI Extraction Endpoint
+// Ask Gemini (endpoint /api/ai/extract-hackathon) to return JSON with name, dates, deadline, eligibility, mode, location, fee, using null for anything not literally stated.
+// Ground every extracted value: the value's text must appear in the fetched page text, else drop that field.
+app.post('/api/ai/extract-hackathon', async (req, res) => {
+  try {
+    const { text, organizer, url } = req.body;
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing or invalid page text',
+        extracted: { name: null, dates: null, deadline: null, eligibility: null, mode: null, location: null, fee: null },
+        grounded: { name: null, dates: null, deadline: null, eligibility: null, mode: null, location: null, fee: null },
+      });
+    }
+
+    const orgName = (typeof organizer === 'string' && organizer.trim()) || 'Unknown Organizer';
+    const targetUrl = (typeof url === 'string' && url.trim()) || '';
+
+    // Ask Gemini for extraction
+    const extracted: WatcherExtractedData = await OfficialPageWatcherService.extractWithGemini(
+      text,
+      orgName,
+      targetUrl
+    );
+
+    // Ground every extracted value: the value's text must appear in the fetched page text, else drop that field
+    const grounded: WatcherExtractedData = groundExtractedData(extracted, text);
+
+    return res.json({
+      success: true,
+      organizer: orgName,
+      sourceUrl: targetUrl,
+      extracted,
+      grounded,
+    });
+  } catch (err: any) {
+    logger.error('OfficialPageWatcher', 'Error in /api/ai/extract-hackathon', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Extraction failed',
+      extracted: { name: null, dates: null, deadline: null, eligibility: null, mode: null, location: null, fee: null },
+      grounded: { name: null, dates: null, deadline: null, eligibility: null, mode: null, location: null, fee: null },
+    });
+  }
+});
+
+// PROMPT 46: Official Page Watcher Status & Snapshots API
+app.get('/api/hackathons/watcher/status', (req, res) => {
+  res.json({
+    success: true,
+    watchlist: OfficialPageWatcherService.getWatchlist(),
+    snapshots: OfficialPageWatcherService.getSnapshots(),
+    count: OfficialPageWatcherService.getSnapshots().length,
+  });
+});
+
+// PROMPT 46: Trigger immediate watcher scan cycle
+app.post('/api/hackathons/watcher/run', async (req, res) => {
+  try {
+    const snapshots = await OfficialPageWatcherService.runWatcher();
+    res.json({
+      success: true,
+      count: snapshots.length,
+      snapshots,
+    });
+  } catch (err: any) {
+    logger.error('OfficialPageWatcher', 'Manual watcher trigger failed', err);
+    res.status(500).json({
+      success: false,
+      error: err?.message || 'Watcher cycle execution failed',
+    });
+  }
+});
+
 
 // PROMPT 27 — Funded Company Discovery: Recent Funding News API
 app.get('/api/funding/recent', async (req, res) => {
@@ -3395,6 +3476,8 @@ async function startServer() {
 
   app.listen(PORT, '0.0.0.0', () => {
     logger.info('Server:Bootstrap', `TERRASYNX Server running on http://0.0.0.0:${PORT}`, { port: PORT, env: process.env.NODE_ENV || 'development' });
+    // Prompt 46: Start official page watcher scheduled every 24 hours
+    OfficialPageWatcherService.startScheduler();
   });
 }
 
