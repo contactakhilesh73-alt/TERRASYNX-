@@ -37,6 +37,7 @@ import { InternshipsPortal } from './components/InternshipsPortal';
 import { ScholarshipsPortal } from './components/ScholarshipsPortal';
 import { ResearchPortal } from './components/ResearchPortal';
 import { OpenSourcePortal } from './components/OpenSourcePortal';
+import { HackathonsPortal } from './components/HackathonsPortal';
 import { HeartbeatScheduler } from './services/heartbeatScheduler';
 import { AuthModal } from './components/AuthModal';
 import { StudentOnboardingModal } from './components/StudentOnboardingModal';
@@ -545,6 +546,16 @@ export default function App() {
         {currentMode === 'open_source' && (
           <div className="space-y-6">
             <OpenSourcePortal
+              onNavigateToCalendar={() => setCurrentMode('calendar')}
+              studentProfile={studentProfile}
+            />
+          </div>
+        )}
+
+        {/* PORTAL 5: Hackathons Portal (Prompt 42) */}
+        {currentMode === 'hackathons' && (
+          <div className="space-y-6">
+            <HackathonsPortal
               onNavigateToCalendar={() => setCurrentMode('calendar')}
               studentProfile={studentProfile}
             />

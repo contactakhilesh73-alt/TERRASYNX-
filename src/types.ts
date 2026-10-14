@@ -377,6 +377,7 @@ export type OperationalMode =
   | 'scholarships'   // 2. Scholarships: scholarship_12th, global_full_ride, pre_university_full_ride
   | 'research_fellowships' // 3. Research & Fellowships: scientific_lab, academic_fellowship
   | 'open_source'    // 4. Open Source: open_source_grant
+  | 'hackathons'     // 5. Global Hackathons: online, in-person, hybrid competitions (Prompt 42)
   | 'analytics'      // Real-Time Application Telemetry & Conversion Analytics (Phase 4 Point 1)
   | 'calendar'       // Automated Interview & Assessment Calendar Sync / Scheduler (Phase 4 Point 2)
   | 'mock_interview' // Real-Time Mock Interview Simulator & STAR Response Coach (Phase 7 Point 1)
@@ -1102,5 +1103,31 @@ export interface CompanyRedFlagReport {
   totalFlagsCount: number;
 }
 
+// ============================================================================
+// PROMPT 42: GLOBAL HACKATHONS MODEL SPECIFICATION
+// ============================================================================
 
+export type HackathonMode = 'online' | 'in-person' | 'hybrid';
+export type HackathonSource = 'devpost-live' | 'recurring-series';
+export type HackathonStatusTab = 'OPEN_NOW' | 'UPCOMING' | 'PASSED';
 
+export interface Hackathon {
+  id: string;
+  name: string;
+  organizer: string;
+  mode: HackathonMode;
+  country: string; // 'Online/Global' when virtual
+  themes: string[];
+  eligibilityText: string;
+  entryFeeText: string;
+  prizeText: string;
+  startDate: string;
+  endDate: string;
+  registrationDeadline: string;
+  officialUrl: string;
+  source: HackathonSource;
+  description?: string;
+  locationDetails?: string;
+  datesNote?: string; // Prompt 44: "Dates change every edition, confirm on the official page"
+  spocNote?: string; // Prompt 44: "Show the SPOC note on the SIH card"
+}

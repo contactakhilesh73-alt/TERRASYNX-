@@ -12,6 +12,7 @@ import { logger } from './src/utils/logger';
 import { resolveCanonicalApplyUrl, sanitizeOpportunityUrls } from './src/utils/portalUrlResolver';
 import { HONEST_USER_AGENT, validateSafeTargetUrl, isHostnameAllowed, isPrivateOrLocalIp } from './src/services/linkAllowlistService';
 import { AtsClosureDetectionService } from './src/services/atsClosureDetectionService';
+import { Hackathon, HackathonMode } from './src/types';
 
 const app = express();
 const PORT = 3000;
@@ -181,6 +182,193 @@ app.get('/api/health/check-url', async (req, res) => {
       isAlive: false,
       state: 'UNKNOWN',
       error: err?.message || 'Check timed out or failed',
+    });
+  }
+});
+
+// ============================================================================
+// PROMPT 43: DEVPOST LIVE HACKATHONS FEED WITH 60-MINUTE SHARED CACHE
+// ============================================================================
+
+let devpostHackathonsCache: {
+  timestamp: number;
+  data: Hackathon[];
+} | null = null;
+const DEVPOST_CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes shared across all users
+
+function parseDevpostDates(dateStr: string): { startDate: string; endDate: string; registrationDeadline: string } | null {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const normalized = dateStr.replace(/\s+/g, ' ').trim();
+  const parts = normalized.split(/–|-/).map(s => s.trim());
+
+  if (parts.length === 2) {
+    const endRaw = parts[1];
+    const yearMatch = endRaw.match(/\b(20\d\d)\b/);
+    const year = yearMatch ? yearMatch[1] : new Date().getFullYear().toString();
+    const startRaw = parts[0].match(/\b(20\d\d)\b/) ? parts[0] : `${parts[0]}, ${year}`;
+
+    const startDate = new Date(startRaw);
+    const endDate = new Date(endRaw);
+
+    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+      const startIso = startDate.toISOString().split('T')[0];
+      const endIso = endDate.toISOString().split('T')[0];
+      return {
+        startDate: startIso,
+        endDate: endIso,
+        registrationDeadline: endIso,
+      };
+    }
+  } else if (parts.length === 1 && parts[0].length > 0) {
+    const d = new Date(parts[0]);
+    if (!isNaN(d.getTime())) {
+      const iso = d.toISOString().split('T')[0];
+      return { startDate: iso, endDate: iso, registrationDeadline: iso };
+    }
+  }
+
+  return null;
+}
+
+app.get('/api/hackathons/live', async (req, res) => {
+  try {
+    const force = req.query.force === 'true';
+    const simulateError = req.query.simulate_error === 'true';
+    if (simulateError) {
+      throw new Error('Simulated upstream network error');
+    }
+
+    const now = Date.now();
+
+    // Shared 60-minute in-memory cache
+    if (!force && devpostHackathonsCache && (now - devpostHackathonsCache.timestamp < DEVPOST_CACHE_TTL_MS)) {
+      return res.json({
+        success: true,
+        cached: true,
+        count: devpostHackathonsCache.data.length,
+        hackathons: devpostHackathonsCache.data,
+      });
+    }
+
+    const liveHackathons: Hackathon[] = [];
+    const MAX_PAGES = 3;
+    let anyPageSucceeded = false;
+
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      if (page > 1) {
+        // short delay between page fetches
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      const devpostUrl = `https://devpost.com/api/hackathons?page=${page}`;
+      const response = await fetch(devpostUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': HONEST_USER_AGENT, // 'TerrasynxLinkChecker/1.0'
+          'Accept': 'application/json',
+        },
+        signal: AbortSignal.timeout(6000),
+      });
+
+      if (!response.ok) {
+        logger.warn('DevpostLiveFeed', `Devpost API returned HTTP ${response.status} on page ${page}`);
+        break;
+      }
+
+      const json = await response.json();
+      const rawList = Array.isArray(json?.hackathons) ? json.hackathons : [];
+      anyPageSucceeded = true;
+
+      for (const item of rawList) {
+        // Validation: skip any item that lacks a title, an https URL or dates. Do not guess missing fields.
+        if (!item || typeof item !== 'object') continue;
+        if (!item.title || typeof item.title !== 'string' || item.title.trim().length === 0) continue;
+        if (!item.url || typeof item.url !== 'string' || !item.url.startsWith('https://')) continue;
+        if (!item.submission_period_dates || typeof item.submission_period_dates !== 'string' || item.submission_period_dates.trim().length === 0) continue;
+
+        const parsedDates = parseDevpostDates(item.submission_period_dates);
+        if (!parsedDates || !parsedDates.startDate || !parsedDates.endDate) continue;
+
+        // Determine mode and country without guessing
+        const loc = item.displayed_location?.location || '';
+        let mode: HackathonMode = 'online';
+        let country = 'Online/Global';
+
+        if (loc.toLowerCase().includes('online')) {
+          mode = 'online';
+          country = 'Online/Global';
+        } else if (loc.trim().length > 0) {
+          if (loc.toLowerCase().includes('hybrid')) {
+            mode = 'hybrid';
+            country = loc.trim();
+          } else {
+            mode = 'in-person';
+            country = loc.trim();
+          }
+        }
+
+        const rawPrize = item.prize_amount ? item.prize_amount.replace(/<[^>]+>/g, '').trim() : '';
+        const prizeText = rawPrize && rawPrize.length > 0 ? rawPrize : 'Not listed';
+
+        const rawThemes = Array.isArray(item.themes)
+          ? item.themes.map((t: any) => (typeof t === 'string' ? t : t?.name)).filter(Boolean)
+          : [];
+
+        const hackathon: Hackathon = {
+          id: `devpost_${item.id || Math.random().toString(36).slice(2, 9)}`,
+          name: item.title.trim(),
+          organizer: item.organization_name ? item.organization_name.trim() : 'Devpost Community',
+          mode,
+          country,
+          themes: rawThemes,
+          eligibilityText: item.eligibility_requirement_invite_only_description
+            ? item.eligibility_requirement_invite_only_description.trim()
+            : (item.invite_only ? 'Invite Only' : 'Open to all eligible participants on Devpost'),
+          entryFeeText: '100% Free Entry',
+          prizeText,
+          startDate: parsedDates.startDate,
+          endDate: parsedDates.endDate,
+          registrationDeadline: parsedDates.registrationDeadline,
+          officialUrl: item.url.trim(),
+          source: 'devpost-live',
+          description: typeof item.analytics_identifier === 'string' ? item.analytics_identifier : undefined,
+        };
+
+        liveHackathons.push(hackathon);
+      }
+    }
+
+    if (!anyPageSucceeded) {
+      // On any failure return an empty list and show "Live hackathon feed temporarily unavailable".
+      // Never add hardcoded fallback hackathons.
+      return res.status(200).json({
+        success: false,
+        hackathons: [],
+        message: 'Live hackathon feed temporarily unavailable',
+      });
+    }
+
+    // Cache the validated result for 60 minutes
+    devpostHackathonsCache = {
+      timestamp: now,
+      data: liveHackathons,
+    };
+
+    return res.json({
+      success: true,
+      count: liveHackathons.length,
+      hackathons: liveHackathons,
+      cached: false,
+    });
+  } catch (err: any) {
+    logger.error('DevpostLiveFeed', 'Live hackathon feed temporarily unavailable', err);
+    // On any failure return an empty list and show "Live hackathon feed temporarily unavailable".
+    // Never add hardcoded fallback hackathons.
+    return res.status(200).json({
+      success: false,
+      hackathons: [],
+      message: 'Live hackathon feed temporarily unavailable',
+      error: err?.message || 'Upstream fetch failure',
     });
   }
 });

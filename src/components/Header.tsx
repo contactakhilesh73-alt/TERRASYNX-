@@ -39,7 +39,8 @@ import {
   FlaskConical,
   GitBranch,
   BookOpen,
-  Radio
+  Radio,
+  Trophy
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -413,6 +414,22 @@ export const Header: React.FC<HeaderProps> = ({
             <span>Open Source Programs</span>
             <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-purple-950 text-purple-300 border border-purple-800 font-mono">
               Grants
+            </span>
+          </button>
+
+          {/* Top-Level Portal 5: Global Hackathons (Prompt 42) */}
+          <button
+            onClick={() => onModeChange('hackathons')}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              currentMode === 'hackathons'
+                ? 'bg-orange-500/20 text-orange-200 border border-orange-500/50 shadow-sm shadow-orange-900/50'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5 text-orange-400" />
+            <span>Hackathons</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-orange-950 text-orange-300 border border-orange-800 font-mono">
+              Live &amp; Global
             </span>
           </button>
 

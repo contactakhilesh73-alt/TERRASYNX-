@@ -133,6 +133,11 @@ function buildProgramAllowlist(): { allowedHostnames: Set<string>; allowedRoots:
     'builtin.com',
     'news.ycombinator.com',
     'clearbit.com',
+    // Prompt 43: Hackathon platforms and official national competition domains
+    'devpost.com',
+    'mlh.io',
+    'mlh.com',
+    'sih.gov.in',
   ];
   for (const h of coreAtsHostnames) {
     ingest(h);

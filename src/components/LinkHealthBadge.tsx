@@ -3,7 +3,8 @@ import { UrlHealthResolver, UrlHealthState } from '../services/urlHealthResolver
 import { CheckCircle2, AlertTriangle, XCircle, Loader2 } from 'lucide-react';
 
 interface LinkHealthBadgeProps {
-  url: string;
+  url?: string;
+  targetUrl?: string;
   companyDomain?: string;
   className?: string;
   compact?: boolean;
@@ -11,23 +12,25 @@ interface LinkHealthBadgeProps {
 
 export const LinkHealthBadge: React.FC<LinkHealthBadgeProps> = ({
   url,
+  targetUrl,
   companyDomain,
   className = '',
   compact = false,
 }) => {
+  const effectiveUrl = url || targetUrl || '';
   const [state, setState] = useState<UrlHealthState | 'CHECKING'>('CHECKING');
   const [displayText, setDisplayText] = useState<string>('Verifying link...');
 
   useEffect(() => {
     let isMounted = true;
-    if (!url) {
+    if (!effectiveUrl) {
       setState('UNKNOWN');
       setDisplayText('Could not verify, check the official page');
       return;
     }
 
     setState('CHECKING');
-    UrlHealthResolver.probeUrlHealth(url, companyDomain)
+    UrlHealthResolver.probeUrlHealth(effectiveUrl, companyDomain)
       .then((status) => {
         if (!isMounted) return;
         setState(status.state);
