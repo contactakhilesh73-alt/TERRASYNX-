@@ -229,22 +229,46 @@ export const HackathonWhitePageModal: React.FC<HackathonWhitePageModalProps> = (
               </div>
             </div>
 
-            {/* SECTION 1: PAY RATE, PRIZES & PERKS */}
+            {/* SECTION 1: RANK-WISE PRIZE BREAKDOWN (WINNER KO KYA MILEGA) */}
             <div className="rounded-lg border border-slate-200 overflow-hidden">
-              <div className="bg-slate-100 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 flex items-center gap-2">
-                <Trophy className="w-3.5 h-3.5 text-orange-600" />
-                <span>1. Compensation, Prize Pool & Student Benefits</span>
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-900 border-b border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-orange-600" />
+                  <span>1. Official Rank-Wise Prize Matrix & Rewards</span>
+                </div>
+                <span className="text-[11px] font-bold text-orange-700 bg-orange-100/80 px-2 py-0.5 rounded border border-orange-300">
+                  Total Pool: {blueprint.overallPrizePool}
+                </span>
               </div>
-              <div className="p-4 text-xs text-slate-700 space-y-2 leading-relaxed">
-                <p>
-                  <strong>Total Listed Prizes:</strong> <span className="text-slate-950 font-bold">{hackathon.prizeText}</span>
-                </p>
-                <p>
-                  <strong>Entry Fee:</strong> <span className="text-emerald-700 font-semibold">{hackathon.entryFeeText || '100% Free - Verified Zero Fee'}</span>
-                </p>
+              <div className="p-4 text-xs text-slate-700 space-y-3 leading-relaxed">
                 <p className="text-slate-600">
-                  Participants receive access to official mentor hours, digital participant certificates, sponsor platform credits, and potential interview fast-tracks for top performing teams.
+                  Direct official awards distributed per verified rank tier, plus perks and platform benefits guaranteed for all participating student builders:
                 </p>
+                <div className="space-y-2.5">
+                  {blueprint.prizeTiers.map((tier, idx) => (
+                    <div 
+                      key={tier.rankTitle} 
+                      className={`p-3 rounded-lg border ${idx === 0 ? 'bg-amber-50/70 border-amber-300' : 'bg-slate-50 border-slate-200'}`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${idx === 0 ? 'bg-amber-500 text-slate-950' : 'bg-slate-200 text-slate-800'}`}>
+                            {idx + 1}
+                          </span>
+                          <strong className="text-slate-900 text-xs">{tier.rankTitle}</strong>
+                        </div>
+                        <span className="font-mono font-bold text-orange-600 text-xs sm:text-right">
+                          {tier.prizeAmount}
+                        </span>
+                      </div>
+                      <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-slate-600">
+                        {tier.perks.map((perk, pIdx) => (
+                          <li key={pIdx}>{perk}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -252,7 +276,7 @@ export const HackathonWhitePageModal: React.FC<HackathonWhitePageModalProps> = (
             <div className="rounded-lg border border-slate-200 overflow-hidden">
               <div className="bg-slate-100 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 flex items-center gap-2">
                 <Clock className="w-3.5 h-3.5 text-orange-600" />
-                <span>2. Official Timing, Dates & Schedule</span>
+                <span>2. Official Timing, Dates & Registration Deadline</span>
               </div>
               <div className="p-4 text-xs text-slate-700 space-y-2 leading-relaxed">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -298,46 +322,177 @@ export const HackathonWhitePageModal: React.FC<HackathonWhitePageModalProps> = (
               </div>
             </div>
 
-            {/* SECTION 4: THEMES & APPROVED TRACKS */}
+            {/* SECTION 4: WHAT PROJECT TO BUILD & DELIVERABLES */}
             <div className="rounded-lg border border-slate-200 overflow-hidden">
               <div className="bg-slate-100 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-orange-600" />
-                <span>4. Competition Tracks & Problem Themes</span>
+                <Target className="w-3.5 h-3.5 text-orange-600" />
+                <span>4. What Project to Build: Problem Statements & Deliverables</span>
               </div>
-              <div className="p-4 text-xs text-slate-700 space-y-2">
-                <p>Participants are invited to develop solutions aligning with one or more of the following official focus domains:</p>
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {hackathon.themes && hackathon.themes.length > 0 ? (
-                    hackathon.themes.map(t => (
-                      <span 
-                        key={t}
-                        className="px-2.5 py-1 rounded bg-slate-100 text-slate-800 font-mono text-[11px] font-semibold border border-slate-300"
-                      >
-                        #{t}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="px-2.5 py-1 rounded bg-slate-100 text-slate-800 font-mono text-[11px]">#OpenInnovation</span>
-                  )}
+              <div className="p-4 text-xs text-slate-700 space-y-3 leading-relaxed">
+                <div>
+                  <strong className="text-slate-900 block mb-1">Target Solution Scope:</strong>
+                  <p className="text-slate-800 bg-slate-50 p-2.5 rounded border border-slate-200 text-xs">
+                    {blueprint.strategy.projectScope.whatToBuild}
+                  </p>
+                </div>
+
+                <div>
+                  <strong className="text-slate-900 block mb-1.5">Official Problem Statements / Target Use Cases:</strong>
+                  <ul className="list-disc pl-5 space-y-1 text-xs text-slate-700">
+                    {blueprint.strategy.projectScope.targetProblemStatements.map((ps, idx) => (
+                      <li key={idx}><span className="text-slate-900 font-medium">{ps}</span></li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <strong className="text-slate-900 block mb-1.5">Mandatory Submission Deliverables (Official Portal Requirement):</strong>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {blueprint.strategy.projectScope.mandatoryDeliverables.map((deliv, idx) => (
+                      <div key={idx} className="p-2.5 rounded bg-slate-50 border border-slate-200">
+                        <span className="font-bold text-slate-900 block mb-0.5">{deliv.title}</span>
+                        <p className="text-[11px] text-slate-600 leading-normal">{deliv.requirement}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* SECTION 5: DELIVERABLES & TECHNICAL REQUIREMENTS */}
+            {/* SECTION 5: TECHNICAL ARCHITECTURE & PERFORMANCE SLAS */}
             <div className="rounded-lg border border-slate-200 overflow-hidden">
               <div className="bg-slate-100 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 flex items-center gap-2">
-                <FileText className="w-3.5 h-3.5 text-orange-600" />
-                <span>5. Mandatory Submission Deliverables</span>
+                <Code2 className="w-3.5 h-3.5 text-orange-600" />
+                <span>5. Recommended Stack & High Performance SLAs</span>
               </div>
-              <div className="p-4 text-xs text-slate-700 leading-relaxed">
-                <ul className="list-disc pl-5 space-y-1.5">
-                  <li><strong>Source Code Repository:</strong> Public GitHub / GitLab repository containing working code and step-by-step README instructions.</li>
-                  <li><strong>Demonstration Video:</strong> 2-3 minute recorded video walkthrough displaying core features and user flow.</li>
-                  <li><strong>Project Presentation:</strong> Problem definition, architecture diagram, tech stack, and future roadmap.</li>
-                  <li><strong>Original Work Certification:</strong> Submissions must be newly constructed during the official hacking duration.</li>
-                </ul>
+              <div className="p-4 text-xs text-slate-700 space-y-3 leading-relaxed">
+                <div>
+                  <span className="text-slate-500 font-mono text-[11px] block mb-1">Recommended Tech Stack:</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {blueprint.strategy.architecturalGuidance.recommendedStack.map((tech, idx) => (
+                      <span key={idx} className="px-2 py-0.5 rounded bg-slate-100 text-slate-900 font-mono text-[11px] font-semibold border border-slate-300">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-slate-500 font-mono text-[11px] block mb-1">Core System Capabilities:</span>
+                  <ul className="list-disc pl-5 space-y-0.5 text-xs text-slate-700">
+                    {blueprint.strategy.architecturalGuidance.coreCapabilities.map((cap, idx) => (
+                      <li key={idx}>{cap}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <span className="text-slate-500 font-mono text-[11px] block mb-1">Performance & Capability SLAs:</span>
+                  <ul className="list-disc pl-5 space-y-0.5 text-xs text-emerald-800 font-medium">
+                    {blueprint.strategy.architecturalGuidance.performanceAndSlas.map((sla, idx) => (
+                      <li key={idx}>⚡ {sla}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
+
+            {/* SECTION 6: THE WINNING EDGE (REQUIREMENT SE UPAR UTHKAR) */}
+            <div className="rounded-lg border border-purple-300 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-purple-950 border-b border-purple-200 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-purple-600" />
+                <span>6. The Winning Edge: Features Beyond Baseline to Outrank Competitors</span>
+              </div>
+              <div className="p-4 text-xs text-slate-700 space-y-3 leading-relaxed">
+                <p className="text-slate-600">
+                  To achieve Rank 1 out of hundreds of global teams, integrate capabilities that exceed normal prompt wrappers and address hard architectural challenges:
+                </p>
+                <div className="space-y-2.5">
+                  {blueprint.strategy.winningEdgeFeatures.map((feat, idx) => (
+                    <div key={idx} className="p-3 rounded-lg bg-purple-50/60 border border-purple-200">
+                      <div className="font-bold text-purple-900 text-xs mb-1 flex items-center gap-1.5">
+                        <Award className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                        <span>{feat.featureName}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-700 mb-1">
+                        <strong>Why It Beats Others:</strong> {feat.whyItOutranksCompetitors}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono bg-white/80 p-1.5 rounded border border-purple-100">
+                        Technical Implementation: {feat.technicalDepthDescription}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Multi-AI Model Guidance */}
+                {blueprint.strategy.aiIntelligenceAdvice && blueprint.strategy.aiIntelligenceAdvice.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-purple-200">
+                    <strong className="text-purple-950 text-xs block mb-2">Multi-AI Synthesis Strategy (Claude, ChatGPT, Gemini, Cursor):</strong>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {blueprint.strategy.aiIntelligenceAdvice.map((ai, idx) => (
+                        <div key={idx} className="p-2.5 rounded bg-white border border-slate-200">
+                          <span className="font-bold text-slate-900 block text-[11px]">🤖 {ai.modelSource}</span>
+                          <p className="text-[10px] text-slate-600 mt-0.5">{ai.strategicAdvantage}</p>
+                          <p className="text-[9.5px] font-mono text-purple-700 mt-1 bg-purple-50 p-1 rounded">
+                            {ai.tacticalPromptTip}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECTION 7: JUDGING RUBRIC & HOW TO SCORE 10/10 */}
+            <div className="rounded-lg border border-slate-200 overflow-hidden">
+              <div className="bg-slate-100 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
+                <span>7. Official Judging Rubric & Max Score Strategy</span>
+              </div>
+              <div className="p-4 text-xs text-slate-700 space-y-2 leading-relaxed">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {blueprint.strategy.judgingRubricBreakdown.map((rubric, idx) => (
+                    <div key={idx} className="p-2.5 rounded bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between font-bold text-slate-900 text-xs mb-1">
+                        <span>{rubric.criteria}</span>
+                        <span className="text-orange-600 font-mono">{rubric.weightPercentage}%</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 leading-normal">{rubric.howToScoreMax}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 8: 48-HOUR TACTICAL SPRINT ROADMAP */}
+            {blueprint.strategy.executionRoadmap48h && blueprint.strategy.executionRoadmap48h.length > 0 && (
+              <div className="rounded-lg border border-slate-200 overflow-hidden">
+                <div className="bg-slate-100 px-4 py-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 flex items-center gap-2">
+                  <Calendar className="w-3.5 h-3.5 text-orange-600" />
+                  <span>8. 48-Hour Tactical Sprint Execution Roadmap</span>
+                </div>
+                <div className="p-4 text-xs text-slate-700 space-y-2 leading-relaxed">
+                  <div className="space-y-2">
+                    {blueprint.strategy.executionRoadmap48h.map((step, idx) => (
+                      <div key={idx} className="p-2.5 rounded bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-start gap-2">
+                        <span className="font-mono font-bold text-orange-600 text-[11px] shrink-0 sm:w-28">
+                          {step.timeframe}
+                        </span>
+                        <div className="flex-1">
+                          <strong className="text-slate-900 text-xs block mb-0.5">{step.focus}</strong>
+                          <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-slate-600">
+                            {step.deliverables.map((d, dIdx) => (
+                              <li key={dIdx}>{d}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* STUDENT APPLICATION TRACKING RECORD (if tracked) */}
             {applicationRecord && (

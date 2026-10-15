@@ -458,14 +458,14 @@ export class HackathonTrackingService {
       <div class="meta-box">
         <div>Ref: <strong>${escapeHtml(docSerial)}</strong></div>
         <div>Date: <strong>${escapeHtml(reportDate)}</strong></div>
-        <div>Entry: <strong>100% Free Verified</strong></div>
+        <div>Entry: <strong>100% Free Guarantee</strong></div>
       </div>
     </div>
 
     <!-- Official Guarantee Ribbon -->
     <div class="status-ribbon">
       <div>
-        🔒 Verified Official Publication: Data directly synchronized from host portal. Zero third-party fees.
+        🔒 Verified Official Publication: 100% Free Guarantee. Data directly synchronized from host portal. Zero third-party fees.
       </div>
       <div>
         Status: <strong>${escapeHtml(hackathon.status)}</strong>
@@ -633,6 +633,49 @@ export class HackathonTrackingService {
             `).join('')}
           </div>
         </div>
+
+        ${blueprint.strategy.executionRoadmap48h && blueprint.strategy.executionRoadmap48h.length > 0 ? `
+        <div style="margin-top: 10px;">
+          <strong>48-Hour Tactical Sprint Execution Roadmap:</strong>
+          <table class="prize-table" style="margin-top: 4px;">
+            <thead>
+              <tr>
+                <th style="width: 25%;">Timeframe</th>
+                <th style="width: 35%;">Sprint Milestone Focus</th>
+                <th style="width: 40%;">Key Deliverables</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${blueprint.strategy.executionRoadmap48h.map(step => `
+                <tr>
+                  <td><strong>${escapeHtml(step.timeframe)}</strong></td>
+                  <td style="color: #0f172a; font-weight: 600;">${escapeHtml(step.focus)}</td>
+                  <td>
+                    <ul style="padding-left: 14px; margin: 0; font-size: 7.5pt;">
+                      ${step.deliverables.map(d => `<li>${escapeHtml(d)}</li>`).join('')}
+                    </ul>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        ` : ''}
+
+        ${blueprint.strategy.aiIntelligenceAdvice && blueprint.strategy.aiIntelligenceAdvice.length > 0 ? `
+        <div style="margin-top: 10px;">
+          <strong>Multi-AI Model Strategic Synthesis (Claude, ChatGPT, Gemini & Cursor):</strong>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 4px;">
+            ${blueprint.strategy.aiIntelligenceAdvice.map(ai => `
+              <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px 8px; font-size: 7.5pt;">
+                <div style="font-weight: 800; color: #0f172a;">🤖 ${escapeHtml(ai.modelSource)}</div>
+                <div style="color: #334155; margin-top: 2px;"><strong>Advantage:</strong> ${escapeHtml(ai.strategicAdvantage)}</div>
+                <div style="color: #64748b; font-family: monospace; margin-top: 2px;">Prompt: ${escapeHtml(ai.tacticalPromptTip)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
       </div>
     </div>
 

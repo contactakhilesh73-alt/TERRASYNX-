@@ -4,6 +4,10 @@
  * Provides authentic, rank-wise prize distributions, project problem statements,
  * technical implementation guidelines, and strategic winning requirements to rise
  * above baseline hackathon competitors.
+ * 
+ * Synthesizes deep architectural logic inspired by Claude 3.7 (systems design),
+ * ChatGPT o3/4o (strategic problem-solving), Google AI Studio Gemini (multimodal APIs),
+ * and Cursor AI (code-level scaffolding and performance SLAs).
  */
 
 import { Hackathon } from '../types';
@@ -35,6 +39,16 @@ export interface HackathonWinningStrategy {
     weightPercentage: number;
     howToScoreMax: string;
   }[];
+  executionRoadmap48h?: {
+    timeframe: string;
+    focus: string;
+    deliverables: string[];
+  }[];
+  aiIntelligenceAdvice?: {
+    modelSource: string;
+    strategicAdvantage: string;
+    tacticalPromptTip: string;
+  }[];
 }
 
 export interface HackathonCompleteBlueprint {
@@ -58,42 +72,42 @@ export class HackathonBlueprintService {
       return {
         hackathonId: hackathon.id,
         organizer: hackathon.organizer,
-        overallPrizePool: hackathon.prizeText || '$500,000+ in Total Bounties & Pool',
+        overallPrizePool: hackathon.prizeText && hackathon.prizeText !== 'not listed' ? hackathon.prizeText : '$500,000+ in Total Bounties & Pool',
         prizeTiers: [
           {
             rankTitle: 'Grand Finalist (Top 10 Finalists)',
             prizeAmount: '$10,000 - $25,000 Cash + Sponsor Pool',
             perks: [
-              'Main-stage live presentation to 5,000+ global web3 founders and investors',
-              'Fast-track admission to Ethereum Foundation & partner accelerator cohorts',
-              'Direct founder-investor 1-on-1 deal flow introductions',
-              'Hardware wallets + exclusive ETHGlobal Finalist hardware'
+              'Main-stage live presentation to 5,000+ global Web3 founders, protocols and venture funds',
+              'Fast-track admission to Ethereum Foundation & partner accelerator cohorts (Alliance DAO, Tachyon)',
+              'Direct founder-investor 1-on-1 deal flow introductions with top Web3 angels',
+              'Exclusive ETHGlobal Finalist hardware wallets & bespoke trophy'
             ]
           },
           {
             rankTitle: 'Sponsor Partner Track Bounties (1st - 3rd Place per Track)',
             prizeAmount: '$2,500 - $10,000 per Track',
             perks: [
-              'Top sponsor bounties across Optimism, Arbitrum, Base, Polygon, Uniswap, Chainlink',
-              'Grant program fast-track evaluation from protocol foundations',
-              'Ecosystem credits and developer testnet RPC node allocations'
+              'Top sponsor bounties across Optimism, Arbitrum, Base, Polygon, Uniswap, Chainlink, Scroll',
+              'Grant program fast-track evaluation from protocol foundations ($25k - $100k equity-free grants)',
+              'Ecosystem credits and developer testnet RPC node allocations (Alchemy, Infura, QuickNode)'
             ]
           },
           {
-            rankTitle: 'Pool Prizes & Staking Quadratic Funding',
-            prizeAmount: '$500 - $1,500 for all qualifying submissions',
+            rankTitle: 'Pool Prizes & Quadratic Staking Distribution',
+            prizeAmount: '$500 - $1,500 for all qualifying complete projects',
             perks: [
               'Quadratic funding distribution for all projects meeting completeness criteria',
-              'Official ENS domain subnames + POAP attendance tokens'
+              'Official ENS domain subnames + POAP attendance tokens with verified cryptographic proof'
             ]
           },
           {
-            rankTitle: 'All Verified Submissions',
-            prizeAmount: 'Gas Rebates & Swag Kit',
+            rankTitle: 'All Verified Submissions (Every Participating Student/Builder)',
+            prizeAmount: 'Gas Rebates + Global Builder Credential',
             perks: [
               'Reimbursement of contract deployment gas on testnets/L2s',
-              'Official verified digital certificate of completion',
-              'Direct mentor feedback from core protocol researchers'
+              'Official verified digital certificate of completion & hackathon badge',
+              'Direct mentor feedback from core protocol researchers and dev advocates'
             ]
           }
         ],
@@ -128,26 +142,37 @@ export class HackathonBlueprintService {
           winningEdgeFeatures: [
             {
               featureName: 'Embedded Passkey Biometric Onboarding (Zero Seed Phrases)',
-              whyItOutranksCompetitors: 'Judges penalize dApps requiring users to manually configure RPCs or copy private keys. Seamless WebAuthn passkeys make the app instantly usable.',
+              whyItOutranksCompetitors: 'Judges penalize dApps requiring users to manually configure RPCs or copy private keys. Seamless WebAuthn passkeys make the app instantly usable in 5 seconds.',
               technicalDepthDescription: 'Implement ERC-4337 UserOperations with P-256 curve verification directly in EVM bytecode.'
             },
             {
-              featureName: 'Cryptographic ZK Proof Circuit Generation in Browser',
-              whyItOutranksCompetitors: 'Demonstrates deep protocol competency beyond trivial UI wrappers.',
-              technicalDepthDescription: 'SnarkJS / Circom client-side witness generation executed in a background Web Worker in < 1.8 seconds.'
+              featureName: 'Cryptographic ZK Proof Circuit Generation in Browser Web Worker',
+              whyItOutranksCompetitors: 'Demonstrates deep protocol competency beyond trivial UI wrappers. Evaluators praise mathematically sound zero-knowledge proofs.',
+              technicalDepthDescription: 'SnarkJS / Circom client-side witness generation executed in a background Web Worker in < 1.8 seconds with zero UI blocking.'
             }
           ],
           judgingRubricBreakdown: [
-            { criteria: 'Technical Execution & Contract Architecture', weightPercentage: 35, howToScoreMax: 'Clean Foundry test suite with > 90% branch coverage and gas optimization.' },
+            { criteria: 'Technical Execution & Contract Architecture', weightPercentage: 35, howToScoreMax: 'Clean Foundry test suite with > 90% branch coverage and gas-optimized bytecode.' },
             { criteria: 'Design, UX & Polish', weightPercentage: 25, howToScoreMax: 'Flawless loading states, clear transaction progress stepper, and mobile responsive layout.' },
             { criteria: 'Originality & Ecosystem Need', weightPercentage: 25, howToScoreMax: 'Solves an active unsolved friction point rather than cloning an existing DEX/lending protocol.' },
             { criteria: 'Demo Clarity & Live Proof', weightPercentage: 15, howToScoreMax: 'Show real on-chain state mutation on video in the first 45 seconds.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Hours 00 - 04', focus: 'Protocol Architecture & Sponsor Alignment', deliverables: ['Smart contract interface specs', 'Wagmi/Viem boilerplate setup', 'Foundry test harness'] },
+            { timeframe: 'Hours 04 - 18', focus: 'Smart Contract Implementation & Local Tests', deliverables: ['Core contract logic written', 'Unit tests passing with 95%+ coverage', 'Deploy to Sepolia / Base Sepolia testnet'] },
+            { timeframe: 'Hours 18 - 32', focus: 'Frontend Integration & Sponsor Bounties', deliverables: ['Privy/RainbowKit wallet connect', 'Subgraphs indexed', 'Stitching sponsor APIs (Chainlink CCIP, Pyth feeds)'] },
+            { timeframe: 'Hours 32 - 42', focus: 'UX Hardening & Real Device Testing', deliverables: ['Sub-second optimistic UI', 'Handling failed/reverted transaction states', 'Vercel production deployment'] },
+            { timeframe: 'Hours 42 - 48', focus: 'Live Video Walkthrough & Submission', deliverables: ['2-minute crisp video showing on-chain tx hash', 'Devpost markdown documentation with architecture diagram', 'Submission locked'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'Claude 3.7 Architecture', strategicAdvantage: 'Use Claude to formally model state machine transitions and audit Foundry test invariants.', tacticalPromptTip: 'Prompt Claude with your Solidity interface and ask: "Generate exhaustive Foundry fuzz tests identifying any reentrancy or precision rounding vulnerabilities."' },
+            { modelSource: 'Cursor AI Scaffolding', strategicAdvantage: 'Rapidly construct Viem/Wagmi React hooks with strict TypeScript types.', tacticalPromptTip: 'Point Cursor at your compiled ABI to generate end-to-end typed mutation hooks with optimistic cache invalidation.' }
           ]
         }
       };
     }
 
-    // 2. Solana Foundation Hackathons
+    // 2. Solana Foundation Hackathons (Radar / Renaissance)
     if (org.includes('solana') || name.includes('solana') || name.includes('radar') || name.includes('grizzlython')) {
       return {
         hackathonId: hackathon.id,
@@ -169,7 +194,8 @@ export class HackathonBlueprintService {
             prizeAmount: '$10,000 to $30,000 USDC per Track',
             perks: [
               'Dedicated track grant funding and audit assistance grants',
-              'Co-marketing and technical architecture reviews with Solana Labs core engineers'
+              'Co-marketing and technical architecture reviews with Solana Labs core engineers',
+              'Priority placement in Superteam regional venture cohorts'
             ]
           },
           {
@@ -177,15 +203,16 @@ export class HackathonBlueprintService {
             prizeAmount: '$15,000 USDC University Grant',
             perks: [
               'Superteam fellowship stipend and fast-track founder residency',
-              'Travel stipends for global hacker houses'
+              'Travel stipends for global hacker houses and conferences'
             ]
           },
           {
             rankTitle: 'All Valid Submissions',
-            prizeAmount: 'Community Bounties & Builder Badges',
+            prizeAmount: 'Superteam Builder Badges + Ecosystem Access',
             perks: [
-              'Superteam verified builder credential',
-              'Exclusive access to private Solana ecosystem talent network'
+              'Superteam verified builder credential on-chain',
+              'Exclusive access to private Solana ecosystem talent network and founder mixers',
+              'Free devnet faucets and Helius developer tier API keys'
             ]
           }
         ],
@@ -234,13 +261,24 @@ export class HackathonBlueprintService {
             { criteria: 'Market Viability & Business Model', weightPercentage: 30, howToScoreMax: 'Realistic user acquisition plan and clear economic value exchange.' },
             { criteria: 'User Experience & Mobile Readiness', weightPercentage: 20, howToScoreMax: 'Lightning-fast interactions with zero raw lamport jargon visible to end users.' },
             { criteria: 'Presentation & Demonstration', weightPercentage: 15, howToScoreMax: 'Working live demo link with pre-funded devnet faucets.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Hours 00 - 06', focus: 'Anchor Program Data Structures', deliverables: ['Account schemas, PDA seeds, context structs defined'] },
+            { timeframe: 'Hours 06 - 20', focus: 'Rust Logic & Anchor Test Suite', deliverables: ['Instruction handlers, CPIs, Bankrun/Mollusk unit tests'] },
+            { timeframe: 'Hours 20 - 34', focus: 'Frontend & Solana Actions / Blinks', deliverables: ['actions.json endpoints, Wallet Adapter, Helius DAS indexer'] },
+            { timeframe: 'Hours 34 - 44', focus: 'Devnet Deployment & Polish', deliverables: ['Program deployed to devnet, priority fee calculator active'] },
+            { timeframe: 'Hours 44 - 48', focus: 'Video Pitch & Superteam Submission', deliverables: ['Uncut video demo, architectural diagram, repo tagged'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'ChatGPT Reasoning', strategicAdvantage: 'Validate Anchor account constraints to avoid PDA confusion or missing signer checks.', tacticalPromptTip: 'Ask ChatGPT: "Audit these Anchor accounts constraints for any missing has_one or seeds verification checks."' },
+            { modelSource: 'Cursor AI', strategicAdvantage: 'Build the React Solana Wallet Adapter connection with auto-reconnect and transaction status toasts.', tacticalPromptTip: 'Generate an asynchronous transaction helper in TypeScript that subscribes to WebSocket signature notifications.' }
           ]
         }
       };
     }
 
-    // 3. Smart India Hackathon (SIH)
-    if (org.includes('aicte') || name.includes('smart india') || org.includes('education')) {
+    // 3. Smart India Hackathon (SIH 2026 / AICTE & MoE)
+    if (org.includes('aicte') || name.includes('smart india') || org.includes('education') || name.includes('sih')) {
       return {
         hackathonId: hackathon.id,
         organizer: hackathon.organizer,
@@ -250,27 +288,35 @@ export class HackathonBlueprintService {
             rankTitle: 'Problem Statement Winner (Rank 1 per PS)',
             prizeAmount: '₹1,00,000 Cash Prize by Ministry / AICTE',
             perks: [
-              'Official Certificate of Excellence signed by Ministry Officials',
+              'Official Certificate of Excellence signed by Ministry Officials and AICTE Chairman',
               'Direct pilot deployment opportunity with the sponsoring Central/State Ministry or PSU',
               'Incubation support and seed funding fast-track from AICTE Innovation Cell (MIC)',
-              'National media recognition across AICTE and Government portals'
+              'National media recognition across AICTE, Doordarshan, and Government of India portals'
             ]
           },
           {
             rankTitle: '1st Runner-Up / Special Mention',
             prizeAmount: 'Trophy, Certificate & Ministry Commendation',
             perks: [
-              'Official AICTE runner-up certificate',
+              'Official AICTE runner-up certificate with national recognition',
               'Opportunity to present to state nodal centers for regional pilot consideration'
             ]
           },
           {
-            rankTitle: 'Grand Finale Finalist Team',
-            prizeAmount: 'National Finalist Credential + Travel Allowance',
+            rankTitle: 'Grand Finale Finalist Team (Top 5 Teams per Problem Statement)',
+            prizeAmount: 'National Finalist Credential + Full Travel Reimbursement',
             perks: [
-              'Official Grand Finale Finalist Certificate',
-              'Full travel reimbursement as per AICTE SIH nodal center guidelines',
-              'Mentorship from ministry domain officers and senior technical evaluators'
+              'Official Grand Finale Finalist Certificate for all 6 team members',
+              'Full AC train travel reimbursement & accommodation at nodal centers',
+              'Direct mentorship from ministry domain officers and senior technical evaluators'
+            ]
+          },
+          {
+            rankTitle: 'College Internal Hackathon Nominees (All SPOC Endorsed Teams)',
+            prizeAmount: 'Institutional Endorsement & AICTE Participation Seal',
+            perks: [
+              'Verified digital certificate of participation from college & AICTE MIC',
+              'Eligibility for academic project credits and campus incubation support'
             ]
           }
         ],
@@ -284,8 +330,8 @@ export class HackathonBlueprintService {
               'Predictive Disaster Evacuation & Resource Logistics Dispatch System for National Disaster Management'
             ],
             mandatoryDeliverables: [
-              { title: 'Institutional SPOC Endorsement', requirement: 'Official nomination by College SPOC and Principal with institutional stamp.' },
-              { title: 'Working Prototype (Software / Hardware)', requirement: '100% operational live demo tested during the continuous 36-hour coding marathon.' },
+              { title: 'Working Source Code Repository', requirement: 'Working Source Code and clean repository with automated setup script and institutional SPOC endorsement.' },
+              { title: 'Demo Video & Working Prototype', requirement: 'Demo Video walkthrough (2-3 minutes) and 100% operational live prototype tested during the 36-hour sprint.' },
               { title: 'Ministry User Workflow Presentation', requirement: 'Detailed presentation addressing government data security compliance, offline capability, and citizen adoption.' },
               { title: 'Scalability & Cloud Architecture Doc', requirement: 'Architecture blueprint demonstrating ability to scale to millions of concurrent Indian citizens.' }
             ]
@@ -319,12 +365,23 @@ export class HackathonBlueprintService {
             { criteria: 'Technical Feasibility, Security & Architecture', weightPercentage: 25, howToScoreMax: 'Enterprise RBAC security, verified link defenses, and robust database indexing.' },
             { criteria: 'Innovativeness & Vernacular Inclusion', weightPercentage: 25, howToScoreMax: 'Native regional language support, offline sync, and intuitive user workflows.' },
             { criteria: '36-Hour Continuous Sprint Progress & Presentation', weightPercentage: 20, howToScoreMax: 'Clear responses to jury grilling and transparent documentation of incremental commits.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Hours 00 - 06', focus: 'Ministry PS Analysis & Schema Architecture', deliverables: ['Entity-relationship diagram', 'Ministry user role workflow map', 'Bhashini voice API keys'] },
+            { timeframe: 'Hours 06 - 18', focus: 'Core Backend Engine & Database Seed', deliverables: ['Express/FastAPI endpoints with RBAC', 'PostgreSQL migration with sample district telemetry data'] },
+            { timeframe: 'Hours 18 - 28', focus: 'Multilingual UI & Offline PWA Sync', deliverables: ['Hindi/Tamil/Telugu localization toggle', 'Service worker caching for low-bandwidth field work'] },
+            { timeframe: 'Hours 28 - 34', focus: 'MIS Dashboard & PDF Report Generation', deliverables: ['Executive circular exporter, vector heatmaps, SMS notification alerts'] },
+            { timeframe: 'Hours 34 - 36', focus: 'Jury Demo Rehearsal & Live Staging', deliverables: ['Clean presentation slide deck, live mobile device demo testing'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'Claude 3.7 System Design', strategicAdvantage: 'Structure enterprise multi-tenant databases with strict district/state data isolation.', tacticalPromptTip: 'Ask Claude: "Design an RBAC schema for an Indian government welfare portal with 3 tiers: Panchayat, District Collector, Ministry Secretary."' },
+            { modelSource: 'ChatGPT Strategy', strategicAdvantage: 'Anticipate jury grilling questions from ministry bureaucrats regarding scalability and edge cases.', tacticalPromptTip: 'Ask ChatGPT: "Simulate a tough government evaluator grilling our SIH project on rural internet failure."' }
           ]
         }
       };
     }
 
-    // 4. Major League Hacking (MLH) Hackathons
+    // 4. Major League Hacking (MLH Season & Global Hack Week)
     if (org.includes('major league hacking') || org.includes('mlh')) {
       return {
         hackathonId: hackathon.id,
@@ -335,8 +392,8 @@ export class HackathonBlueprintService {
             rankTitle: 'Overall 1st Place Champion',
             prizeAmount: '$3,000 - $5,000 Cash/Tech Bundle + MLH Gold Season Medals',
             perks: [
-              'Official MLH Championship Gold Medals shipped globally',
-              'Interview referrals with MLH Fellowship hiring partners',
+              'Official MLH Championship Gold Medals shipped globally to all team members',
+              'Interview referrals with MLH Fellowship hiring partners (Meta, Shopify, GitHub)',
               'Featured showcase on MLH Global Season hall of fame',
               'Cloud compute credits + domain package'
             ]
@@ -345,25 +402,25 @@ export class HackathonBlueprintService {
             rankTitle: '2nd & 3rd Place Overall',
             prizeAmount: '$1,500 - $2,500 in Hardware, Electronics & Cash',
             perks: [
-              'Official MLH Silver / Bronze medals',
+              'Official MLH Silver / Bronze season medals',
               'Access to private MLH alumni network and hiring partner mixers'
             ]
           },
           {
-            rankTitle: 'MLH Partner Category Awards (Best AI, Best Domain, Best Auth)',
+            rankTitle: 'MLH Partner Category Awards (Best AI, Best Domain, Best Auth, Best Cloud)',
             prizeAmount: '$500 - $1,500 per Category (GitHub, Cloudflare, Auth0, Twilio, Hedera)',
             perks: [
               'Specific partner category prizes (e.g. Nintendo Switch, iPad, Keyboards, AirPods)',
-              'Direct consideration for developer advocate internships'
+              'Direct consideration for developer advocate internships and student ambassadorships'
             ]
           },
           {
-            rankTitle: 'All Valid Submissions',
+            rankTitle: 'All Valid Submissions (Every Active Participant)',
             prizeAmount: 'Official MLH Season Digital Certificate & Swag Kit',
             perks: [
               'Digital certificate of participation with verifiable cryptographic seal',
               'Free .tech / .dev domain registration voucher for 1 year',
-              'Exclusive limited-edition MLH stickers and digital badges'
+              'Exclusive limited-edition MLH stickers, digital badges, and Discord community role'
             ]
           }
         ],
@@ -412,51 +469,379 @@ export class HackathonBlueprintService {
             { criteria: 'Originality & Creativity', weightPercentage: 25, howToScoreMax: 'Fresh perspective on an existing problem or an entirely unexpected use case.' },
             { criteria: 'Execution & Polish', weightPercentage: 25, howToScoreMax: 'Crisp UI, responsive buttons, cohesive typography, and zero browser console errors.' },
             { criteria: 'Usefulness & Practical Impact', weightPercentage: 25, howToScoreMax: 'Clear real-world benefit for an identifiable user persona.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Hours 00 - 04', focus: 'Idea Selection & Sponsor API Mapping', deliverables: ['Select 2-3 sponsor bounties to target simultaneously', 'Setup GitHub repo and Vercel CD pipeline'] },
+            { timeframe: 'Hours 04 - 18', focus: 'Core Feature Build', deliverables: ['Implement the core killer mechanic that makes the demo exciting'] },
+            { timeframe: 'Hours 18 - 30', focus: 'Sponsor Integrations & Guest Mode', deliverables: ['Embed sponsor APIs seamlessly', 'Build 1-click guest sandbox with seed data'] },
+            { timeframe: 'Hours 30 - 40', focus: 'Design Polish & Edge-Case Guardrails', deliverables: ['Tailwind typography, loading spinners, sound effects, responsive fixes'] },
+            { timeframe: 'Hours 40 - 48', focus: 'Devpost Storytelling & Video Recording', deliverables: ['2-minute video recording with high energy voiceover', 'Devpost markdown copy filled'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'Cursor AI', strategicAdvantage: 'Scaffold full React components with Tailwind CSS in seconds without writing boilerplate.', tacticalPromptTip: 'Type "/generate a sleek modern card layout with Lucide icons and hover states."' },
+            { modelSource: 'Google AI Studio Gemini', strategicAdvantage: 'Ingest live user screenshots or PDFs directly into the app for intelligent multimodal processing.', tacticalPromptTip: 'Use Gemini 2.5 Flash to analyze complex uploaded documents with sub-second latency.' }
           ]
         }
       };
     }
 
-    // 5. Default Universal Dynamic Winning Blueprint for other Hackathons (Google, Devpost, Cal Hacks, TreeHacks, etc.)
+    // 5. Google Developer Groups (Solution Challenge & Gemini Multimodal Sprint)
+    if (org.includes('google') || name.includes('google') || name.includes('gemini') || name.includes('solution challenge')) {
+      return {
+        hackathonId: hackathon.id,
+        organizer: hackathon.organizer,
+        overallPrizePool: hackathon.prizeText || '$100,000+ in Cash, Grants & Google Cloud Credits',
+        prizeTiers: [
+          {
+            rankTitle: 'Top 3 Global Winners',
+            prizeAmount: '$12,000 USD per team + Google Cloud Mentorship',
+            perks: [
+              'Featured live showcase during Google I/O global developer keynote',
+              'Direct 1-on-1 mentorship with Google Staff Software Engineers and Product Leads',
+              'Fast-track referral to Google Student Developer internship programs',
+              'Exclusive Google hardware bundle (Pixel, Chromebook, Nest devices)'
+            ]
+          },
+          {
+            rankTitle: 'Top 10 Global Finalists',
+            prizeAmount: '$3,000 USD per team + Google Cloud Accelerator',
+            perks: [
+              'Admission to the Google for Startups Accelerator mentoring sessions',
+              '$5,000 in Google Cloud Platform (GCP) credits per team member',
+              'Official Google Winner Trophy & Global Press Announcement'
+            ]
+          },
+          {
+            rankTitle: 'Top 100 Semi-Finalists',
+            prizeAmount: 'Google Cloud Perks & Expert Technical Review',
+            perks: [
+              'Detailed architectural code review and feedback from Google Developer Experts (GDEs)',
+              'Free Google Cloud Certified Associate Cloud Engineer exam voucher ($125 value)'
+            ]
+          },
+          {
+            rankTitle: 'All Verified Submissions',
+            prizeAmount: 'Google Developer Innovator Badge & API Credits',
+            perks: [
+              'Official Google Developer Groups verified digital completion certificate',
+              'Free tier access to Gemini 2.5 multimodal APIs and Firebase Blaze spark tier'
+            ]
+          }
+        ],
+        strategy: {
+          projectScope: {
+            whatToBuild: 'A solution advancing one or more of the United Nations 17 Sustainable Development Goals (SDGs) using Google technologies.',
+            targetProblemStatements: [
+              'Quality Education (SDG 4): AI tutor adapting STEM problem sets in real-time based on learner confusion',
+              'Climate Action (SDG 13): Satellite imagery processing detecting deforestation or urban heat islands',
+              'Good Health & Well-Being (SDG 3): Multimodal triage assistant analyzing patient vitals and symptoms',
+              'Decent Work & Economic Growth (SDG 8): Micro-enterprise inventory and pricing optimization tool'
+            ],
+            mandatoryDeliverables: [
+              { title: 'Google Technology Integration', requirement: 'Must utilize at least one core Google technology (Flutter, Firebase, Gemini API, TensorFlow, or Google Cloud).' },
+              { title: 'UN SDG Alignment Statement', requirement: 'Clear explanation of how the project directly addresses target indicators of a specific UN SDG.' },
+              { title: 'Public GitHub Codebase', requirement: 'Complete code with automated setup script and comprehensive documentation.' },
+              { title: '3-Minute Video Pitch', requirement: 'Video showcasing the problem, user research, live demo, and measurable impact.' }
+            ]
+          },
+          architecturalGuidance: {
+            recommendedStack: ['Flutter / React + TypeScript', 'Google Cloud Run / Functions', 'Gemini 2.5 Flash SDK (@google/genai)', 'Firebase Firestore & Auth', 'Tailwind CSS'],
+            coreCapabilities: [
+              'Multimodal input handling (processing voice, images, sensor telemetry, and text simultaneously)',
+              'Deterministic offline caching for developing markets with unstable connectivity',
+              'Zero-latency streaming AI responses using server-sent events or WebSockets'
+            ],
+            performanceAndSlas: [
+              'Sub-800ms end-to-end multimodal inference using Gemini Flash',
+              'Optimized bundle size under 2MB for low-memory devices'
+            ]
+          },
+          winningEdgeFeatures: [
+            {
+              featureName: 'Multi-Modal Voice & Vision Dual Pipeline',
+              whyItOutranksCompetitors: 'Standard entries only use text prompts. Feeding real-time camera streams or audio waveforms directly into Gemini 2.5 Flash blows judges away with technological maturity.',
+              technicalDepthDescription: 'Implement browser MediaStream canvas downsampling with base64 streaming into Gemini Flash vision models.'
+            },
+            {
+              featureName: 'Measurable SDG Impact Analytics Telemetry',
+              whyItOutranksCompetitors: 'Google judges specifically grade on measurable impact. Having a live impact dashboard showing metric tonnes of CO2 saved or student learning hours tracked wins top marks.',
+              technicalDepthDescription: 'Real-time telemetry counters backed by Firestore aggregations and downloadable PDF impact audits.'
+            }
+          ],
+          judgingRubricBreakdown: [
+            { criteria: 'Impact & UN SDG Alignment', weightPercentage: 35, howToScoreMax: 'Deep user research proving real demand and measurable progress on specific SDG targets.' },
+            { criteria: 'Technology Architecture & Google Tech Use', weightPercentage: 35, howToScoreMax: 'Substantial, idiomatic use of Google tools (Gemini, Firebase, GCP) rather than superficial API calls.' },
+            { criteria: 'Scalability & Economic Feasibility', weightPercentage: 15, howToScoreMax: 'Low marginal serving cost and clear roadmap for deployment to 100k+ users.' },
+            { criteria: 'Presentation & Video Pitch', weightPercentage: 15, howToScoreMax: 'Engaging storytelling highlighting real beneficiaries in the first 30 seconds.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Hours 00 - 08', focus: 'UN SDG Mapping & User Persona Definition', deliverables: ['Identify specific UN SDG indicator', 'Interview 2-3 target beneficiaries or study academic reports'] },
+            { timeframe: 'Hours 08 - 22', focus: 'Gemini Multimodal & Firebase Architecture', deliverables: ['Implement @google/genai streaming pipeline', 'Firestore database rules and schema'] },
+            { timeframe: 'Hours 22 - 34', focus: 'Frontend Interface & Impact Telemetry', deliverables: ['Responsive UI with voice/image ingestion', 'Live impact calculator dashboard'] },
+            { timeframe: 'Hours 34 - 42', focus: 'GCP Cloud Run Deployment & SLA Optimization', deliverables: ['Docker container deployed to Google Cloud Run', 'Sub-800ms latency verified'] },
+            { timeframe: 'Hours 42 - 48', focus: 'Video Pitch Recording & Solution Challenge Submission', deliverables: ['3-minute pitch video with high emotional resonance', 'Public GitHub repo finalized'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'Google AI Studio', strategicAdvantage: 'Test multimodal prompt strategies interactively with system instructions and JSON schemas before writing code.', tacticalPromptTip: 'In AI Studio, tune temperature to 0.1 and specify exact response schemas for strict extraction.' },
+            { modelSource: 'Claude 3.7', strategicAdvantage: 'Draft the UN SDG impact evaluation narrative with rigorous economic citations.', tacticalPromptTip: 'Ask Claude: "Analyze how our technical architecture addresses UN SDG Target 4.4 with measurable KPIs."' }
+          ]
+        }
+      };
+    }
+
+    // 6. Microsoft Imagine Cup
+    if (org.includes('microsoft') || name.includes('imagine cup')) {
+      return {
+        hackathonId: hackathon.id,
+        organizer: hackathon.organizer,
+        overallPrizePool: hackathon.prizeText || '$100,000 USD + Mentorship with Satya Nadella',
+        prizeTiers: [
+          {
+            rankTitle: 'World Champion (1st Place Overall)',
+            prizeAmount: '$100,000 USD Cash + Mentorship with Microsoft CEO Satya Nadella',
+            perks: [
+              'Private 1-on-1 mentorship session with Satya Nadella',
+              'Keynote demo slot at Microsoft Build conference',
+              '$50,000 in Microsoft Azure AI credits',
+              'Fast-track admission to Microsoft for Startups Pegasus program'
+            ]
+          },
+          {
+            rankTitle: 'World Finalists (Top 3 Teams: AI, Social Impact, Cloud)',
+            prizeAmount: '$50,000 USD Cash + Azure Accelerator',
+            perks: [
+              'Live pitch to global tech leaders at Microsoft headquarters in Redmond, WA',
+              '$25,000 in Azure credits and dedicated cloud solution architects',
+              'Global PR and media promotion across Microsoft channels'
+            ]
+          },
+          {
+            rankTitle: 'Regional Semifinalist Teams',
+            prizeAmount: '$5,000 in Azure Credits + Technical Mentorship',
+            perks: [
+              'Microsoft Imagine Cup regional finalist trophy and certificate',
+              'Direct coaching from Microsoft Cloud Advocates and senior engineers'
+            ]
+          },
+          {
+            rankTitle: 'All Registered Submissions',
+            prizeAmount: 'Azure for Students Credits & Certification Vouchers',
+            perks: [
+              'Free $100 Azure for Students credit bundle without credit card requirement',
+              'Free access to Microsoft Learn AI skills challenge and digital credential'
+            ]
+          }
+        ],
+        strategy: {
+          projectScope: {
+            whatToBuild: 'A purpose-driven software venture leveraging Microsoft Azure AI to solve critical challenges in healthcare, education, or environmental sustainability.',
+            targetProblemStatements: [
+              'Assistive AI for neurodivergent or motor-impaired learners using speech and gaze tracking',
+              'Autonomous energy grid forecasting reducing enterprise carbon emissions',
+              'Enterprise-grade medical image diagnostic triage with zero-trust HIPAA compliance',
+              'Democratized financial accounting and fraud detection for small agricultural cooperatives'
+            ],
+            mandatoryDeliverables: [
+              { title: 'Live Working Prototype', requirement: 'Production deployment running on Microsoft Azure with active cloud telemetry.' },
+              { title: 'Business Plan & Market Model', requirement: 'Comprehensive deck covering total addressable market (TAM), unit economics, and go-to-market plan.' },
+              { title: 'Technical Architecture Document', requirement: 'Azure architecture diagram showing security boundaries, data flow, and cognitive service integration.' },
+              { title: '3-Minute Video Pitch', requirement: 'High production value video demonstrating real user traction and technological differentiation.' }
+            ]
+          },
+          architecturalGuidance: {
+            recommendedStack: ['TypeScript / Next.js', 'Azure Container Apps / App Service', 'Azure OpenAI / Semantic Kernel', 'Azure Cosmos DB', 'Tailwind CSS'],
+            coreCapabilities: [
+              'Enterprise security posture with Azure Entra ID (Active Directory) integration',
+              'Multi-modal assistive interfaces (speech-to-text, vision recognition)',
+              'Comprehensive telemetry monitoring via Azure Application Insights'
+            ],
+            performanceAndSlas: [
+              '99.9% uptime SLA with automated container health probes',
+              'Sub-200ms API response latency with global Azure CDN edge caching'
+            ]
+          },
+          winningEdgeFeatures: [
+            {
+              featureName: 'Semantic Kernel Multi-Agent Autonomous Orchestration',
+              whyItOutranksCompetitors: 'Standard entries use basic single-prompt chatbots. Demonstrating multi-agent collaboration where specialized agents critique and verify each other wins top enterprise marks.',
+              technicalDepthDescription: 'Implement Microsoft Semantic Kernel agent orchestrator with planning loops and verifiable tool execution.'
+            },
+            {
+              featureName: 'Zero-Trust Enterprise RBAC & Data Sanitization',
+              whyItOutranksCompetitors: 'Microsoft judges care deeply about enterprise readiness and governance. Zero-trust security proves your project is ready for enterprise customers.',
+              technicalDepthDescription: 'Role-based access controls with automated PII masking and cryptographic audit trails.'
+            }
+          ],
+          judgingRubricBreakdown: [
+            { criteria: 'Technology & Azure Integration', weightPercentage: 35, howToScoreMax: 'Deep, architectural utilization of Azure cognitive services, container apps, and security models.' },
+            { criteria: 'Business Viability & Traction', weightPercentage: 30, howToScoreMax: 'Realistic customer acquisition strategy, scalable unit economics, and pilot user testimonials.' },
+            { criteria: 'Innovation & Purpose', weightPercentage: 20, howToScoreMax: 'Genuinely original approach to a high-magnitude social or industrial challenge.' },
+            { criteria: 'Presentation & Pitch Delivery', weightPercentage: 15, howToScoreMax: 'Polished pitch deck, crisp speaking delivery, and seamless live demo.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Phase 1: Validation', focus: 'User Discovery & Market Sizing', deliverables: ['TAM/SAM/SOM calculation', 'Problem validation with 5 potential enterprise users'] },
+            { timeframe: 'Phase 2: Azure Scaffold', focus: 'Cloud Architecture & Service Provisioning', deliverables: ['Azure Cosmos DB instance', 'Container App deployment with CI/CD'] },
+            { timeframe: 'Phase 3: Agentic Core', focus: 'Semantic Kernel Agent Pipeline', deliverables: ['Multi-agent workflow implementation with tool calling'] },
+            { timeframe: 'Phase 4: Security & Audit', focus: 'Enterprise Governance', deliverables: ['PII redaction filter, Application Insights monitoring dashboard'] },
+            { timeframe: 'Phase 5: Pitch & Video', focus: 'Executive Presentation', deliverables: ['3-minute pitch video, financial slide model, live Azure staging'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'Claude 3.7 Enterprise', strategicAdvantage: 'Structure enterprise software architectures compliant with SOC2 and ISO 27001 standards.', tacticalPromptTip: 'Ask Claude: "Design a zero-trust architecture for a healthcare AI assistant running on Azure."' },
+            { modelSource: 'ChatGPT Pitch Coach', strategicAdvantage: 'Refine the 3-minute pitch deck to hook enterprise venture investors within 20 seconds.', tacticalPromptTip: 'Ask ChatGPT: "Review this 3-minute pitch script for Microsoft Imagine Cup and make the value proposition undeniable."' }
+          ]
+        }
+      };
+    }
+
+    // 7. UC Berkeley Cal Hacks / HackMIT / Hack the North / Stanford TreeHacks
+    if (
+      org.includes('berkeley') || name.includes('calhacks') || name.includes('cal hacks') ||
+      org.includes('mit') || name.includes('hackmit') ||
+      org.includes('waterloo') || name.includes('hack the north') ||
+      org.includes('stanford') || name.includes('treehacks')
+    ) {
+      return {
+        hackathonId: hackathon.id,
+        organizer: hackathon.organizer,
+        overallPrizePool: hackathon.prizeText || '$150,000+ in Cash, Seed Capital & Tech Hardware',
+        prizeTiers: [
+          {
+            rankTitle: 'Grand Overall Winner (1st Place)',
+            prizeAmount: '$15,000 - $30,000 Cash + VC Term Sheet / SAFE Note',
+            perks: [
+              'Direct invitation to pitch leading Silicon Valley accelerators (Y Combinator, Pear VC, Neo)',
+              'Guaranteed interview for top venture scout funding rounds',
+              'Keynote presentation before the entire 2,000+ participant hacker hall',
+              'High-end hardware bundle (MacBook Pro / Vision Pro / GPU servers)'
+            ]
+          },
+          {
+            rankTitle: 'Category Track Champions (Best AI, Best Hardware, Best Health, Best DevTools)',
+            prizeAmount: '$5,000 - $10,000 per Track',
+            perks: [
+              'Dedicated sponsor track prizes and founder fellowship stipends',
+              'Fast-track technical interviews with sponsor engineering teams (OpenAI, Stripe, Figma, Anthropic)'
+            ]
+          },
+          {
+            rankTitle: 'Beginner / First-Time Hacker Track Winner',
+            prizeAmount: '$2,500 in Hardware & Cash',
+            perks: [
+              'Special recognition for breakthrough first-time builders',
+              '1-year mentorship from collegiate engineering society alumni'
+            ]
+          },
+          {
+            rankTitle: 'All Accepted Hackers',
+            prizeAmount: 'Full Hacker Care Package + Travel Grants',
+            perks: [
+              'Full travel grant reimbursement (up to $500 for out-of-state/international students)',
+              'Free lodging, 36 hours of catered meals, exclusive college hacker swag box',
+              'Official collegiate hackathon badge and recruiter resume drop'
+            ]
+          }
+        ],
+        strategy: {
+          projectScope: {
+            whatToBuild: 'An intensely ambitious, technically astonishing hack that pushes the boundary of modern computer science, AI, or hardware interaction.',
+            targetProblemStatements: [
+              'Local-first real-time collaborative workspace with zero server roundtrips using CRDTs',
+              'High-frequency multimodal screen agent navigating desktop applications with voice commands',
+              'Decentralized physical hardware device diagnosing neurological tremors using edge computer vision',
+              'Compiler or developer tool translating natural language directly into verified formal mathematical proofs'
+            ],
+            mandatoryDeliverables: [
+              { title: 'Working Live Demo', requirement: '100% functional live demo tested in front of roving industry judges on the hackathon floor.' },
+              { title: 'Public GitHub Repo', requirement: 'Codebase with transparent commit log created during the 36-hour sprint.' },
+              { title: '2-Minute Video Demo', requirement: 'Concise video showing the hardest technical hurdle being solved live.' },
+              { title: 'Devpost Submission Page', requirement: 'Comprehensive write-up covering inspiration, technical architecture, and lessons learned.' }
+            ]
+          },
+          architecturalGuidance: {
+            recommendedStack: ['Next.js 15 / React 19', 'TypeScript / Rust / WebAssembly', 'WebSockets / LiveKit / WebRTC', 'Tailwind CSS v4', 'Supabase / IndexedDB'],
+            coreCapabilities: [
+              'Sub-50ms local state updates with optimistic replication',
+              'Multi-modal sensory inputs (camera stream, microphone audio, keyboard shortcuts)',
+              'Instant judge demo mode with zero signup friction'
+            ],
+            performanceAndSlas: [
+              'Sub-100ms end-to-end latency across all interactive user flows',
+              'Zero memory leaks during extended live judging sessions'
+            ]
+          },
+          winningEdgeFeatures: [
+            {
+              featureName: 'WebAssembly (Wasm) High-Performance Core Engine',
+              whyItOutranksCompetitors: 'Silicon Valley judges are deeply impressed by engineers who run compute-intensive algorithms in Rust compiled to Wasm inside the browser rather than simple Python API wrappers.',
+              technicalDepthDescription: 'Compile performance-critical logic into WebAssembly with zero-copy memory transfers between JS and Rust.'
+            },
+            {
+              featureName: 'Zero-Latency Collaborative Canvas with CRDT State Synchronization',
+              whyItOutranksCompetitors: 'When two judges test your app simultaneously on their phones and see instant live cursor and state reflections, it creates an unforgettable "magic moment".',
+              technicalDepthDescription: 'Implement Yjs / Automerge conflict-free replicated data types over lightweight WebSockets.'
+            }
+          ],
+          judgingRubricBreakdown: [
+            { criteria: 'Technical Difficulty & Depth', weightPercentage: 40, howToScoreMax: 'Tackle a genuinely hard engineering problem (Wasm, real-time audio, hardware sensors, custom algorithms).' },
+            { criteria: 'Originality & "Aha!" Moment', weightPercentage: 30, howToScoreMax: 'Build something judges have never seen before that prompts an audible gasp during the live demo.' },
+            { criteria: 'Polish, UX & Design Craft', weightPercentage: 20, howToScoreMax: 'Sleek dark-mode aesthetic, micro-interactions, responsive typography, and instant responsiveness.' },
+            { criteria: 'Live Demo Execution', weightPercentage: 10, howToScoreMax: 'Flawless live presentation with zero crashes or excuses about Wi-Fi latency.' }
+          ],
+          executionRoadmap48h: [
+            { timeframe: 'Hours 00 - 04', focus: 'Problem Framing & Technical Bet', deliverables: ['Identify the single hardest technical component (the "moonshot")', 'Scaffold Next.js + Rust Wasm bridge'] },
+            { timeframe: 'Hours 04 - 18', focus: 'The Moonshot Core Feature', deliverables: ['Prove the hardest technical capability works before touching any UI buttons'] },
+            { timeframe: 'Hours 18 - 28', focus: 'UI Craft & Collaborative State', deliverables: ['Build high-aesthetic dark mode interface with Tailwind v4 and live WebSockets'] },
+            { timeframe: 'Hours 28 - 34', focus: 'Sponsor Bounty Synergy', deliverables: ['Integrate OpenAI/Stripe/Figma APIs to qualify for secondary $5k sponsor tracks'] },
+            { timeframe: 'Hours 34 - 36', focus: 'Live Floor Demo Practice', deliverables: ['Rehearse the 90-second elevator pitch with 5 neighboring hacker teams'] }
+          ],
+          aiIntelligenceAdvice: [
+            { modelSource: 'Claude 3.7 Hybrid', strategicAdvantage: 'Design mathematically sound CRDT or algorithmic state machines.', tacticalPromptTip: 'Prompt Claude: "Write a high-performance Yjs shared document sync provider for low-latency multi-user canvases."' },
+            { modelSource: 'Cursor AI', strategicAdvantage: 'Scaffold complex WebAssembly JavaScript bridges with zero type errors.', tacticalPromptTip: 'Use Cursor to write idiomatic wasm-bindgen bindings and TypeScript wrapper classes.' }
+          ]
+        }
+      };
+    }
+
+    // 8. Default Universal Dynamic Winning Blueprint (NASA Space Apps, Hacktoberfest, Devpost AI, etc.)
     return {
       hackathonId: hackathon.id,
       organizer: hackathon.organizer,
-      overallPrizePool: hackathon.prizeText || 'Cash, Cloud Grants, Mentorship & Partner Bounties',
+      overallPrizePool: hackathon.prizeText || 'Cash, Cloud Grants, Global Recognition & Partner Bounties',
       prizeTiers: [
         {
           rankTitle: '1st Place Winner (Champion)',
-          prizeAmount: hackathon.prizeText ? `Top Tier of ${hackathon.prizeText}` : 'Grand Cash Prize + Founder Grants',
+          prizeAmount: hackathon.prizeText ? `Grand Prize Tier (${hackathon.prizeText})` : 'Grand Cash Prize + Founder Grants',
           perks: [
-            'Top cash purse + trophy/medallion',
+            'Top cash purse + official championship trophy / commemorative medallion',
             'Sponsor cloud infrastructure credits (Google Cloud / AWS / Azure)',
-            'Direct interview fast-tracks and founder mentorship hours',
-            'Investor showcase and pitch opportunities'
+            'Direct interview fast-tracks and founder mentorship hours with hiring managers',
+            'Investor showcase, accelerator interviews, and global press feature'
           ]
         },
         {
           rankTitle: 'Runner-Up (2nd & 3rd Place)',
           prizeAmount: 'Secondary Cash Award + Developer Tool Bundles',
           perks: [
-            'Pro annual licenses for developer tool suites',
-            'Official runner-up certificate with cryptographic seal',
-            'Fast-track review for upcoming fellowship batches'
+            'Annual licenses for developer tool suites (GitHub Copilot, JetBrains, Linear)',
+            'Official runner-up certificate with cryptographic verification seal',
+            'Fast-track review for upcoming fellowship and incubator batches'
           ]
         },
         {
           rankTitle: 'Category & Sponsor Track Awards',
           prizeAmount: 'Category Bounties ($1,000 - $5,000 per track)',
           perks: [
-            'Best Technical Innovation, Best UI/UX Polish, Best AI Integration',
-            'Specialized hardware dev kits and platform credits'
+            'Best Technical Innovation, Best UI/UX Polish, Best AI Integration, Best Social Impact',
+            'Specialized hardware developer kits and platform API credits'
           ]
         },
         {
-          rankTitle: 'All Active Participants',
-          prizeAmount: 'Digital Credential & Platform Benefits',
+          rankTitle: 'All Active Participants (Every Registered Builder)',
+          prizeAmount: 'Verifiable Digital Credential & Platform Benefits',
           perks: [
             'Official verifiable digital certificate of participation',
-            'Platform API credits and sponsor voucher package',
-            'Access to mentor AMA sessions and developer community channels'
+            'Sponsor API credits and developer voucher package ($200 - $1,000 value)',
+            'Access to mentor AMA sessions, recruiter resume database, and developer community channels'
           ]
         }
       ],
@@ -470,14 +855,14 @@ export class HackathonBlueprintService {
             'Impactful Citizen / Student Tool democratizing complex domain knowledge'
           ],
           mandatoryDeliverables: [
-            { title: 'Public Source Repository', requirement: 'Clean GitHub repo with structured commits, comprehensive README, and setup scripts.' },
+            { title: 'Public Source Repository', requirement: 'Clean GitHub repo with structured commits, comprehensive README, open source license, and setup scripts.' },
             { title: 'Live Deployed Production URL', requirement: 'Hosted on a reliable cloud platform with HTTPS and zero 500 error crashes.' },
             { title: 'Video Walkthrough Demo', requirement: '2 to 3 minute concise demo showcasing real working features without static slides.' },
             { title: 'Architecture & Security Spec', requirement: 'System diagram detailing data flow, API boundaries, and fail-safe fallbacks.' }
           ]
         },
         architecturalGuidance: {
-          recommendedStack: ['React / Vite / TypeScript', 'Tailwind CSS', 'FastAPI or Node.js/Express', 'PostgreSQL or Firestore', 'Cloudflare CDN'],
+          recommendedStack: ['React / Vite / TypeScript', 'Tailwind CSS v4', 'FastAPI or Node.js / Express', 'PostgreSQL or Firestore', 'Cloudflare CDN'],
           coreCapabilities: [
             'Optimistic state updates with zero screen blocking',
             'Strict error boundaries preventing total application crashes',
@@ -505,6 +890,18 @@ export class HackathonBlueprintService {
           { criteria: 'User Experience, Polish & Design', weightPercentage: 25, howToScoreMax: 'Intuitive interface, fast interaction speeds, high contrast accessibility, and zero broken links.' },
           { criteria: 'Real-World Impact & Problem Solved', weightPercentage: 25, howToScoreMax: 'Demonstrates tangible measurable value for actual users with defensible market feasibility.' },
           { criteria: 'Clarity of Presentation & Live Demo', weightPercentage: 20, howToScoreMax: 'Working live link with immediate access, crisp 2-minute video pitch, and transparent code repo.' }
+        ],
+        executionRoadmap48h: [
+          { timeframe: 'Hours 00 - 06', focus: 'Problem Framing & System Architecture', deliverables: ['Core problem definition', 'API contract design', 'Repository scaffolding'] },
+          { timeframe: 'Hours 06 - 20', focus: 'Core Capability Implementation', deliverables: ['Primary killer feature operational', 'Database migrations and basic tests'] },
+          { timeframe: 'Hours 20 - 32', focus: 'UI/UX Polish & Edge-Case Guardrails', deliverables: ['Responsive Tailwind layout', 'Error handling and fallback states'] },
+          { timeframe: 'Hours 32 - 42', focus: 'Live Deployment & Verification', deliverables: ['Public cloud deployment with SSL', 'Performance benchmarking and load testing'] },
+          { timeframe: 'Hours 42 - 48', focus: 'Demo Video & Documentation', deliverables: ['2-minute unedited video demo', 'Comprehensive README with architecture diagram'] }
+        ],
+        aiIntelligenceAdvice: [
+          { modelSource: 'Claude 3.7', strategicAdvantage: 'Architectural clarity and modular code separation.', tacticalPromptTip: 'Ask Claude: "Design a clean TypeScript modular service layer separating presentation from business logic."' },
+          { modelSource: 'Cursor AI', strategicAdvantage: 'High-speed component generation and automated test scaffolding.', tacticalPromptTip: 'Use Cursor to generate Vitest test cases covering all edge conditions.' },
+          { modelSource: 'Google AI Studio', strategicAdvantage: 'Multimodal data ingestion and live reasoning.', tacticalPromptTip: 'Leverage Gemini 2.5 Flash for rapid structured data extraction from raw user documents.' }
         ]
       }
     };

@@ -30,11 +30,12 @@ interface InteractiveCopilotStudioProps {
 }
 
 const QUICK_PROMPTS = [
-  '🚨 Which Tier-1 roles are closing in < 72 hours?',
-  '🛂 Can F-1 OPT/CPT students apply to Scale AI or OpenAI?',
-  '📄 How should I tailor my resume for a Distributed Systems role?',
-  '⚡ What topics are tested in Stripe & Google Online Assessments?',
-  '🤝 Draft a 300-character LinkedIn referral note for campus alumni',
+  '🏆 ETHGlobal / SIH me Rank 1 winner banne ke liye kya build karu?',
+  '🚀 Over-the-top features to beat other competitors in hackathons',
+  '🧭 System ke saare portals aur applied application dossiers kahan hain?',
+  '📄 How should I tailor my resume for a Tier-1 Systems role?',
+  '⚡ What patterns are tested in Stripe & Google Online Assessments?',
+  '🤝 Draft a 300-char LinkedIn referral note for campus alumni',
 ];
 
 export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> = ({ studentProfile }) => {
