@@ -94,10 +94,10 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
   return (
     <div 
       id={`job-card-${opportunity.id}`}
-      className={`group relative flex flex-col justify-between rounded-xl border p-5 transition-all duration-200 bg-slate-900/70 hover:bg-slate-900/90 ${
+      className={`glass-screen group relative flex flex-col justify-between rounded-2xl p-5 transition-all duration-300 ${
         isUrgent 
-          ? 'border-red-500/40 hover:border-red-400/70 shadow-lg shadow-red-950/20' 
-          : 'border-slate-800 hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-950/20'
+          ? '!bg-rose-950/25 hover:!bg-rose-950/40 !border-rose-500/40 hover:!border-rose-400/70 shadow-lg shadow-rose-950/25' 
+          : 'hover:!bg-black/35 hover:!border-cyan-400/50 shadow-[0_4px_24px_0_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.12)] hover:shadow-[0_8px_32px_0_rgba(6,182,212,0.16),inset_0_1px_0_0_rgba(255,255,255,0.2)]'
       }`}
     >
       {/* Top Header: Company Identity, Verification Shield & Countdown */}
@@ -241,7 +241,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
           {/* Compensation */}
           <div 
-            className="flex items-center gap-1 px-2 py-0.8 rounded bg-slate-950/80 text-emerald-300 border border-emerald-900/40 font-mono"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/[0.04] backdrop-blur-sm text-emerald-300 border border-emerald-500/30 font-mono shadow-sm"
             title={`Market/Community Estimate: ${opportunity.compensation.range} — ${opportunity.compensation.transparentBenchmark || 'Not officially confirmed by employer'}`}
           >
             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
@@ -249,7 +249,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </div>
 
           {/* Location & Mode */}
-          <div className="flex items-center gap-1 px-2 py-0.8 rounded bg-slate-950/60 text-slate-300 border border-slate-800 font-mono text-[11px]">
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/[0.04] backdrop-blur-sm text-slate-300 border border-white/10 font-mono text-[11px] shadow-sm">
             <MapPin className="w-3 h-3 text-cyan-400" />
             <span>{opportunity.location.split('(')[0].trim()}</span>
             <span className="text-slate-500">•</span>
@@ -257,7 +257,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </div>
 
           {/* Eligibility Batch Tag */}
-          <div className="flex items-center gap-1 px-2 py-0.8 rounded bg-indigo-950/50 text-indigo-300 border border-indigo-900/40 font-mono text-[11px]">
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-indigo-950/40 backdrop-blur-sm text-indigo-300 border border-indigo-500/30 font-mono text-[11px] shadow-sm">
             <GraduationCap className="w-3 h-3 text-indigo-400" />
             <span>Batch {opportunity.eligibility.allowedGraduationYears.join('/')}</span>
             {opportunity.eligibility.undergradOnly && (
@@ -272,7 +272,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         </div>
 
         {/* Fitment Score Bar & Missing Skills Snapshot (Req #13 & #17) */}
-        <div className="mt-3.5 p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80">
+        <div className="mt-3.5 p-3 rounded-xl bg-white/[0.035] backdrop-blur-md border border-white/10 shadow-sm">
           <div className="flex items-center justify-between text-xs mb-1.5">
             <span className="text-slate-400 font-medium flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -284,7 +284,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </div>
           
           {/* Progress bar */}
-          <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
+          <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
             <div 
               className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"
               style={{ width: `${opportunity.fitment.overallScore}%` }}

@@ -100,9 +100,9 @@ export const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header id="terrasynx-header" className="sticky top-0 z-50 border-b border-cyan-900/40 bg-slate-950/90 backdrop-blur-md">
+    <header id="terrasynx-header" className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/60 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.35)]">
       {/* Topmost Tactical Pulse Banner */}
-      <div className="flex items-center justify-between px-4 py-1.5 text-[11px] font-mono border-b border-cyan-950/60 bg-slate-900/40 text-slate-400">
+      <div className="flex items-center justify-between px-4 py-1.5 text-[11px] font-mono border-b border-white/5 bg-slate-900/30 backdrop-blur-md text-slate-400">
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1.5 text-cyan-400">
             <span className="relative flex h-2 w-2">

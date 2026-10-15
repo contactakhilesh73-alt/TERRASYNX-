@@ -94,21 +94,29 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
   const appliedRecord = isApplied ? AppliedDossierService.getRecordByOpportunityId(opportunity.id) : undefined;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
+      {/* Dynamic Ambient Luminous Glow Orbs (Creates real "Aar-Paar" visual depth behind the transparent glass) */}
+      <div className="absolute top-1/4 left-1/4 w-80 h-80 rounded-full bg-cyan-500/20 blur-[100px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-indigo-500/20 blur-[120px] pointer-events-none animate-float-slow" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-fuchsia-500/15 blur-[110px] pointer-events-none" />
+
       <div 
-        className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-cyan-500/40 bg-slate-900 p-6 shadow-2xl shadow-cyan-950/50 scrollbar-thin"
+        className="glass-screen relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-1px_1px_rgba(0,0,0,0.2)] scrollbar-thin transition-all"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Specular Light Sheen Reflection */}
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-white/[0.08] via-cyan-400/[0.03] to-transparent pointer-events-none rounded-t-3xl" />
+
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-xl text-slate-300 hover:text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 backdrop-blur-md transition-all cursor-pointer z-10"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
-        <div className="flex items-start gap-4 pr-8">
+        <div className="relative flex items-start gap-4 pr-10 p-5 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 shadow-sm">
           <CompanyLogo
             domain={opportunity.companyDomain}
             name={opportunity.companyName}
@@ -117,9 +125,12 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-lg font-bold text-slate-100">{opportunity.companyName}</h2>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-emerald-950 text-emerald-300 border border-emerald-800">
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 backdrop-blur-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Verified ATS: {opportunity.verification.sourceType.toUpperCase()}</span>
+              </div>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.06] text-cyan-200 border border-white/15 backdrop-blur-sm">
+                <span>✨ Aar-Paar Crystal View</span>
               </div>
             </div>
             <h1 className="text-xl font-black text-cyan-300 mt-1">
@@ -127,7 +138,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             </h1>
 
             {opportunity.isNewlyFunded && (
-              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-300 border border-amber-500/50 text-xs font-mono font-bold shadow-sm">
+              <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-mono font-bold shadow-sm backdrop-blur-sm">
                 <span className="text-sm">🔥</span>
                 <span>Newly Funded — Actively Hiring</span>
                 {opportunity.fundingRoundDetails?.amountRaised && (
@@ -140,7 +151,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
             {/* Prompt 29: Hacker News Provenance Banner */}
             {opportunity.isHnListing && (
-              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/20 text-orange-300 border border-orange-500/40 text-xs font-mono font-bold shadow-sm flex-wrap">
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-orange-500/20 text-orange-300 border border-orange-500/35 text-xs font-mono font-bold shadow-sm flex-wrap backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
                 <span>Ask HN: Who is Hiring</span>
                 {opportunity.hnListingDetails?.author && (
@@ -169,14 +180,14 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
             {/* Prompt 30: Built In Provenance Banner */}
             {opportunity.isBuiltInListing && (
-              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-500/20 text-teal-300 border border-teal-500/40 text-xs font-mono font-bold shadow-sm flex-wrap">
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-500/20 text-teal-300 border border-teal-500/35 text-xs font-mono font-bold shadow-sm flex-wrap backdrop-blur-sm">
                 <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
                 <span>Built In • {opportunity.builtInDetails?.hub || 'Tech'} Hub</span>
                 <span className="px-2 py-0.5 rounded bg-teal-400/20 text-teal-200 border border-teal-400/30 text-[10px]">
                   {opportunity.builtInDetails?.roleCategory === 'internship' ? 'Internship Role' : 'Entry-Level / Early Career'}
                 </span>
                 {opportunity.builtInDetails?.salarySnippet && (
-                  <span className="px-2 py-0.5 rounded bg-slate-900 text-teal-300 border border-teal-800 text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-white/[0.05] text-teal-300 border border-teal-800/80 text-[10px]">
                     {opportunity.builtInDetails.salarySnippet}
                   </span>
                 )}
@@ -196,14 +207,14 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
             {/* Prompt 31: Singapore Government Portal Provenance Banner */}
             {opportunity.isSingaporeGovPortal && (
-              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/20 text-rose-300 border border-red-500/40 text-xs font-mono font-bold shadow-sm flex-wrap">
+              <div className="mt-2.5 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-500/20 text-rose-300 border border-red-500/35 text-xs font-mono font-bold shadow-sm flex-wrap backdrop-blur-sm">
                 <span>🇸🇬</span>
                 <span>Official Singapore Government Portal — Verified</span>
-                <span className="px-2 py-0.5 rounded bg-rose-950 text-rose-200 border border-rose-800 text-[10px]">
+                <span className="px-2 py-0.5 rounded bg-rose-950/70 text-rose-200 border border-rose-800/80 text-[10px]">
                   MyCareersFuture • GovTech / WSG
                 </span>
                 {opportunity.singaporeGovDetails?.salaryRangeSgd && (
-                  <span className="px-2 py-0.5 rounded bg-slate-900 text-rose-300 border border-rose-900 text-[10px]">
+                  <span className="px-2 py-0.5 rounded bg-white/[0.05] text-rose-300 border border-rose-900/80 text-[10px]">
                     {opportunity.singaporeGovDetails.salaryRangeSgd}
                   </span>
                 )}
@@ -232,7 +243,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
             {/* Prompt 41B: ATS Closure Detection Advisory */}
             {opportunity.possiblyClosed && (
-              <div className="mt-3 p-3 rounded-xl bg-amber-950/60 border border-amber-600/70 text-amber-200 flex items-start gap-2.5 shadow-sm">
+              <div className="mt-3 p-3 rounded-xl bg-amber-950/50 backdrop-blur-md border border-amber-500/60 text-amber-200 flex items-start gap-2.5 shadow-sm">
                 <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <span className="font-bold text-amber-300 font-mono block">
@@ -249,7 +260,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
         {/* Applied Provenance Status Panel (Gmail Identity & Submission Route) */}
         {isApplied && (
-          <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/60 via-slate-950 to-slate-900 border border-emerald-800/80 shadow-md">
+          <div className="mt-4 p-4 rounded-2xl bg-emerald-950/40 backdrop-blur-xl border border-emerald-500/30 shadow-md">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -257,29 +268,29 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                   Application Logged & Verified
                 </span>
                 {appliedRecord?.applicantEmail && (
-                  <span className="text-xs font-mono text-emerald-400/90 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-800">
+                  <span className="text-xs font-mono text-emerald-300/90 bg-emerald-900/50 px-2 py-0.5 rounded border border-emerald-700/60">
                     Logged with: {appliedRecord.applicantEmail}
                   </span>
                 )}
               </div>
               <span className={`px-2.5 py-1 rounded-lg text-xs font-bold font-mono ${
                 appliedRecord?.submissionRoute === 'direct_official_ats'
-                  ? 'bg-blue-950 text-blue-300 border border-blue-800'
-                  : 'bg-cyan-950 text-cyan-300 border border-cyan-800'
+                  ? 'bg-blue-950/80 text-blue-300 border border-blue-700/60'
+                  : 'bg-cyan-950/80 text-cyan-300 border border-cyan-700/60'
               }`}>
                 {appliedRecord?.submissionRoute === 'direct_official_ats' ? '🏢 Submitted on Official ATS' : '⚡ Submitted via TERRASYNX Assistant'}
               </span>
             </div>
 
             {appliedRecord?.confirmationId && (
-              <div className="mt-2 text-xs font-mono text-slate-400 flex items-center gap-3 flex-wrap">
-                <span>Confirmation ID: <strong className="text-slate-200">{appliedRecord.confirmationId}</strong></span>
+              <div className="mt-2 text-xs font-mono text-slate-300 flex items-center gap-3 flex-wrap">
+                <span>Confirmation ID: <strong className="text-white">{appliedRecord.confirmationId}</strong></span>
                 <span>•</span>
                 <span>Applied: {new Date(appliedRecord.appliedTimestamp).toLocaleDateString()}</span>
                 {appliedRecord.sha256Proof && (
                   <>
                     <span>•</span>
-                    <span className="text-[11px] text-slate-500 truncate" title={appliedRecord.sha256Proof}>
+                    <span className="text-[11px] text-slate-400 truncate" title={appliedRecord.sha256Proof}>
                       Proof: {appliedRecord.sha256Proof.slice(0, 14)}...
                     </span>
                   </>
@@ -291,96 +302,96 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
         {/* Grid Stats */}
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex flex-col justify-between">
+          <div className="p-3.5 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 hover:border-cyan-400/30 hover:bg-white/[0.06] transition-all flex flex-col justify-between shadow-sm">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-500 block">Compensation</span>
-                <span className="text-[10px] text-amber-400/90 font-mono">Market Estimate</span>
+                <span className="text-slate-400 block text-[11px]">Compensation</span>
+                <span className="text-[10px] text-amber-300/90 font-mono">Market Est.</span>
               </div>
-              <span className="font-bold text-emerald-400 text-sm block mt-0.5">{opportunity.compensation.range}</span>
+              <span className="font-bold text-emerald-300 text-sm block mt-1">{opportunity.compensation.range}</span>
             </div>
-            <span className="text-[10px] text-slate-500 block truncate mt-1" title={opportunity.compensation.transparentBenchmark}>
+            <span className="text-[10px] text-slate-400 block truncate mt-1.5" title={opportunity.compensation.transparentBenchmark}>
               {opportunity.compensation.transparentBenchmark || 'Community/Market estimate'}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-slate-500 block">Target Batches</span>
-            <span className="font-bold text-indigo-300 text-sm">
+          <div className="p-3.5 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 hover:border-indigo-400/30 hover:bg-white/[0.06] transition-all flex flex-col justify-between shadow-sm">
+            <span className="text-slate-400 block text-[11px]">Target Batches</span>
+            <span className="font-bold text-indigo-300 text-sm mt-1">
               Batch {opportunity.eligibility.allowedGraduationYears.join(', ')}
             </span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-slate-500 block">Work Location</span>
-            <span className="font-bold text-slate-200 text-xs truncate block">{opportunity.location}</span>
+          <div className="p-3.5 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 hover:border-cyan-400/30 hover:bg-white/[0.06] transition-all flex flex-col justify-between shadow-sm">
+            <span className="text-slate-400 block text-[11px]">Work Location</span>
+            <span className="font-bold text-slate-200 text-xs truncate block mt-1">{opportunity.location}</span>
           </div>
 
-          <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-            <span className="text-slate-500 block">Fitment Grade</span>
-            <span className="font-bold text-cyan-400 text-sm">
+          <div className="p-3.5 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 hover:border-cyan-400/30 hover:bg-white/[0.06] transition-all flex flex-col justify-between shadow-sm">
+            <span className="text-slate-400 block text-[11px]">Fitment Grade</span>
+            <span className="font-bold text-cyan-300 text-sm mt-1">
               {opportunity.fitment.overallScore}% ({opportunity.fitment.overallGrade})
             </span>
           </div>
         </div>
 
         {/* 10-D Fitment Dimension Breakdown (Req #17) */}
-        <div className="mt-6 p-4 rounded-xl bg-slate-950/50 border border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2 mb-3">
+        <div className="mt-5 p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-sm">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono flex items-center gap-2 mb-3">
             <BrainCircuit className="w-4 h-4 text-cyan-400" />
             <span>10-Dimensional Fitment Assessment</span>
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
             {Object.entries(opportunity.fitment.dimensions).map(([key, val]) => (
-              <div key={key} className="space-y-1">
+              <div key={key} className="space-y-1 p-2 rounded-xl bg-white/[0.02] border border-white/5">
                 <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
+                  <span className="text-slate-300 capitalize">{key.replace(/([A-Z])/g, ' $1')}</span>
                   <span className="font-mono font-bold text-cyan-300">{val}%</span>
                 </div>
-                <div className="w-full h-1 rounded-full bg-slate-800">
-                  <div className="h-full rounded-full bg-cyan-400" style={{ width: `${val}%` }} />
+                <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400" style={{ width: `${val}%` }} />
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-800/80 text-xs text-slate-300">
+          <div className="mt-4 pt-3 border-t border-white/10 text-xs text-slate-300">
             <span className="font-bold text-amber-300">Strategic Verdict: </span>
             {opportunity.fitment.strategicVerdict}
           </div>
         </div>
 
         {/* Assessment Intelligence (Req #16) */}
-        <div className="mt-4 p-4 rounded-xl bg-slate-950/50 border border-slate-800">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono flex items-center gap-2 mb-2">
+        <div className="mt-4 p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 shadow-sm">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono flex items-center gap-2 mb-2">
             <Code2 className="w-4 h-4 text-amber-400" />
             <span>Assessment & Test Intelligence</span>
           </h3>
           <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
-            <div>
-              <span className="text-slate-500">Platform: </span>
-              <span className="text-slate-200 font-bold">{opportunity.assessmentIntel.platform}</span>
+            <div className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10">
+              <span className="text-slate-400">Platform: </span>
+              <span className="text-slate-100 font-bold">{opportunity.assessmentIntel.platform}</span>
             </div>
-            <div>
-              <span className="text-slate-500">Duration: </span>
-              <span className="text-slate-200 font-bold">{opportunity.assessmentIntel.durationMinutes} mins</span>
+            <div className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10">
+              <span className="text-slate-400">Duration: </span>
+              <span className="text-slate-100 font-bold">{opportunity.assessmentIntel.durationMinutes} mins</span>
             </div>
-            <div>
-              <span className="text-slate-500">Difficulty: </span>
+            <div className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10">
+              <span className="text-slate-400">Difficulty: </span>
               <span className="text-amber-300 font-bold">{opportunity.assessmentIntel.difficulty}</span>
             </div>
           </div>
-          <div className="mt-2 text-xs flex items-center justify-between">
+          <div className="mt-3 text-xs flex items-center justify-between flex-wrap gap-2">
             <div>
-              <span className="text-slate-500">Tested Topics: </span>
-              <span className="text-slate-300 font-mono">{opportunity.assessmentIntel.frequentTopics.join(' • ')}</span>
+              <span className="text-slate-400">Tested Topics: </span>
+              <span className="text-slate-200 font-mono">{opportunity.assessmentIntel.frequentTopics.join(' • ')}</span>
             </div>
             {onOpenAssessmentVault && (
               <button
                 type="button"
                 onClick={() => onOpenAssessmentVault(opportunity)}
-                className="px-3 py-1 rounded-lg bg-cyan-950 hover:bg-cyan-900 border border-cyan-700/80 text-cyan-300 font-mono text-[11px] font-bold transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 font-mono text-[11px] font-bold transition-all cursor-pointer shadow-sm"
               >
                 Open Full OA Practice Vault ➔
               </button>
@@ -389,9 +400,11 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
         </div>
 
         {/* Alumni & Insider Referral Signal (Req #15) */}
-        <div className="mt-4 p-4 rounded-xl bg-sky-950/20 border border-sky-900/50 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <Users className="w-4 h-4 text-sky-400" />
+        <div className="mt-4 p-4 rounded-2xl bg-sky-950/30 backdrop-blur-xl border border-sky-500/20 flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-sky-500/20 text-sky-300 border border-sky-500/30">
+              <Users className="w-4 h-4 text-sky-400" />
+            </div>
             <div>
               <span className="text-xs font-bold text-slate-200 block">
                 {typeof opportunity.alumniPresenceCount === 'number'
@@ -411,7 +424,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                 onClose();
                 onOpenInsiderBridge(opportunity);
               }}
-              className="px-3 py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-xs font-mono font-semibold whitespace-nowrap transition-colors cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-500/40 text-xs font-mono font-semibold whitespace-nowrap transition-colors cursor-pointer"
             >
               Outreach Studio ➔
             </button>
@@ -420,7 +433,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
 
         {/* Other Open Opportunities at This Exact Employer (Phase 5 Single-Role Isolation) */}
         {otherCompanyRoles.length > 0 && (
-          <div className="mt-6 pt-5 border-t border-slate-800">
+          <div className="mt-6 pt-5 border-t border-white/10">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <CompanyLogo
@@ -431,11 +444,11 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                 <h4 className="text-sm font-bold text-slate-200">
                   Other Active Openings at {opportunity.companyName}
                 </h4>
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 backdrop-blur-sm">
                   {otherCompanyRoles.length} more
                 </span>
               </div>
-              <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+              <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
                 Each button opens its own exact role form
               </span>
             </div>
@@ -444,7 +457,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
               {otherCompanyRoles.map((role) => (
                 <div
                   key={role.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition-colors"
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 hover:border-cyan-400/30 hover:bg-white/[0.06] transition-all"
                 >
                   <div className="min-w-0 pr-3">
                     <h5 className="text-xs font-bold text-slate-200 truncate">
@@ -469,7 +482,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
                     {onSelectOpportunity && (
                       <button
                         onClick={() => onSelectOpportunity(role)}
-                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-xs font-medium rounded-lg bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 border border-white/10 transition-colors cursor-pointer"
                         title="View details for this role"
                       >
                         Inspect
@@ -493,7 +506,7 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
         )}
 
         {/* Action Buttons (Req #4, #7, #17) */}
-        <div className="mt-6 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-6 pt-4 border-t border-white/15 sticky bottom-0 -mx-6 sm:-mx-8 -mb-6 sm:-mb-8 p-4 sm:p-5 bg-slate-950/65 backdrop-blur-2xl rounded-b-3xl flex flex-wrap items-center justify-between gap-3 z-10 shadow-lg">
           {!isApplied ? (
             <button
               onClick={() => {

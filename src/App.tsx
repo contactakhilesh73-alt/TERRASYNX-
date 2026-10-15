@@ -392,8 +392,23 @@ export default function App() {
   const appliedCount = opportunities.filter(o => o.stage !== 'discovered' && o.stage !== 'archived').length;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
       
+      {/* Ambient Glassmorphism Luminous Glow System ("Aar-Paar" Translucent Atmosphere) */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
+        {/* Subtle Radial Mesh Depth */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(56,189,248,0.14),rgba(15,23,42,0))]" />
+        
+        {/* Floating Aurora Orbs (Cyan, Indigo, Emerald, Fuchsia) */}
+        <div className="absolute -top-32 -left-32 w-[42rem] h-[42rem] rounded-full bg-cyan-500/12 blur-[130px] animate-float-slow" />
+        <div className="absolute top-1/3 -right-32 w-[45rem] h-[45rem] rounded-full bg-indigo-600/14 blur-[150px] animate-float-reverse" />
+        <div className="absolute bottom-10 left-1/4 w-[38rem] h-[38rem] rounded-full bg-emerald-500/10 blur-[140px] animate-float-slow" />
+        <div className="absolute top-2/3 right-1/4 w-[30rem] h-[30rem] rounded-full bg-fuchsia-600/10 blur-[130px] animate-float-reverse" />
+        
+        {/* Technological Micro-Grid Sheen */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_60%,transparent_100%)] opacity-70" />
+      </div>
+
       {/* Top Global Command Deck & Navigation */}
       <Header
         currentMode={currentMode}
@@ -666,7 +681,7 @@ export default function App() {
       </main>
 
       {/* Footer & Mobile Quick Touch Deck (>=44px touch targets) */}
-      <footer className="border-t border-slate-900 bg-slate-950/90 py-4 px-4 text-xs font-mono text-slate-500">
+      <footer className="border-t border-white/10 bg-slate-950/60 backdrop-blur-2xl py-4 px-4 text-xs font-mono text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <p>
             TERRASYNX Global Intelligence System • Autonomous Early-Career Radar • 100% Cryptographic Verification
@@ -674,7 +689,7 @@ export default function App() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsShortcutsOpen(true)}
-              className="min-h-[44px] sm:min-h-0 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 text-slate-300 border border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="min-h-[44px] sm:min-h-0 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/10 flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <span>Hotkeys (⌘K)</span>
             </button>
