@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Hackathon, HackathonMode, HackathonStatusTab, HackathonStatus, StudentProfile } from '../types';
+import { Hackathon, HackathonMode, HackathonStatusTab, HackathonStatus, HackathonType, StudentProfile } from '../types';
 import { HackathonsService } from '../services/hackathonsService';
 import { LinkHealthBadge } from './LinkHealthBadge';
 import { 
@@ -75,6 +75,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const [selectedTheme, setSelectedTheme] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedType, setSelectedType] = useState<HackathonType | 'all'>('all'); // Prompt 51
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Tracked Hackathons state (persisted in localStorage)
@@ -258,6 +259,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
         theme: selectedTheme,
         status: selectedStatus,
         statusTab: selectedStatus === 'all' && activeStatusTab !== 'ALL' ? (activeStatusTab as HackathonStatusTab) : undefined,
+        type: selectedType, // Prompt 51
         query: searchQuery
       },
       referenceDate
@@ -268,7 +270,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
       HackathonTrackingService.isHackathonTracked(h.id, studentProfile?.email) ||
       trackedHackathonIds.includes(h.id)
     );
-  }, [allHackathons, selectedMode, selectedCountry, selectedTheme, selectedStatus, activeStatusTab, searchQuery, referenceDate, filterOnlyTracked, hackathonApplications, studentProfile?.email, trackedHackathonIds]);
+  }, [allHackathons, selectedMode, selectedCountry, selectedTheme, selectedStatus, selectedType, activeStatusTab, searchQuery, referenceDate, filterOnlyTracked, hackathonApplications, studentProfile?.email, trackedHackathonIds]);
 
   // Reset all filters
   const handleResetFilters = () => {
@@ -276,6 +278,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
     setSelectedCountry('all');
     setSelectedTheme('all');
     setSelectedStatus('all');
+    setSelectedType('all');
     setSearchQuery('');
   };
 
@@ -590,8 +593,22 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
           </select>
         </div>
 
+        {/* Type Filter ('hackathon' | 'coding-contest') (Prompt 51) */}
+        <div className="flex items-center gap-1.5">
+          <label className="text-slate-400 text-[11px]">Type:</label>
+          <select
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value as HackathonType | 'all')}
+            className="px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 focus:outline-none focus:border-orange-500/50"
+          >
+            <option value="all">All Types</option>
+            <option value="hackathon">Hackathon</option>
+            <option value="coding-contest">Coding Contest</option>
+          </select>
+        </div>
+
         {/* Reset button if any filter is dirty */}
-        {(selectedMode !== 'all' || selectedCountry !== 'all' || selectedTheme !== 'all' || selectedStatus !== 'all' || searchQuery) && (
+        {(selectedMode !== 'all' || selectedCountry !== 'all' || selectedTheme !== 'all' || selectedStatus !== 'all' || selectedType !== 'all' || searchQuery) && (
           <button
             onClick={handleResetFilters}
             className="ml-auto flex items-center gap-1 text-[11px] text-orange-400 hover:text-orange-300 transition-colors cursor-pointer"
@@ -600,6 +617,114 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
             <span>Reset Filters</span>
           </button>
         )}
+      </div>
+
+      {/* Prompt 51: "Browse more" row with plain link-out cards to Devpost, MLH, Devfolio and Unstop */}
+      <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-4 space-y-3" data-testid="browse-more-section">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Compass className="w-4 h-4 text-orange-400" />
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200">
+              Browse More
+            </h3>
+            <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
+              Explore global &amp; regional ecosystems directly on official directories
+            </span>
+          </div>
+          <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+            Plain Link-Out • No Scraper
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Devpost */}
+          <a
+            href="https://devpost.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="browse-more-devpost"
+            className="group p-3 rounded-xl bg-slate-950/70 hover:bg-slate-900/90 border border-slate-800 hover:border-orange-500/50 transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-white group-hover:text-orange-300 transition-colors">
+                Devpost
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-400 transition-colors" />
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-2">
+              Browse thousands of global hackathons and virtual builder sprints.
+            </p>
+            <div className="mt-2 text-[10px] font-mono text-orange-400 flex items-center gap-1">
+              <span>devpost.com</span>
+            </div>
+          </a>
+
+          {/* MLH */}
+          <a
+            href="https://mlh.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="browse-more-mlh"
+            className="group p-3 rounded-xl bg-slate-950/70 hover:bg-slate-900/90 border border-slate-800 hover:border-orange-500/50 transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-white group-hover:text-orange-300 transition-colors">
+                MLH (Major League Hacking)
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-400 transition-colors" />
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-2">
+              Official student hackathon league, Global Hack Week, and member events.
+            </p>
+            <div className="mt-2 text-[10px] font-mono text-orange-400 flex items-center gap-1">
+              <span>mlh.io</span>
+            </div>
+          </a>
+
+          {/* Devfolio */}
+          <a
+            href="https://devfolio.co"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="browse-more-devfolio"
+            className="group p-3 rounded-xl bg-slate-950/70 hover:bg-slate-900/90 border border-slate-800 hover:border-orange-500/50 transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-white group-hover:text-orange-300 transition-colors">
+                Devfolio
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-400 transition-colors" />
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-2">
+              India and global community hackathons, Web3 tracks, and university hackathons.
+            </p>
+            <div className="mt-2 text-[10px] font-mono text-orange-400 flex items-center gap-1">
+              <span>devfolio.co</span>
+            </div>
+          </a>
+
+          {/* Unstop */}
+          <a
+            href="https://unstop.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="browse-more-unstop"
+            className="group p-3 rounded-xl bg-slate-950/70 hover:bg-slate-900/90 border border-slate-800 hover:border-orange-500/50 transition-all flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-bold text-white group-hover:text-orange-300 transition-colors">
+                Unstop
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-400 transition-colors" />
+            </div>
+            <p className="text-[11px] text-slate-400 line-clamp-2">
+              Student competitions, corporate innovation challenges, and coding contests.
+            </p>
+            <div className="mt-2 text-[10px] font-mono text-orange-400 flex items-center gap-1">
+              <span>unstop.com</span>
+            </div>
+          </a>
+        </div>
       </div>
 
       {/* Main Hackathons Grid */}
@@ -644,6 +769,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
           {filteredHackathons.map((hackathon) => {
             const isTracked = trackedHackathonIds.includes(hackathon.id);
             const computedStatus = HackathonsService.getHackathonStatus(hackathon, referenceDate);
+            const hasFeeOrStake = HackathonsService.hasFeeOrStake(hackathon);
 
             return (
               <div
@@ -654,6 +780,15 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Type Badge (Prompt 51: 'hackathon' | 'coding-contest') */}
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border ${
+                        hackathon.type === 'coding-contest'
+                          ? 'bg-amber-950/80 text-amber-300 border-amber-800/60'
+                          : 'bg-slate-900 text-slate-300 border-slate-700'
+                      }`}>
+                        {hackathon.type === 'coding-contest' ? 'Coding Contest' : 'Hackathon'}
+                      </span>
+
                       {/* Mode Badge */}
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border ${
                         hackathon.mode === 'online'
@@ -682,6 +817,17 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                       >
                         {HackathonsService.getSourceBadgeText(hackathon.source)}
                       </span>
+
+                      {/* Prompt 51: Clear "Fee / stake required" flag */}
+                      {hasFeeOrStake && (
+                        <span 
+                          data-testid="hackathon-fee-stake-flag"
+                          className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-rose-950/90 text-rose-300 border border-rose-500/80 flex items-center gap-1 shadow-sm ring-1 ring-rose-500/30"
+                        >
+                          <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0" />
+                          <span>Fee / stake required</span>
+                        </span>
+                      )}
 
                       {/* Status Tag (Open Now / Upcoming / Passed) */}
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${
@@ -752,6 +898,16 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                       <div className="flex items-center gap-1.5 text-[11px] font-mono text-orange-400/90 font-semibold mb-0.5">
                         <Building2 className="w-3 h-3 shrink-0" />
                         <span className="truncate">{hackathon.organizer}</span>
+                        <span className="text-slate-600">•</span>
+                        <a 
+                          href={hackathon.officialUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-slate-400 hover:text-orange-300 transition-colors flex items-center gap-0.5 font-normal truncate"
+                          title={hackathon.officialUrl}
+                        >
+                          <span>{getDomainFromUrl(hackathon.officialUrl)}</span>
+                        </a>
                       </div>
                       <h3 className="text-lg font-bold text-white group-hover:text-orange-200 transition-colors leading-snug">
                         {hackathon.name}
@@ -823,28 +979,28 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                           </div>
                         </div>
 
-                        {/* Entry Fee (flag clearly if a fee or stake exists) */}
+                        {/* Entry Fee (Prompt 51: flag clearly if a fee or stake exists: "Fee / stake required") */}
                         <div 
                           data-testid="hackathon-fee-box"
                           className={`p-2.5 rounded-xl border flex items-center gap-2 transition-all ${
-                            feeExists
+                            (feeExists || hasFeeOrStake)
                               ? 'bg-rose-950/40 border-rose-500/70 text-rose-200 ring-1 ring-rose-500/30'
                               : 'bg-slate-900/60 border-slate-800 text-slate-300'
                           }`}
                         >
-                          {feeExists ? (
+                          {(feeExists || hasFeeOrStake) ? (
                             <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 animate-pulse" />
                           ) : (
                             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                           )}
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center justify-between gap-1 text-[10px] uppercase font-semibold">
-                              <span className={feeExists ? 'text-rose-400 font-bold flex items-center gap-1' : 'text-slate-400'}>
-                                {feeExists ? (hackathon.entryFeeText.toLowerCase().includes('stake') ? '⚠️ Fee / Stake' : '⚠️ Entry Fee') : 'Entry Fee (as listed)'}
+                              <span className={(feeExists || hasFeeOrStake) ? 'text-rose-400 font-bold flex items-center gap-1' : 'text-slate-400'}>
+                                {(feeExists || hasFeeOrStake) ? '⚠️ Fee / stake required' : 'Entry Fee (as listed)'}
                               </span>
-                              {feeExists ? (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-rose-900/80 text-rose-200 border border-rose-600 shadow-sm">
-                                  {hackathon.entryFeeText.toLowerCase().includes('stake') ? 'Stake Exists' : 'Fee Exists'}
+                              {(feeExists || hasFeeOrStake) ? (
+                                <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-rose-900/90 text-rose-200 border border-rose-500 shadow-sm">
+                                  Fee / stake required
                                 </span>
                               ) : (
                                 <span className="text-[9px] px-1.5 py-0.5 rounded font-mono bg-emerald-950/60 text-emerald-300 border border-emerald-800/50">
@@ -852,8 +1008,8 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                                 </span>
                               )}
                             </div>
-                            <div className={`text-xs font-semibold truncate mt-0.5 ${feeExists ? 'text-rose-200 font-bold' : 'text-emerald-300'}`}>
-                              {hackathon.entryFeeText}
+                            <div className={`text-xs font-semibold truncate mt-0.5 ${(feeExists || hasFeeOrStake) ? 'text-rose-200 font-bold' : 'text-emerald-300'}`}>
+                              {hackathon.entryFeeText || 'Fee / stake required'}
                             </div>
                           </div>
                         </div>
@@ -889,23 +1045,34 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                           <Clock className="w-3 h-3 text-amber-400" />
                           <span>Registration Deadline:</span>
                         </span>
-                        <span className="font-semibold text-amber-300">
-                          {formatDateDisplay(hackathon.registrationDeadline)}
-                        </span>
+                        {(() => {
+                          const isDeadlinePassed = hackathon.registrationDeadline && 
+                            new Date(hackathon.registrationDeadline + 'T23:59:59Z').getTime() < referenceDate.getTime();
+                          if (isDeadlinePassed) {
+                            return (
+                              <span className="font-semibold text-rose-400 flex items-center gap-1">
+                                <span>Registration closed</span>
+                                <span className="text-slate-400 font-normal">({formatDateDisplay(hackathon.registrationDeadline)})</span>
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="font-semibold text-amber-300">
+                              {formatDateDisplay(hackathon.registrationDeadline)}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
 
-                  {/* Previous Edition Facts & Confirmation Note (Prompt 44) */}
+                  {/* Previous Edition Facts & Confirmation Note (Prompt 44 & 48) */}
                   {hackathon.lastEditionNote && (
                     <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] font-mono text-slate-300 flex items-start gap-2">
                       <Info className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
                       <div className="leading-relaxed min-w-0">
-                        <span className="text-orange-400 font-semibold">Last Edition: </span>
+                        <span className="text-orange-400 font-semibold">{hackathon.type === 'coding-contest' ? 'Contest Note: ' : 'Last Edition: '}</span>
                         <span>{hackathon.lastEditionNote}</span>
-                        <div className="text-[10px] text-amber-300/90 font-sans italic mt-0.5">
-                          Confirm on the official page
-                        </div>
                       </div>
                     </div>
                   )}
@@ -920,6 +1087,12 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                       </div>
                     </div>
                   )}
+
+                  {/* Mandatory Official Page Confirmation Notice on Every Card (Prompt 48) */}
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900/50 border border-slate-800/80 text-[10px] font-mono text-amber-300/90">
+                    <ExternalLink className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span>Confirm on the official page</span>
+                  </div>
 
                   {/* Themes Tag Cloud */}
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
@@ -1023,8 +1196,9 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-slate-300 hover:text-orange-300 border border-slate-800 font-mono text-xs transition-colors cursor-pointer"
+                      title={hackathon.officialUrl}
                     >
-                      <span>Official Portal</span>
+                      <span>{getDomainFromUrl(hackathon.officialUrl) || 'Official Portal'}</span>
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
 

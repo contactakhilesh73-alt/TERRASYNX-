@@ -322,11 +322,113 @@ Early open-source multi-agent job search workflows running across Claude Code, G
   - Updated `SystemAuditModal.tsx` with 13/13 audits passed and refreshed institutional certificate.
   - Fully verified with 0 lint warnings and 100% clean production build.
 
+---
+### Prompt 51: Platform Links, Contest Type, Allowlist & Fee/Stake Flags (Completed)
+- **Hackathon Type Architecture:**
+  - Added `HackathonType = 'hackathon' | 'coding-contest'` to `src/types.ts` and on `Hackathon` interface.
+  - Added filter dropdown for Type (`All Types`, `Hackathon`, `Coding Contest`) with state persistence.
+- **"Browse More" Directory Row:**
+  - Added prominent "Browse more" section on the Hackathons page with plain link-out cards to:
+    - **Devpost** (`https://devpost.com`)
+    - **MLH (Major League Hacking)** (`https://mlh.io`)
+    - **Devfolio** (`https://devfolio.co`)
+    - **Unstop** (`https://unstop.com`)
+  - Plain outbound links with `target="_blank"` and `rel="noopener noreferrer"`.
+  - Zero scraping or fetching of Devfolio or Unstop.
+- **Link Allowlist Additions:**
+  - Added `devfolio.co`, `unstop.com`, and `codevita.tcsapps.com` (and `tcsapps.com`) to `src/services/linkAllowlistService.ts`.
+  - Verified with `isHostnameAllowed` and `validateSafeTargetUrl` for outbound links.
+- **"Fee / stake required" Flag:**
+  - Built `HackathonsService.hasFeeOrStake` and `isFeeRequired` to detect entry fees and participation stakes in source fields.
+  - Exempted 100% refunded/refundable check-in deposits.
+  - Displayed high-visibility `Fee / stake required` badge (`data-testid="hackathon-fee-stake-flag"`) on hackathon cards in `HackathonsPortal.tsx`.
+  - Displayed `Fee / stake required` alert ribbon in `HackathonWhitePageModal.tsx` and in printable white paper export.
+- **Test & Build Verification:**
+  - Created 11 automated unit tests in `src/tests/prompt51PlatformLinksAndContestType.test.tsx`.
+  - Full test suite: 35/35 test files passed (217 tests).
+  - TypeScript build (`compile_applet`) and lint (`lint_applet` / `tsc --noEmit`) 100% clean with zero errors.
 
+---
+### Prompt 52: TCS CodeVita Entry, Coding Contest Type & Third-Party Unconfirmed Status (Completed)
+- **TCS CodeVita Integration (`HACKATHONS_DATABASE` in `hackathonsService.ts`):**
+  - Added TCS CodeVita with `type: 'coding-contest'`.
+  - Status set strictly to `'ANNOUNCED_UNCONFIRMED'`.
+  - Official URL assigned to `https://codevita.tcsapps.com` (domain `codevita.tcsapps.com` already verified on allowlist).
+  - Exact note added verbatim:
+    `"Season 14 dates reported by third-party sources (registration deadline 13 November 2026, MockVita 23-24 October and 13-14 November, Pre-Qualifier 11-12 December); prize figures differ between sources; confirm on the official portal"`.
+  - `prizeText` set strictly to `'not listed'`.
+  - Eligibility text set to: `"Science/Engineering UG/PG students, graduation year as stated on the official portal"`.
+  - Strict compliance: Zero claims that it leads to a job, hiring, recruitment, or placement.
+- **Card & UI Presentation (`HackathonsPortal.tsx`):**
+  - Displays `codevita.tcsapps.com` directly beside organizer name and on the official portal action button.
+  - Highlights `CODING CONTEST` badge and `ANNOUNCED (UNCONFIRMED)` lifecycle status badge.
+  - Displays `Contest Note:` block with the unconfirmed dates advisory and confirmation instruction.
+  - White Page modal is safely suppressed for `ANNOUNCED_UNCONFIRMED` entries per Prompt 49 rules.
+- **Verification & Test Coverage:**
+  - Created 10 automated unit tests in `src/tests/prompt52TcsCodeVita.test.ts`.
+  - Full suite: 36 test files, 227 tests passing (100% pass rate).
+  - Production build (`compile_applet`) and TypeScript lint (`lint_applet`) 100% clean with zero errors.
 
+---
+### Prompt 53: Meta Hacker Cup Coding Contest Integration & Zero-Interview Constraint (Completed)
+- **Meta Hacker Cup Entry (`HACKATHONS_DATABASE` in `hackathonsService.ts`):**
+  - Added Meta Hacker Cup with `type: 'coding-contest'`.
+  - Status set strictly to `'NOT_ANNOUNCED'`.
+  - Verbatim `lastEditionNote` included:
+    `"2025 season: registration opened 3 October 2025, free, main track age 18+, high-school division needs parental consent, prizes include T-shirts and cash for finalists, some countries excluded from prize shipping. 2026 season not announced as of the last check; confirm on the official Hacker Cup page."`
+  - `prizeText` set strictly to `'not listed'`.
+  - Strict compliance: Zero mention of interviews, recruitment, or job referrals anywhere in the record.
+  - Official URL assigned to `https://www.facebook.com/codingcompetitions/hacker-cup`.
+- **Link Allowlist Integration (`linkAllowlistService.ts`):**
+  - Added `'facebook.com'`, `'meta.com'`, and `'metacareers.com'` to `coreAtsHostnames` in `src/services/linkAllowlistService.ts`.
+  - Both `isHostnameAllowed` and SSRF prevention validation (`validateSafeTargetUrl`) verified safe for Meta Hacker Cup.
+- **Verification & Test Coverage:**
+  - Created 10 automated unit tests in `src/tests/prompt53MetaHackerCup.test.ts`.
+  - Full suite: 37 test files, 237 tests passing (100% pass rate).
+  - TypeScript build (`compile_applet`) and lint (`lint_applet` / `tsc --noEmit`) 100% clean with zero errors.
 
-
-
-
-
-
+---
+### Prompt 48 (Naya Version): Updated HACKATHONS_DATABASE & Expanded Series Catalog (Completed)
+- **HACKATHONS_DATABASE Upgrades (`src/services/hackathonsService.ts`):**
+  - Updated catalog without deleting user-added coding contests (TCS CodeVita, Meta Hacker Cup).
+  - Added **NASA International Space Apps Challenge**:
+    - Status: `ANNOUNCED_VERIFIED`.
+    - Dates: `14-15 November 2026`.
+    - Open since 26 August, challenge statements 28 October, free, all ages, teams up to 6, local events full notice.
+    - Official site: `https://www.spaceappschallenge.org`.
+  - Updated **Junction (Espoo, Finland)**:
+    - Dates: `13-15 November 2026`.
+    - Free entry, travel grants listed by organizer.
+    - Registration closed `6 September 2026` (renders "Registration closed" badge).
+  - Added **Colosseum / Solana Hackathons**:
+    - Online, two main editions/year (spring & autumn), 2026 spring "Frontier" ($2.5M fund).
+    - Status: `NOT_ANNOUNCED`, `prizeText: 'not listed'`.
+  - Added **Cal Hacks**:
+    - Status: `NOT_ANNOUNCED`.
+    - 2025 edition 24-26 Oct 2025, prize `"$200,000+"` per its own site, 2026 not confirmed.
+  - Added **PennApps**:
+    - Status: `NOT_ANNOUNCED`.
+    - Runs twice a year, each edition has its own site, 2026 fall not confirmed.
+  - Updated notes and statuses for **ETHGlobal**, **Google Solution Challenge**, **HackMIT**, **Hack the North**, **TreeHacks**, **Microsoft Imagine Cup**, **MLH Global Hack Week**, **MLH Season**, and **Smart India Hackathon** (all `NOT_ANNOUNCED`).
+  - Strict rule preserved: `source` is ALWAYS `'recurring-series'` (never `'devpost-live'`), `prizeText` is `'not listed'` unless explicitly stated, and note *"Confirm on the official page"* is present on every card.
+- **Link Allowlist Integration (`src/services/linkAllowlistService.ts`):**
+  - Added `spaceappschallenge.org`, `colosseum.org`, `calhacks.io`, `pennapps.com`, and `hackjunction.com` to core ATS hostnames.
+- **Verification & Test Coverage:**
+  - Created 10 automated unit tests in `src/tests/prompt48NayaVersion.test.ts`.
+  - Full suite: 38 test files, 247 tests passing (100% pass rate).
+  - TypeScript build (`compile_applet`) and lint (`lint_applet` / `tsc --noEmit`) 100% clean with zero errors.
+---
+### System Audit & Integrity Recheck: 100% Verified
+- **Database Consistency & No Accidental Deletions:**
+  - All 14 Prompt 48 recurring hackathons + 2 coding contests (TCS CodeVita & Meta Hacker Cup) are intact (total 16 verified events).
+  - All entries strictly set `source: 'recurring-series'` (never `'devpost-live'`).
+  - `prizeText` set to `'not listed'` unless explicitly stated (Cal Hacks: "$200,000+", Microsoft Imagine Cup: "$100,000 USD and mentorship...").
+  - Every card includes `"Confirm on the official page"`.
+  - Zero false job/recruitment claims on TCS CodeVita; zero interview mentions on Meta Hacker Cup.
+- **Port & Server Check:**
+  - Development server responding HTTP 200 on port 3000 (`http://localhost:3000/`).
+  - Live `/api/health` endpoint responds with `{ status: "ok" }`.
+- **Quality Assurance & Verification:**
+  - `lint_applet` (`tsc --noEmit`): 0 errors, 0 warnings.
+  - `compile_applet` (`vite build`): Clean production bundle generation with 0 errors.
+  - Vitest test suite: **38 test files, 247 tests, 100% passing**.

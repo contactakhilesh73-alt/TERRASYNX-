@@ -21,14 +21,14 @@ describe('Prompt 45: Safety Badges & Honest Hackathon Labeling', () => {
   });
 
   it('evaluates prize text as "listed by organizer" (or "not listed")', () => {
-    // Hackathons with explicitly listed cash/prize pools
-    const withPrize = allHackathons.find(h => h.prizeText.includes('$80,000'));
+    // Hackathons with explicitly listed cash/prize pools (e.g. Microsoft Imagine Cup per Prompt 48)
+    const withPrize = allHackathons.find(h => h.prizeText.includes('$100,000'));
     expect(withPrize).toBeDefined();
     if (withPrize) {
       const display = HackathonsService.getPrizeDisplay(withPrize.prizeText);
       expect(display.isListed).toBe(true);
       expect(display.badgeText).toBe('listed by organizer');
-      expect(display.displayText).toContain('$80,000');
+      expect(display.displayText).toContain('$100,000');
     }
 
     // Hackathons where prize is not listed / unconfirmed

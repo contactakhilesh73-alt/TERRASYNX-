@@ -265,7 +265,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         portal: 'research',
         status: 'all'
       });
-      expect(researchCycles.length).toBe(23);
+      expect(researchCycles.length).toBe(26);
       for (const c of researchCycles) {
         expect(UpcomingInternshipsService.isCycleInPortal(c, 'research')).toBe(true);
       }

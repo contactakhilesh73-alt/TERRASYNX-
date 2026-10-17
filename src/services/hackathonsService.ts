@@ -9,93 +9,106 @@
  * - Honest Empty State when filters yield 0 matches
  */
 
-import { Hackathon, HackathonMode, HackathonSource, HackathonStatusTab, HackathonStatus } from '../types';
+import { Hackathon, HackathonMode, HackathonSource, HackathonStatusTab, HackathonStatus, HackathonType } from '../types';
 
 export const HACKATHONS_DATABASE: Hackathon[] = [
   {
-    id: 'hack_devpost_ai_challenge',
-    name: 'Global AI Innovators Challenge',
-    organizer: 'Devpost & AWS',
-    mode: 'online',
-    country: 'Online/Global',
-    themes: ['AI / Machine Learning', 'Cloud & DevOps', 'Developer Tools'],
-    eligibilityText: 'Open to developers, students, and founders worldwide (18+). Solo or teams up to 4.',
-    entryFeeText: '100% Free Entry',
-    prizeText: '$80,000 USD in cash + AWS GPU credits',
-    dates: 'Oct 15 - Nov 28, 2026',
-    startDate: '2026-10-15',
-    endDate: '2026-11-28',
-    registrationDeadline: '2026-11-20',
-    officialUrl: 'https://devpost.com/hackathons',
-    source: 'devpost-live',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'Build enterprise-grade AI assistants and autonomous workflows using foundation models on AWS Bedrock.',
-    locationDetails: 'Virtual / Online Global'
-  },
-  {
-    id: 'hack_solana_renaissance',
-    name: 'Solana Global Renaissance Hackathon',
-    organizer: 'Solana Foundation',
-    mode: 'online',
-    country: 'Online/Global',
-    themes: ['Web3 / Blockchain', 'Fintech', 'Infrastructure'],
-    eligibilityText: 'Open to all builders, engineers, and creators globally. No degree requirement.',
-    entryFeeText: '100% Free Entry',
-    prizeText: '$1,000,000+ USD in prizes & seed funding',
-    dates: 'Oct 01 - Nov 15, 2026',
-    startDate: '2026-10-01',
-    endDate: '2026-11-15',
-    registrationDeadline: '2026-11-05',
-    officialUrl: 'https://solana.com/hackathon',
-    source: 'devpost-live',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'Premier global Web3 hackathon for high-throughput decentralized apps, payments, and DePIN projects.',
-    locationDetails: 'Virtual / Online Global'
-  },
-  {
-    id: 'hack_devpost_gemini_sprint',
-    name: 'Gemini Multimodal Innovation Challenge',
-    organizer: 'Google Cloud & Devpost',
-    mode: 'online',
-    country: 'Online/Global',
-    themes: ['AI / Machine Learning', 'Developer Tools', 'Social Impact'],
-    eligibilityText: 'Open to students, researchers, and professional developers globally.',
-    entryFeeText: 'Free Entry + Free Google Cloud API Credits',
-    prizeText: '$50,000 USD + Google Cloud Innovator perks',
-    dates: 'Oct 05 - Nov 30, 2026',
-    startDate: '2026-10-05',
-    endDate: '2026-11-30',
-    registrationDeadline: '2026-11-22',
-    officialUrl: 'https://devpost.com/software',
-    source: 'devpost-live',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'Create revolutionary multimodal solutions leveraging Gemini 2.0 / Flash across text, vision, and real-time audio.',
-    locationDetails: 'Virtual / Online Global'
-  },
-  {
-    id: 'hack_calhacks_13',
-    name: 'CalHacks 13.0 (World’s Largest Collegiate Hackathon)',
-    organizer: 'UC Berkeley Cal Hacks',
+    id: 'hack_nasa_space_apps',
+    name: 'NASA International Space Apps Challenge',
+    organizer: 'NASA',
+    type: 'hackathon',
     mode: 'hybrid',
-    country: 'United States',
-    themes: ['AI / Machine Learning', 'Developer Tools', 'Hardware & Robotics'],
-    eligibilityText: 'Open to all currently enrolled undergraduate and graduate university students worldwide.',
-    entryFeeText: '100% Free Entry (Travel grants available)',
-    prizeText: '$150,000+ USD in prizes & incubator fast-tracks',
-    dates: 'Oct 24 - Oct 26, 2026',
-    startDate: '2026-10-24',
-    endDate: '2026-10-26',
-    registrationDeadline: '2026-10-18',
-    officialUrl: 'https://calhacks.io',
+    country: 'Online/Global',
+    themes: ['Space Exploration', 'Earth Science', 'Open Data', 'AI / Machine Learning'],
+    eligibilityText: 'Open to all ages, teams up to 6. Free participation. Some local events are full.',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: '14-15 November 2026',
+    startDate: '2026-11-14',
+    endDate: '2026-11-15',
+    registrationDeadline: '2026-11-15',
+    datesNote: 'Registration open since 26 August, challenge statements 28 October; some local events full; confirm on the official page',
+    lastEditionNote: 'Worldwide local events, registration open since 26 August, challenge statements 28 October, free, open to all ages, teams up to 6, some local events are full. Confirm on the official page.',
+    officialUrl: 'https://www.spaceappschallenge.org',
     source: 'recurring-series',
     status: 'ANNOUNCED_VERIFIED',
-    description: 'The world’s largest collegiate hackathon hosted at UC Berkeley and the San Francisco Metreon.',
-    locationDetails: 'UC Berkeley / San Francisco, CA & Online'
+    description: 'NASA flagship international hackathon where teams address real-world Earth and space science challenges using open NASA data.',
+    locationDetails: 'Worldwide Local Events & Virtual Global'
+  },
+  {
+    id: 'hack_colosseum_solana',
+    name: 'Colosseum / Solana Hackathons',
+    organizer: 'Colosseum & Solana Foundation',
+    type: 'hackathon',
+    mode: 'online',
+    country: 'Online/Global',
+    themes: ['Web3 / Blockchain', 'Crypto Infrastructure', 'DeFi', 'Open Source'],
+    eligibilityText: 'Open to builders, founders, and engineers globally.',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: 'Runs twice per year (spring and autumn). Next edition NOT_ANNOUNCED; confirm on the official page',
+    lastEditionNote: 'Online, two main editions per year (spring and autumn); 2026 spring edition "Frontier" ran 6 April to 11 May with a $2.5M venture fund; next edition NOT_ANNOUNCED. Confirm on the official page.',
+    officialUrl: 'https://www.colosseum.org',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'Premier online Solana hackathon platform running bi-annual global competitions with venture funding tracks.',
+    locationDetails: 'Virtual / Online Global'
+  },
+  {
+    id: 'hack_cal_hacks',
+    name: 'Cal Hacks',
+    organizer: 'Cal Hacks (UC Berkeley)',
+    type: 'hackathon',
+    mode: 'in-person',
+    country: 'United States',
+    themes: ['AI / Machine Learning', 'Developer Tools', 'Open Source', 'Social Impact'],
+    eligibilityText: 'Undergraduate and collegiate students worldwide. Free entry.',
+    entryFeeText: 'Free',
+    prizeText: '$200,000+',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: '2026 not confirmed; confirm on the official page',
+    lastEditionNote: '2025 edition 24-26 Oct 2025, prize "$200,000+" per its own site; 2026 not confirmed. Confirm on the official page.',
+    officialUrl: 'https://calhacks.io',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'World’s largest collegiate hackathon hosted at UC Berkeley, uniting builders across global engineering tracks.',
+    locationDetails: 'San Francisco Bay Area / Berkeley, CA'
+  },
+  {
+    id: 'hack_pennapps',
+    name: 'PennApps',
+    organizer: 'University of Pennsylvania',
+    type: 'hackathon',
+    mode: 'in-person',
+    country: 'United States',
+    themes: ['Software Engineering', 'Hardware / IoT', 'Healthcare', 'FinTech'],
+    eligibilityText: 'College and university students globally. Travel reimbursements and mentorship provided.',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: 'Runs twice a year, each edition has its own site; 2026 fall not confirmed; confirm on the official page',
+    lastEditionNote: 'Runs twice a year, each edition has its own site; 2026 fall not confirmed. Confirm on the official page.',
+    officialUrl: 'https://pennapps.com',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'The nation’s first student-run college hackathon, hosted by the University of Pennsylvania twice per year.',
+    locationDetails: 'Philadelphia, PA, USA'
   },
   {
     id: 'hack_ethglobal',
     name: 'ETHGlobal',
     organizer: 'ETHGlobal',
+    type: 'hackathon',
     mode: 'hybrid',
     country: 'Online/Global',
     themes: ['Web3 / Blockchain', 'Open Source', 'Cryptography', 'Developer Tools'],
@@ -107,6 +120,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     endDate: '',
     registrationDeadline: '',
     datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Premier Ethereum hackathon series. Confirm on the official page.',
     officialUrl: 'https://ethglobal.com/events',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
@@ -114,29 +128,147 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     locationDetails: 'Global Events & Online Streams'
   },
   {
-    id: 'hack_open_source_hacktoberfest',
-    name: 'Hacktoberfest 2026 Global Build Sprint',
-    organizer: 'DigitalOcean, GitHub & Cloudflare',
+    id: 'hack_google_solution_challenge',
+    name: 'Google Solution Challenge',
+    organizer: 'Google Developer Groups (GDG)',
+    type: 'hackathon',
     mode: 'online',
     country: 'Online/Global',
-    themes: ['Open Source', 'Developer Tools'],
-    eligibilityText: 'Open to everyone, students, beginners, and senior engineers globally.',
-    entryFeeText: '100% Free Entry',
-    prizeText: 'Official Hacktoberfest tree planted or limited kit + digital credentials',
-    dates: 'Oct 01 - Oct 31, 2026',
-    startDate: '2026-10-01',
-    endDate: '2026-10-31',
-    registrationDeadline: '2026-10-31',
-    officialUrl: 'https://hacktoberfest.com',
+    themes: ['AI / Machine Learning', 'Social Impact', 'Sustainability'],
+    eligibilityText: 'Student teams, via Google Developer Groups',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Last edition submission deadline 20 April 2026 PT. Confirm on the official page.',
+    officialUrl: 'https://developers.google.com/community/gdsc-solution-challenge',
     source: 'recurring-series',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'Month-long celebration of open source code contribution, mentorship, and community pull requests.',
+    status: 'NOT_ANNOUNCED',
+    description: 'Annual global contest inviting student developer teams via Google Developer Groups to build solutions for local communities.',
+    locationDetails: 'Virtual / Online Global'
+  },
+  {
+    id: 'hack_hackmit',
+    name: 'HackMIT',
+    organizer: 'MIT TechX',
+    type: 'hackathon',
+    mode: 'hybrid',
+    country: 'United States',
+    themes: ['AI / Machine Learning', 'BioTech / Healthcare', 'Systems'],
+    eligibilityText: 'Open to undergraduate students globally across any institution or degree track. Selective application, travel terms vary by year.',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Last edition 19-20 Sept 2026, selective application, travel terms vary by year. Confirm on the official page.',
+    officialUrl: 'https://hackmit.org',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'MIT’s flagship annual student hackathon gathering student innovators on MIT campus and online.',
+    locationDetails: 'Cambridge, MA, USA & Hybrid'
+  },
+  {
+    id: 'hack_hack_the_north',
+    name: 'Hack the North',
+    organizer: 'University of Waterloo & Techvibes',
+    type: 'hackathon',
+    mode: 'in-person',
+    country: 'Canada',
+    themes: ['AI / Machine Learning', 'Fintech', 'Infrastructure'],
+    eligibilityText: 'Open to undergraduate students worldwide. Free travel, food, and accommodation provided.',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Last edition 18-20 Sept 2026, Waterloo. Confirm on the official page.',
+    officialUrl: 'https://hackthenorth.com',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'Canada’s biggest hackathon bringing together over 1,000 students from around the globe.',
+    locationDetails: 'Waterloo, Ontario, Canada'
+  },
+  {
+    id: 'hack_treehacks_stanford',
+    name: 'TreeHacks',
+    organizer: 'Stanford University',
+    type: 'hackathon',
+    mode: 'in-person',
+    country: 'United States',
+    themes: ['Healthcare', 'Sustainability', 'AI / Machine Learning', 'Education'],
+    eligibilityText: 'Open to all undergraduate and graduate students globally. Flight reimbursements provided for accepted hackers.',
+    entryFeeText: '100% Free Entry + Travel scholarships available',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Last edition 13-15 Feb 2026; 2027 not confirmed, prize figures differ between sources, do not state one. Confirm on the official page.',
+    officialUrl: 'https://treehacks.com',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'Stanford University’s premier hackathon convening elite student builders to tackle urgent global problems.',
+    locationDetails: 'Stanford University, Stanford, CA'
+  },
+  {
+    id: 'hack_junction_europe',
+    name: 'Junction',
+    organizer: 'Junction',
+    type: 'hackathon',
+    mode: 'hybrid',
+    country: 'Finland',
+    themes: ['AI / Machine Learning', 'Developer Tools', 'Gaming & XR'],
+    eligibilityText: 'Open to all international students, software engineers, and digital designers.',
+    entryFeeText: 'Free entry (travel grants listed by the organizer)',
+    prizeText: 'not listed',
+    dates: '13-15 Nov 2026',
+    startDate: '2026-11-13',
+    endDate: '2026-11-15',
+    registrationDeadline: '2026-09-06',
+    lastEditionNote: '13-15 Nov 2026, Espoo, Finland, free entry, travel grants listed by the organizer, registration closed 6 Sept 2026. Confirm on the official page.',
+    officialUrl: 'https://hackjunction.com',
+    source: 'recurring-series',
+    status: 'ANNOUNCED_UNCONFIRMED',
+    description: 'Europe’s leading flagship hackathon held at Dipoli, Aalto University, bringing builders together for a 48-hour challenge.',
+    locationDetails: 'Espoo, Finland & Hybrid'
+  },
+  {
+    id: 'hack_microsoft_imagine_cup',
+    name: 'Microsoft Imagine Cup',
+    organizer: 'Microsoft',
+    type: 'hackathon',
+    mode: 'online',
+    country: 'Online/Global',
+    themes: ['AI / Machine Learning', 'Cloud & DevOps', 'Social Impact'],
+    eligibilityText: 'Open to students worldwide 16+ enrolled in high school, undergraduate, or graduate programs.',
+    entryFeeText: '100% Free Entry + Azure Cloud Sponsorship',
+    prizeText: '$100,000 USD and mentorship per 2025/2026 official pages',
+    dates: 'Confirm on the official page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: '2027 dates: confirm on the official page',
+    lastEditionNote: 'Prize $100,000 and mentorship per 2025/2026 official pages, 2027 dates: confirm on the official page. Confirm on the official page.',
+    officialUrl: 'https://imaginecup.microsoft.com',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'Student technology competition empowering young innovators to launch viable AI startups.',
     locationDetails: 'Virtual / Online Global'
   },
   {
     id: 'hack_mlh_global_hack_week',
     name: 'MLH Global Hack Week',
     organizer: 'Major League Hacking',
+    type: 'hackathon',
     mode: 'online',
     country: 'Online/Global',
     themes: ['AI / Machine Learning', 'Web Development', 'Open Source', 'Beginner Friendly'],
@@ -148,6 +280,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     endDate: '',
     registrationDeadline: '',
     datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Recurring global week-long hackathon series. Confirm on the official page.',
     officialUrl: 'https://ghw.mlh.com',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
@@ -158,6 +291,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     id: 'hack_mlh_hackathon_season',
     name: 'MLH Season',
     organizer: 'Major League Hacking',
+    type: 'hackathon',
     mode: 'hybrid',
     country: 'Online/Global',
     themes: ['Collegiate Hacking', 'Software Engineering', 'Open Source'],
@@ -169,6 +303,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     endDate: '',
     registrationDeadline: '',
     datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'Collegiate hackathon league running hundreds of student-run hackathons throughout the academic year. Confirm on the official page.',
     officialUrl: 'https://mlh.com/events',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
@@ -179,6 +314,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     id: 'hack_smart_india_hackathon',
     name: 'Smart India Hackathon',
     organizer: 'Ministry of Education & AICTE',
+    type: 'hackathon',
     mode: 'in-person',
     country: 'India',
     themes: ['Smart Automation', 'CleanTech & Environment', 'Healthcare', 'Agriculture', 'FinTech'],
@@ -191,6 +327,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     endDate: '',
     registrationDeadline: '',
     datesNote: 'Dates change every edition, confirm on the official page',
+    lastEditionNote: 'College SPOC only. Entry strictly through institute Single Point of Contact nomination. Confirm on the official page.',
     officialUrl: 'https://sih.gov.in',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
@@ -198,209 +335,49 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     locationDetails: 'Multiple Nodal Centers across India'
   },
   {
-    id: 'hack_junction_europe',
-    name: 'Junction Europe 2026 (Europe’s Flagship Hackathon)',
-    organizer: 'Junction',
-    mode: 'hybrid',
-    country: 'Finland',
-    themes: ['AI / Machine Learning', 'Developer Tools', 'Gaming & XR'],
-    eligibilityText: 'Open to all international students, software engineers, and digital designers.',
-    entryFeeText: 'Free Entry + Free Meals & Traditional Finnish Sauna',
-    prizeText: '€35,000 EUR in cash prizes + sponsor contracts',
-    dates: 'Nov 06 - Nov 08, 2026',
-    startDate: '2026-11-06',
-    endDate: '2026-11-08',
-    registrationDeadline: '2026-10-20',
-    officialUrl: 'https://hackjunction.com',
-    source: 'recurring-series',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'Europe’s leading hackathon held at Dipoli, bringing 1,500+ builders together for a 48-hour challenge.',
-    locationDetails: 'Espoo / Helsinki, Finland & Hybrid'
-  },
-  {
-    id: 'hack_google_solution_challenge',
-    name: 'Google Solution Challenge',
-    organizer: 'Google Developer Groups (GDG)',
+    id: 'contest_tcs_codevita',
+    name: 'TCS CodeVita',
+    organizer: 'Tata Consultancy Services (TCS)',
+    type: 'coding-contest',
     mode: 'online',
     country: 'Online/Global',
-    themes: ['AI / Machine Learning', 'Social Impact', 'Sustainability'],
-    eligibilityText: 'Student teams, via Google Developer Groups',
+    themes: ['Competitive Programming', 'Algorithms', 'Data Structures'],
+    eligibilityText: 'Science/Engineering UG/PG students, graduation year as stated on the official portal',
     entryFeeText: 'Free',
     prizeText: 'not listed',
-    dates: 'Confirm on the official page',
+    dates: 'Confirm on the official portal',
     startDate: '',
     endDate: '',
     registrationDeadline: '',
-    datesNote: 'Dates change every edition, confirm on the official page',
-    lastEditionNote: 'Last edition submission deadline 20 April 2026 PT',
-    officialUrl: 'https://developers.google.com/community/gdsc-solution-challenge',
-    source: 'recurring-series',
-    status: 'NOT_ANNOUNCED',
-    description: 'Annual global contest inviting student developer teams via Google Developer Groups to build solutions for local communities.',
-    locationDetails: 'Virtual / Online Global'
-  },
-  {
-    id: 'hack_microsoft_imagine_cup',
-    name: 'Microsoft Imagine Cup 2027',
-    organizer: 'Microsoft',
-    mode: 'online',
-    country: 'Online/Global',
-    themes: ['AI / Machine Learning', 'Cloud & DevOps', 'Social Impact'],
-    eligibilityText: 'Open to students worldwide 16+ enrolled in high school, undergraduate, or graduate programs.',
-    entryFeeText: '100% Free Entry + Azure Cloud Sponsorship',
-    prizeText: '$100,000 USD + Mentorship session with Satya Nadella',
-    dates: 'Dec 01, 2026 - May 15, 2027',
-    startDate: '2026-12-01',
-    endDate: '2027-05-15',
-    registrationDeadline: '2027-01-25',
-    officialUrl: 'https://imaginecup.microsoft.com',
-    source: 'recurring-series',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'The Olympics of student technology competitions, empowering young innovators to launch viable AI startups.',
-    locationDetails: 'Virtual / World Finals in Seattle, WA'
-  },
-  {
-    id: 'hack_treehacks_stanford',
-    name: 'TreeHacks 2027',
-    organizer: 'Stanford University',
-    mode: 'in-person',
-    country: 'United States',
-    themes: ['Healthcare', 'Sustainability', 'AI / Machine Learning', 'Education'],
-    eligibilityText: 'Open to all undergraduate and graduate students globally. Flight reimbursements provided for accepted hackers.',
-    entryFeeText: '100% Free Entry + Travel scholarships available',
-    prizeText: '$120,000+ USD in category prizes & VC angel grants',
-    dates: 'Feb 19 - Feb 21, 2027',
-    startDate: '2027-02-19',
-    endDate: '2027-02-21',
-    registrationDeadline: '2027-01-15',
-    officialUrl: 'https://treehacks.com',
+    datesNote: 'Season 14 dates reported by third-party sources (registration deadline 13 November 2026, MockVita 23-24 October and 13-14 November, Pre-Qualifier 11-12 December); prize figures differ between sources; confirm on the official portal',
+    lastEditionNote: 'Season 14 dates reported by third-party sources (registration deadline 13 November 2026, MockVita 23-24 October and 13-14 November, Pre-Qualifier 11-12 December); prize figures differ between sources; confirm on the official portal. Confirm on the official page.',
+    officialUrl: 'https://codevita.tcsapps.com',
     source: 'recurring-series',
     status: 'ANNOUNCED_UNCONFIRMED',
-    description: 'Stanford University’s premier hackathon, convening 1,200+ elite student builders to tackle urgent global problems.',
-    locationDetails: 'Stanford University, Stanford, CA'
-  },
-  {
-    id: 'hack_ai_engineer_challenge',
-    name: 'AI Engineer World Summit Hackathon',
-    organizer: 'AI Engineer & Latent Space',
-    mode: 'online',
-    country: 'Online/Global',
-    themes: ['AI / Machine Learning', 'Developer Tools', 'Open Source'],
-    eligibilityText: 'Open to software developers, ML researchers, and autonomous agent creators worldwide.',
-    entryFeeText: '100% Free Entry',
-    prizeText: '$40,000 USD + GPU compute allocations',
-    dates: 'Nov 25 - Dec 10, 2026',
-    startDate: '2026-11-25',
-    endDate: '2026-12-10',
-    registrationDeadline: '2026-11-24',
-    officialUrl: 'https://ai.engineer',
-    source: 'devpost-live',
-    status: 'ANNOUNCED_VERIFIED',
-    description: 'Sprint focused on production-ready autonomous coding agents, evals, and local inference toolchains.',
+    description: 'Global programming competition organized by TCS for science and engineering students worldwide. Season 14 dates reported by third-party sources; confirm on the official portal.',
     locationDetails: 'Virtual / Online Global'
   },
   {
-    id: 'hack_hackmit',
-    name: 'HackMIT',
-    organizer: 'MIT TechX',
-    mode: 'hybrid',
-    country: 'United States',
-    themes: ['AI / Machine Learning', 'BioTech / Healthcare', 'Systems'],
-    eligibilityText: 'Open to undergraduate students globally across any institution or degree track. Selective application, travel terms vary by year.',
-    entryFeeText: 'Free',
-    prizeText: 'not listed',
-    dates: 'Confirm on the official page',
-    startDate: '',
-    endDate: '',
-    registrationDeadline: '',
-    datesNote: 'Dates change every edition, confirm on the official page',
-    lastEditionNote: 'Last edition 19-20 Sept 2026, selective application, travel terms vary by year',
-    officialUrl: 'https://hackmit.org',
-    source: 'recurring-series',
-    status: 'NOT_ANNOUNCED',
-    description: 'MIT’s flagship annual student hackathon gathering student innovators on MIT campus and online.',
-    locationDetails: 'Cambridge, MA, USA & Hybrid'
-  },
-  {
-    id: 'hack_pennapps_xxvi',
-    name: 'PennApps XXVI (America’s First Student Hackathon)',
-    organizer: 'University of Pennsylvania',
-    mode: 'in-person',
-    country: 'United States',
-    themes: ['AI / Machine Learning', 'Healthcare', 'Fintech'],
-    eligibilityText: 'Open to high school and college students aged 15+. All academic majors welcome.',
-    entryFeeText: '100% Free Entry + On-site meals & swag',
-    prizeText: '$45,000+ USD in cash and hardware prizes',
-    dates: 'Sep 04 - Sep 06, 2026',
-    startDate: '2026-09-04',
-    endDate: '2026-09-06',
-    registrationDeadline: '2026-08-10',
-    officialUrl: 'https://pennapps.com',
-    source: 'recurring-series',
-    status: 'PASSED',
-    description: 'The nation’s first collegiate hackathon founded in 2009, continuing its heritage of high-impact engineering.',
-    locationDetails: 'Philadelphia, PA, USA'
-  },
-  {
-    id: 'hack_hack_the_north',
-    name: 'Hack the North',
-    organizer: 'University of Waterloo & Techvibes',
-    mode: 'in-person',
-    country: 'Canada',
-    themes: ['AI / Machine Learning', 'Fintech', 'Infrastructure'],
-    eligibilityText: 'Open to undergraduate students worldwide. Free travel, food, and accommodation provided.',
-    entryFeeText: 'Free',
-    prizeText: 'not listed',
-    dates: 'Confirm on the official page',
-    startDate: '',
-    endDate: '',
-    registrationDeadline: '',
-    datesNote: 'Dates change every edition, confirm on the official page',
-    lastEditionNote: 'Last edition 18-20 Sept 2026, Waterloo',
-    officialUrl: 'https://hackthenorth.com',
-    source: 'recurring-series',
-    status: 'NOT_ANNOUNCED',
-    description: 'Canada’s biggest hackathon bringing together over 1,000 students from around the globe.',
-    locationDetails: 'Waterloo, Ontario, Canada'
-  },
-  {
-    id: 'hack_nasa_space_apps_2026',
-    name: 'NASA International Space Apps Challenge',
-    organizer: 'NASA & International Space Agencies',
-    mode: 'hybrid',
-    country: 'Online/Global',
-    themes: ['Space & Astronomy', 'Climate & CleanTech', 'Open Source'],
-    eligibilityText: 'Open to all curious problem solvers, students, and engineers globally.',
-    entryFeeText: '100% Free Entry (Open Data Initiative)',
-    prizeText: 'Global Winner Accolades + NASA Launch Viewing Invitation',
-    dates: 'Oct 03 - Oct 04, 2026',
-    startDate: '2026-10-03',
-    endDate: '2026-10-04',
-    registrationDeadline: '2026-10-02',
-    officialUrl: 'https://spaceappschallenge.org',
-    source: 'recurring-series',
-    status: 'PASSED',
-    description: 'Global hackathon using open NASA and ESA earth observation data to solve real challenges on Earth and in space.',
-    locationDetails: 'Virtual & 300+ Local Lead Centers Worldwide'
-  },
-  {
-    id: 'hack_chainlink_block_magic',
-    name: 'Chainlink Block Magic Global Hackathon',
-    organizer: 'Chainlink Labs',
+    id: 'contest_meta_hacker_cup',
+    name: 'Meta Hacker Cup',
+    organizer: 'Meta',
+    type: 'coding-contest',
     mode: 'online',
     country: 'Online/Global',
-    themes: ['Web3 / Blockchain', 'Fintech', 'AI / Machine Learning'],
-    eligibilityText: 'Open globally to all software engineers, DeFi developers, and researchers.',
-    entryFeeText: '100% Free Entry',
-    prizeText: '$250,000+ USD in bounties and startup grants',
-    dates: 'Apr 10 - May 15, 2026',
-    startDate: '2026-04-10',
-    endDate: '2026-05-15',
-    registrationDeadline: '2026-05-01',
-    officialUrl: 'https://chain.link/hackathon',
-    source: 'devpost-live',
-    status: 'PASSED',
-    description: 'Build decentralized applications connecting smart contracts with real-world data and verifiable compute.',
+    themes: ['Competitive Programming', 'Algorithms', 'Data Structures', 'Problem Solving'],
+    eligibilityText: 'Main track age 18+, high-school division needs parental consent, subject to official terms',
+    entryFeeText: 'Free',
+    prizeText: 'not listed',
+    dates: 'Confirm on the official Hacker Cup page',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '',
+    datesNote: '2026 season not announced as of the last check; confirm on the official Hacker Cup page.',
+    lastEditionNote: '2025 season: registration opened 3 October 2025, free, main track age 18+, high-school division needs parental consent, prizes include T-shirts and cash for finalists, some countries excluded from prize shipping. 2026 season not announced as of the last check; confirm on the official Hacker Cup page.',
+    officialUrl: 'https://www.facebook.com/codingcompetitions/hacker-cup',
+    source: 'recurring-series',
+    status: 'NOT_ANNOUNCED',
+    description: 'Annual global algorithmic programming contest hosted by Meta for competitors across multiple online rounds.',
     locationDetails: 'Virtual / Online Global'
   }
 ];
@@ -411,6 +388,7 @@ export interface HackathonFilters {
   theme?: string;
   status?: string; // 'all' | 'NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED'
   statusTab?: HackathonStatusTab;
+  type?: HackathonType | 'all'; // Prompt 51: 'hackathon' | 'coding-contest'
   query?: string;
 }
 
@@ -535,6 +513,14 @@ export class HackathonsService {
       // 2. Status filter ('NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED')
       if (filters.status && filters.status !== 'all') {
         if (hackathon.status !== filters.status) {
+          return false;
+        }
+      }
+
+      // 2b. Type filter ('hackathon' | 'coding-contest') (Prompt 51)
+      if (filters.type && filters.type !== 'all') {
+        const itemType = hackathon.type || 'hackathon';
+        if (itemType !== filters.type) {
           return false;
         }
       }
@@ -684,11 +670,18 @@ export class HackathonsService {
   }
 
   /**
-   * Prompt 45: Flag clearly if an entry fee exists (Prompt 45)
+   * Prompt 45 & 51: Flag clearly if an entry fee or stake exists
+   * For any hackathon whose source mentions a stake or entry fee, show a clear "Fee / stake required" flag.
    */
   public static isFeeRequired(entryFeeText?: string): boolean {
     if (!entryFeeText) return false;
     const lower = entryFeeText.toLowerCase().trim();
+
+    // Explicitly refunded/refundable stake on check-in is not a net entry fee
+    if (lower.includes('refunded stake') || lower.includes('refundable stake') || lower.includes('100% refunded')) {
+      return false;
+    }
+
     if (
       lower === 'free' ||
       lower.startsWith('free') ||
@@ -698,7 +691,12 @@ export class HackathonsService {
       lower.includes('$0') ||
       lower.includes('zero')
     ) {
-      if (!lower.includes('not free') && !lower.includes('fee exists') && !lower.includes('stake required')) {
+      if (
+        !lower.includes('not free') && 
+        !lower.includes('fee exists') && 
+        !lower.includes('stake required') && 
+        !lower.includes('fee required')
+      ) {
         return false;
       }
     }
@@ -709,7 +707,8 @@ export class HackathonsService {
       lower.includes('entry fee') ||
       lower.includes('stake required') ||
       lower.includes('stake exists') ||
-      (lower.includes('stake') && !lower.includes('refund')) ||
+      lower.includes('deposit stake') ||
+      (lower.includes('stake') && !lower.includes('stakeholder')) ||
       /\$\s*\d+/.test(lower) ||
       /₹\s*\d+/.test(lower) ||
       /€\s*\d+/.test(lower) ||
@@ -718,6 +717,43 @@ export class HackathonsService {
       return true;
     }
     return !lower.includes('free');
+  }
+
+  /**
+   * Prompt 51: Check if any hackathon field or source text mentions a stake or entry fee
+   * Returns true if entryFeeText, description, eligibility, or rules mention stake or entry fee.
+   */
+  public static hasFeeOrStake(hackathon: Partial<Hackathon>): boolean {
+    if (this.isFeeRequired(hackathon.entryFeeText)) return true;
+    const combined = [
+      hackathon.entryFeeText,
+      hackathon.description,
+      hackathon.eligibilityText,
+      hackathon.datesNote,
+      hackathon.lastEditionNote
+    ].filter(Boolean).join(' ').toLowerCase();
+
+    if (combined.includes('refunded stake') || combined.includes('refundable stake') || combined.includes('100% refunded')) {
+      return false;
+    }
+
+    if (
+      combined.includes('stake required') ||
+      combined.includes('fee required') ||
+      combined.includes('entry fee') ||
+      combined.includes('paid entry') ||
+      combined.includes('fee of') ||
+      combined.includes('fee / stake') ||
+      combined.includes('stake / fee') ||
+      combined.includes('staking required') ||
+      combined.includes('stake to participate') ||
+      combined.includes('deposit stake') ||
+      combined.includes('participation stake') ||
+      (combined.includes('stake') && !combined.includes('stakeholder'))
+    ) {
+      return true;
+    }
+    return false;
   }
 
   /**

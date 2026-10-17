@@ -6,7 +6,7 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
   const allHackathons = HackathonsService.getAllHackathons();
 
   it('validates that all hackathons conform to the Hackathon type specification', () => {
-    expect(allHackathons.length).toBeGreaterThanOrEqual(15);
+    expect(allHackathons.length).toBe(16);
 
     for (const h of allHackathons) {
       expect(typeof h.id).toBe('string');
@@ -59,26 +59,25 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
     }
   });
 
-  it('contains hackathons across all 4 statuses and filters by status', () => {
+  it('contains hackathons across accurate statuses and filters by status', () => {
     const verified = HackathonsService.filterHackathons(allHackathons, { status: 'ANNOUNCED_VERIFIED' });
     const unconfirmed = HackathonsService.filterHackathons(allHackathons, { status: 'ANNOUNCED_UNCONFIRMED' });
     const notAnnounced = HackathonsService.filterHackathons(allHackathons, { status: 'NOT_ANNOUNCED' });
-    const passed = HackathonsService.filterHackathons(allHackathons, { status: 'PASSED' });
 
-    expect(verified.length).toBeGreaterThan(0);
-    expect(unconfirmed.length).toBeGreaterThan(0);
-    expect(notAnnounced.length).toBeGreaterThan(0);
-    expect(passed.length).toBeGreaterThan(0);
+    expect(verified.length).toBe(1); // NASA International Space Apps Challenge
+    expect(unconfirmed.length).toBe(2); // Junction & TCS CodeVita
+    expect(notAnnounced.length).toBe(13); // All 13 other recurring series & contests
 
-    expect(verified.length + unconfirmed.length + notAnnounced.length + passed.length).toBe(allHackathons.length);
+    expect(verified.length + unconfirmed.length + notAnnounced.length).toBe(allHackathons.length);
   });
 
-  it('contains hackathons across both devpost-live and recurring-series sources', () => {
-    const devpost = allHackathons.filter(h => h.source === 'devpost-live');
+  it('strictly enforces Prompt 35 & 48: HACKATHONS_DATABASE static entries are recurring-series with zero fake devpost-live fallbacks', () => {
+    // Under Prompt 35 & Prompt 48: Static catalog must NEVER fake live feed provenance
+    const devpostInStatic = allHackathons.filter(h => h.source === 'devpost-live');
     const recurring = allHackathons.filter(h => h.source === 'recurring-series');
 
-    expect(devpost.length).toBeGreaterThanOrEqual(4);
-    expect(recurring.length).toBeGreaterThanOrEqual(8);
+    expect(devpostInStatic.length).toBe(0); // ZERO fake devpost-live in static catalog!
+    expect(recurring.length).toBe(16); // Exactly the recurring series and contests
   });
 
   it('contains hackathons across all 3 modes: online, in-person, hybrid', () => {
@@ -86,12 +85,12 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
     const inPerson = allHackathons.filter(h => h.mode === 'in-person');
     const hybrid = allHackathons.filter(h => h.mode === 'hybrid');
 
-    expect(online.length).toBeGreaterThanOrEqual(5);
+    expect(online.length).toBeGreaterThanOrEqual(3);
     expect(inPerson.length).toBeGreaterThanOrEqual(3);
     expect(hybrid.length).toBeGreaterThanOrEqual(4);
   });
 
-  it('correctly resolves status tabs (Open Now, Upcoming, Passed)', () => {
+  it('correctly resolves status tabs (Open Now, Upcoming)', () => {
     const refDate = new Date('2026-10-15T12:00:00Z');
 
     const openNow = HackathonsService.filterHackathons(
@@ -104,18 +103,12 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
       { statusTab: 'UPCOMING' },
       refDate
     );
-    const passed = HackathonsService.filterHackathons(
-      allHackathons,
-      { statusTab: 'PASSED' },
-      refDate
-    );
 
-    expect(openNow.length).toBeGreaterThan(0);
-    expect(upcoming.length).toBeGreaterThan(0);
-    expect(passed.length).toBeGreaterThan(0);
+    expect(openNow.length).toBe(15);
+    expect(upcoming.length).toBe(1); // Junction (event Nov 13-15 2026, registration closed Sept 6 2026)
 
     // Sum should equal total hackathons
-    expect(openNow.length + upcoming.length + passed.length).toBe(allHackathons.length);
+    expect(openNow.length + upcoming.length).toBe(allHackathons.length);
   });
 
   it('filters by mode, country, theme, and query without error', () => {
@@ -152,12 +145,12 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
     }
 
     // Filter by search query
-    const devpostQuery = HackathonsService.filterHackathons(
+    const mlhQuery = HackathonsService.filterHackathons(
       allHackathons,
-      { query: 'devpost' },
+      { query: 'mlh' },
       refDate
     );
-    expect(devpostQuery.length).toBeGreaterThan(0);
+    expect(mlhQuery.length).toBeGreaterThan(0);
   });
 
   it('guarantees that hackathons are NEVER hidden based on eligibility', () => {

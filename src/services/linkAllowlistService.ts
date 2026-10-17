@@ -94,7 +94,7 @@ function buildProgramAllowlist(): { allowedHostnames: Set<string>; allowedRoots:
         if (parts.length >= 2) {
           const root = parts.slice(-2).join('.');
           allowedRoots.add(root);
-          if (parts.length >= 3 && ['co.uk', 'gov.in', 'ac.uk', 'gov.sg', 'edu.sg', 'go.jp', 'ac.in', 'org.in'].includes(parts.slice(-2).join('.'))) {
+          if (parts.length >= 3 && ['co.uk', 'gov.in', 'ac.uk', 'gov.sg', 'edu.sg', 'go.jp', 'ac.in', 'org.in', 'res.in'].includes(parts.slice(-2).join('.'))) {
             allowedRoots.add(parts.slice(-3).join('.'));
           }
         }
@@ -148,6 +148,27 @@ function buildProgramAllowlist(): { allowedHostnames: Set<string>; allowedRoots:
     'sfp.caltech.edu',
     'iusstf.org.in',
     'iusstf.org',
+    // Prompt 50: Official Indian Research Institutes & Laboratories
+    'tifr.res.in',
+    'drdo.gov.in',
+    'isro.gov.in',
+    'vssc.gov.in',
+    'iirs.gov.in',
+    // Prompt 51: Platform links & contest domains
+    'devfolio.co',
+    'unstop.com',
+    'codevita.tcsapps.com',
+    'tcsapps.com',
+    // Prompt 53: Meta Hacker Cup domains
+    'facebook.com',
+    'meta.com',
+    'metacareers.com',
+    // Prompt 48 (naya version): NASA Space Apps, Colosseum, Cal Hacks, PennApps, Junction
+    'spaceappschallenge.org',
+    'colosseum.org',
+    'calhacks.io',
+    'pennapps.com',
+    'hackjunction.com',
   ];
   for (const h of coreAtsHostnames) {
     ingest(h);

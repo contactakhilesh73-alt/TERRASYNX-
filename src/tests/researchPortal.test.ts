@@ -31,17 +31,17 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     });
   };
 
-  it('shows ONLY scientific_lab and academic_fellowship entries (count: 23 with Caltech SURF & S.N. Bose)', () => {
+  it('shows ONLY scientific_lab and academic_fellowship entries (count: 26 with Caltech SURF, S.N. Bose & India programs)', () => {
     const research = getResearchCycles();
 
-    expect(research.length).toBe(23);
+    expect(research.length).toBe(26);
 
     const scientificLabs = research.filter(c => c.tierCategory === 'scientific_lab');
     const academicFellowships = research.filter(c => c.tierCategory === 'academic_fellowship');
 
-    expect(scientificLabs.length).toBe(14);
+    expect(scientificLabs.length).toBe(17);
     expect(academicFellowships.length).toBe(9);
-    expect(scientificLabs.length + academicFellowships.length).toBe(23);
+    expect(scientificLabs.length + academicFellowships.length).toBe(26);
   });
 
   it('contains premier scientific institutes: CERN, RIKEN, OIST, Max Planck, MITACS, DAAD, and similar', () => {
@@ -78,6 +78,18 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     const fermilab = research.find(c => c.companyName === 'Fermilab');
     expect(fermilab).toBeDefined();
     expect(fermilab?.country).toBe('USA');
+
+    const tifr = research.find(c => c.companyName === 'TIFR');
+    expect(tifr).toBeDefined();
+    expect(tifr?.country).toBe('India');
+
+    const drdo = research.find(c => c.companyName === 'DRDO');
+    expect(drdo).toBeDefined();
+    expect(drdo?.country).toBe('India');
+
+    const isro = research.find(c => c.companyName === 'ISRO');
+    expect(isro).toBeDefined();
+    expect(isro?.country).toBe('India');
   });
 
   it('strictly excludes corporate tech internships, scholarships, and open source grants', () => {
@@ -114,7 +126,7 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     expect(countryCounts['Germany']).toBe(4);
     expect(countryCounts['Japan']).toBe(3);
     expect(countryCounts['Singapore']).toBe(3);
-    expect(countryCounts['India']).toBe(3);
+    expect(countryCounts['India']).toBe(6);
     expect(countryCounts['Switzerland']).toBe(2);
     expect(countryCounts['USA']).toBe(2); // Fermilab + Caltech SURF
     expect(countryCounts['Israel']).toBe(1);

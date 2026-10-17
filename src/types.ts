@@ -1111,11 +1111,13 @@ export type HackathonMode = 'online' | 'in-person' | 'hybrid';
 export type HackathonSource = 'devpost-live' | 'recurring-series';
 export type HackathonStatusTab = 'OPEN_NOW' | 'UPCOMING' | 'PASSED';
 export type HackathonStatus = 'NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED' | 'UNKNOWN';
+export type HackathonType = 'hackathon' | 'coding-contest'; // Prompt 51
 
 export interface Hackathon {
   id: string;
   name: string;
   organizer: string;
+  type?: HackathonType; // Prompt 51: 'hackathon' | 'coding-contest'
   mode: HackathonMode;
   country: string; // 'Online/Global' when virtual
   themes: string[];

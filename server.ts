@@ -336,6 +336,7 @@ app.get('/api/hackathons/live', async (req, res) => {
           registrationDeadline: parsedDates.registrationDeadline,
           officialUrl: item.url.trim(),
           source: 'devpost-live',
+          type: 'hackathon',
           status,
           description: typeof item.analytics_identifier === 'string' ? item.analytics_identifier : undefined,
         };
