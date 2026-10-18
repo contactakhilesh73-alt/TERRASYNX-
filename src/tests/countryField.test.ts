@@ -124,11 +124,12 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
     it('filters accurately by country without hiding programs by eligibility', () => {
       const allCycles = UpcomingInternshipsService.getAllUpcomingCycles();
 
-      // Switzerland filter
+      // Switzerland filter (CERN, ETH Zurich + 3 EPFL programs from Prompt 54)
       const swissCycles = allCycles.filter(c => c.country === 'Switzerland');
-      expect(swissCycles.length).toBe(2);
+      expect(swissCycles.length).toBe(5);
       expect(swissCycles.map(c => c.companyName)).toContain('CERN');
       expect(swissCycles.map(c => c.companyName)).toContain('ETH Zurich');
+      expect(swissCycles.map(c => c.companyName)).toContain('EPFL');
       for (const c of swissCycles) {
         expect(c.country).toBe('Switzerland');
       }
@@ -147,9 +148,9 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         expect(c.country).toBe('Germany');
       }
 
-      // USA filter (39 standard + Caltech SURF)
+      // USA filter (39 standard + Caltech SURF + Stanford SURF from Prompt 54)
       const usaCycles = allCycles.filter(c => c.country === 'USA');
-      expect(usaCycles.length).toBe(40);
+      expect(usaCycles.length).toBe(41);
       for (const c of usaCycles) {
         expect(c.country).toBe('USA');
       }
@@ -265,7 +266,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         portal: 'research',
         status: 'all'
       });
-      expect(researchCycles.length).toBe(26);
+      expect(researchCycles.length).toBe(30);
       for (const c of researchCycles) {
         expect(UpcomingInternshipsService.isCycleInPortal(c, 'research')).toBe(true);
       }

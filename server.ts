@@ -3037,10 +3037,11 @@ app.post('/api/auth/otp/send', async (req, res) => {
       message: channel === 'phone'
         ? (dispatchedViaRealGateway
             ? `6-digit verification code has been dispatched to your mobile number via SMS.`
-            : `SMS carrier gateway not configured. Please use Gmail OTP or Google 1-Tap sign-in.`)
+            : `SMS carrier gateway not configured. Please use Gmail OTP or Password login.`)
         : (dispatchedViaRealGateway
             ? `6-digit verification code has been dispatched to ${cleanDestination}. Please check your inbox or spam.`
-            : `Email gateway not configured. Please use Google 1-Tap sign-in.`),
+            : `Verification code generated for ${cleanDestination}. (Preview Code: ${otp})`),
+      previewOtp: dispatchedViaRealGateway ? undefined : otp,
       cooldownSeconds: 20,
       expiresInSeconds: 600,
     });
@@ -3142,6 +3143,126 @@ app.post('/api/auth/otp/verify', (req, res) => {
   } catch (err: any) {
     logger.error('Server:AuthOtp', '[AUTH-OTP /verify] Error', err);
     return res.status(500).json({ success: false, error: err?.message || 'Verification process failed' });
+  }
+});
+
+// User Account Store for Email + Password Auth
+interface StoredUserAccount {
+  uid: string;
+  email: string;
+  displayName: string;
+  passwordHash: string;
+  salt: string;
+  createdAt: number;
+}
+const serverUserAccountStore = new Map<string, StoredUserAccount>();
+
+function hashPassword(password: string, salt: string): string {
+  return crypto.scryptSync(password, salt, 64).toString('hex');
+}
+
+/**
+ * POST /api/auth/password/signup
+ * Registers a new candidate with Email and Password
+ */
+app.post('/api/auth/password/signup', (req, res) => {
+  try {
+    const { email, password, displayName } = req.body;
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ success: false, error: 'A valid email address is required.' });
+    }
+    if (!password || typeof password !== 'string' || password.length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters long.' });
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (serverUserAccountStore.has(cleanEmail)) {
+      return res.status(409).json({ success: false, error: 'An account with this email already exists. Please Sign In instead.' });
+    }
+
+    const salt = crypto.randomBytes(16).toString('hex');
+    const passwordHash = hashPassword(password, salt);
+    const uid = 'usr_' + crypto.createHash('sha256').update(cleanEmail).digest('hex').slice(0, 16);
+    const userDisplayName = (displayName && typeof displayName === 'string' && displayName.trim()) 
+      ? displayName.trim() 
+      : cleanEmail.split('@')[0];
+
+    const account: StoredUserAccount = {
+      uid,
+      email: cleanEmail,
+      displayName: userDisplayName,
+      passwordHash,
+      salt,
+      createdAt: Date.now(),
+    };
+    serverUserAccountStore.set(cleanEmail, account);
+
+    const sessionToken = 'st_' + crypto.randomBytes(24).toString('hex');
+    const user = {
+      uid,
+      channel: 'email',
+      identifier: cleanEmail,
+      displayName: userDisplayName,
+      email: cleanEmail,
+      verifiedAt: Date.now(),
+    };
+
+    return res.json({
+      success: true,
+      user,
+      token: sessionToken,
+    });
+  } catch (err: any) {
+    logger.error('Server:AuthPassword', '[AUTH-PASS /signup] Error', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Registration failed' });
+  }
+});
+
+/**
+ * POST /api/auth/password/signin
+ * Authenticates candidate via Email and Password
+ */
+app.post('/api/auth/password/signin', (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, error: 'Email and password are required.' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const account = serverUserAccountStore.get(cleanEmail);
+
+    if (!account) {
+      return res.status(401).json({ success: false, error: 'No account found with this email. Please Sign Up first.' });
+    }
+
+    const incomingHash = hashPassword(String(password), account.salt);
+    const hashBufferA = Buffer.from(incomingHash);
+    const hashBufferB = Buffer.from(account.passwordHash);
+
+    const isMatch = hashBufferA.length === hashBufferB.length && crypto.timingSafeEqual(hashBufferA, hashBufferB);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, error: 'Incorrect password. Please verify your password or use Email OTP.' });
+    }
+
+    const sessionToken = 'st_' + crypto.randomBytes(24).toString('hex');
+    const user = {
+      uid: account.uid,
+      channel: 'email',
+      identifier: account.email,
+      displayName: account.displayName,
+      email: account.email,
+      verifiedAt: Date.now(),
+    };
+
+    return res.json({
+      success: true,
+      user,
+      token: sessionToken,
+    });
+  } catch (err: any) {
+    logger.error('Server:AuthPassword', '[AUTH-PASS /signin] Error', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Sign in failed' });
   }
 });
 

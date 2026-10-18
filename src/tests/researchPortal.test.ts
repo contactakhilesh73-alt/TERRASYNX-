@@ -31,17 +31,17 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     });
   };
 
-  it('shows ONLY scientific_lab and academic_fellowship entries (count: 26 with Caltech SURF, S.N. Bose & India programs)', () => {
+  it('shows ONLY scientific_lab and academic_fellowship entries (count: 30 with Caltech SURF, S.N. Bose, India programs & Prompt 54)', () => {
     const research = getResearchCycles();
 
-    expect(research.length).toBe(26);
+    expect(research.length).toBe(30);
 
     const scientificLabs = research.filter(c => c.tierCategory === 'scientific_lab');
     const academicFellowships = research.filter(c => c.tierCategory === 'academic_fellowship');
 
-    expect(scientificLabs.length).toBe(17);
+    expect(scientificLabs.length).toBe(21);
     expect(academicFellowships.length).toBe(9);
-    expect(scientificLabs.length + academicFellowships.length).toBe(26);
+    expect(scientificLabs.length + academicFellowships.length).toBe(30);
   });
 
   it('contains premier scientific institutes: CERN, RIKEN, OIST, Max Planck, MITACS, DAAD, and similar', () => {
@@ -127,8 +127,8 @@ describe('Prompt 34D: ResearchPortal (Scientific Labs & Fellowships Only)', () =
     expect(countryCounts['Japan']).toBe(3);
     expect(countryCounts['Singapore']).toBe(3);
     expect(countryCounts['India']).toBe(6);
-    expect(countryCounts['Switzerland']).toBe(2);
-    expect(countryCounts['USA']).toBe(2); // Fermilab + Caltech SURF
+    expect(countryCounts['Switzerland']).toBe(5); // CERN, ETH Zurich + 3 EPFL programs
+    expect(countryCounts['USA']).toBe(3); // Fermilab + Caltech SURF + Stanford SURF
     expect(countryCounts['Israel']).toBe(1);
     expect(countryCounts['Canada']).toBe(1);
     expect(countryCounts['South Korea']).toBe(1);

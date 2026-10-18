@@ -51,6 +51,8 @@ import { AtsDiscoveryModal } from './components/AtsDiscoveryModal';
 import { StoryBankView } from './components/StoryBankView';
 import { AppliedDossierService } from './services/appliedDossierService';
 import { PipelineIntegrityService } from './services/pipelineIntegrityService';
+import { ProfileCompletionGateModal } from './components/ProfileCompletionGateModal';
+import { calculateProfileCompletion } from './utils/profileCompletion';
 import { 
   signInWithGoogle, 
   signOutStudent, 
@@ -94,6 +96,22 @@ export default function App() {
   const [emailDraftOpp, setEmailDraftOpp] = useState<Opportunity | null>(null);
   const [emailDraftType, setEmailDraftType] = useState<EmailDraftType>('referral-request');
   const [researchOpp, setResearchOpp] = useState<Opportunity | null>(null);
+
+  // Profile Completion Gating Sentinel (Strict 90-100% required to apply)
+  const [isProfileGateOpen, setIsProfileGateOpen] = useState<boolean>(false);
+  const [profileGateTargetTitle, setProfileGateTargetTitle] = useState<string>('');
+  const [profileGateCompletion, setProfileGateCompletion] = useState(() => calculateProfileCompletion(studentProfile));
+
+  const handleGatedFastApply = (opp: Opportunity) => {
+    const completion = calculateProfileCompletion(studentProfile);
+    if (!completion.isCompleteForApply) {
+      setProfileGateCompletion(completion);
+      setProfileGateTargetTitle(`${opp.companyName} (${opp.title})`);
+      setIsProfileGateOpen(true);
+      return;
+    }
+    setFastApplyOpp(opp);
+  };
 
   const handleOpenEmailDraft = (opp: Opportunity, type: EmailDraftType = 'referral-request') => {
     setEmailDraftOpp(opp);
@@ -252,6 +270,7 @@ export default function App() {
         };
         setCurrentUser(googleSession);
         saveStudentSession(googleSession);
+        RadarEngine.setActiveUser(googleSession);
 
         try {
           const cloudProfile = await loadStudentProfileCloud(firebaseUser.uid, true);
@@ -297,6 +316,13 @@ export default function App() {
   };
 
   const handleOpenSelfReport = (opp: Opportunity) => {
+    const completion = calculateProfileCompletion(studentProfile);
+    if (!completion.isCompleteForApply) {
+      setProfileGateCompletion(completion);
+      setProfileGateTargetTitle(`${opp.companyName} (${opp.title})`);
+      setIsProfileGateOpen(true);
+      return;
+    }
     setSelfReportOpp(opp);
   };
 
@@ -323,12 +349,17 @@ export default function App() {
   const handleAuthSuccess = async (session: AuthUserSession, isSignUp = false) => {
     setCurrentUser(session);
     saveStudentSession(session);
+    RadarEngine.setActiveUser(session);
+    setStudentProfile(RadarEngine.getStudentProfile());
+    setIsAuthModalOpen(false);
+
     try {
       const cloudProfile = await loadStudentProfileCloud(session.uid, session.channel === 'google');
       if (cloudProfile && cloudProfile.collegeName && cloudProfile.degree) {
         RadarEngine.updateStudentProfile(cloudProfile);
         setStudentProfile(RadarEngine.getStudentProfile());
-        if (isSignUp) {
+        const completion = calculateProfileCompletion(RadarEngine.getStudentProfile());
+        if (isSignUp || completion.percentage < 90) {
           setIsOnboardingOpen(true);
         }
       } else {
@@ -341,7 +372,7 @@ export default function App() {
         await saveStudentProfileCloud(session.uid, initialSeed, session.channel === 'google');
         RadarEngine.updateStudentProfile(initialSeed);
         setStudentProfile(RadarEngine.getStudentProfile());
-        // Automatically open onboarding modal so candidate enters degree, college name, skills, batch
+        // Automatically open onboarding modal so candidate can enter degree, college name, skills, batch
         setIsOnboardingOpen(true);
       }
 
@@ -375,7 +406,10 @@ export default function App() {
 
   const handleSignOut = async () => {
     clearStudentSession();
+    RadarEngine.setActiveUser(null);
     setCurrentUser(null);
+    setStudentProfile(RadarEngine.getStudentProfile());
+    setIsAuthModalOpen(true);
     try {
       await signOutStudent();
     } catch (err) {
@@ -390,6 +424,58 @@ export default function App() {
     return h <= 72 && h > 0;
   }).length;
   const appliedCount = opportunities.filter(o => o.stage !== 'discovered' && o.stage !== 'archived').length;
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-hidden">
+        {/* Ambient Security Glow */}
+        <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden" aria-hidden="true">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(56,189,248,0.14),rgba(15,23,42,0))]" />
+          <div className="absolute -top-32 -left-32 w-[42rem] h-[42rem] rounded-full bg-cyan-500/12 blur-[130px] animate-float-slow" />
+          <div className="absolute top-1/3 -right-32 w-[45rem] h-[45rem] rounded-full bg-indigo-600/14 blur-[150px] animate-float-reverse" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-70" />
+        </div>
+
+        {/* Minimal Gate Top Bar */}
+        <header className="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 via-sky-500 to-blue-600 flex items-center justify-center text-slate-950 font-black text-lg shadow-lg shadow-cyan-500/25">
+              ⚡
+            </div>
+            <div>
+              <span className="text-base font-black tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400">
+                TERRASYNX
+              </span>
+              <span className="hidden sm:inline-block ml-2 text-[10px] font-mono uppercase tracking-widest text-slate-400 px-2 py-0.5 rounded border border-slate-800 bg-slate-900/60">
+                Candidate Access Gateway
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 bg-cyan-950/50 border border-cyan-800/50 px-3 py-1.5 rounded-lg">
+            <Lock className="w-3.5 h-3.5" />
+            <span>Secure Candidate Portal</span>
+          </div>
+        </header>
+
+        {/* Central Auth Gateway Card Container */}
+        <div className="flex-1 flex items-center justify-center p-4 py-8">
+          <AuthModal
+            isOpen={true}
+            onClose={() => {}}
+            onAuthSuccess={handleAuthSuccess}
+            currentUser={null}
+            onSignOut={handleSignOut}
+            isGateMode={true}
+          />
+        </div>
+
+        {/* Minimal Gate Footer */}
+        <footer className="border-t border-slate-900 bg-slate-950/80 px-6 py-3 text-center text-xs font-mono text-slate-500">
+          Strict Multi-User Privacy &amp; Data Isolation • Encrypted Candidate Workspace • No Shared Dossiers
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200 relative overflow-x-hidden">
@@ -439,7 +525,7 @@ export default function App() {
             onMarkApplied={handleMarkApplied}
             onOpenDetails={setSelectedOpp}
             onInspectVerification={setInspectedOpp}
-            onFastApply={setFastApplyOpp}
+            onFastApply={handleGatedFastApply}
             onOpenDossier={setSelectedDossierOpp}
             onOpenCoverLetter={setCoverLetterOpp}
             onOpenEmailDraft={handleOpenEmailDraft}
@@ -455,7 +541,7 @@ export default function App() {
             opportunities={opportunities}
             onUpdateStage={handleUpdateStage}
             onOpenDetails={setSelectedOpp}
-            onFastApply={setFastApplyOpp}
+            onFastApply={handleGatedFastApply}
             onOpenDossierVault={() => setIsDossierVaultOpen(true)}
             onOpenMockInterview={(opp) => {
               setSelectedOpp(opp);
@@ -573,6 +659,7 @@ export default function App() {
             <HackathonsPortal
               onNavigateToCalendar={() => setCurrentMode('calendar')}
               studentProfile={studentProfile}
+              onOpenProfileEditor={() => setIsOnboardingOpen(true)}
             />
           </div>
         )}
@@ -733,7 +820,7 @@ export default function App() {
           setSelectedOpp(null);
           setCurrentMode('calendar');
         }}
-        onFastApply={setFastApplyOpp}
+        onFastApply={handleGatedFastApply}
         onOpenDossier={(opp) => {
           setSelectedOpp(null);
           setSelectedDossierOpp(opp);
@@ -849,7 +936,7 @@ export default function App() {
           onClose={() => setSelectedDossierOpp(null)}
           onFastApply={(opp) => {
             setSelectedDossierOpp(null);
-            setFastApplyOpp(opp);
+            handleGatedFastApply(opp);
           }}
           onTailorResume={(opp) => {
             setSelectedDossierOpp(null);
@@ -907,6 +994,18 @@ export default function App() {
           await RadarEngine.scanLiveAtsBoards();
           setOpportunities(RadarEngine.getOpportunities());
         }}
+      />
+
+      {/* Profile Completion Gate Modal (90-100% required to apply) */}
+      <ProfileCompletionGateModal
+        isOpen={isProfileGateOpen}
+        onClose={() => setIsProfileGateOpen(false)}
+        onOpenProfileEditor={() => {
+          setIsProfileGateOpen(false);
+          setIsOnboardingOpen(true);
+        }}
+        completion={profileGateCompletion}
+        targetOpportunityTitle={profileGateTargetTitle}
       />
 
     </div>

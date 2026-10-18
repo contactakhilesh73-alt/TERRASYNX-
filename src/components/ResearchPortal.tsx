@@ -16,6 +16,7 @@ import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
 import { LinkHealthBadge } from './LinkHealthBadge';
+import { DynamicCalendarIcon } from './DynamicCalendarIcon';
 import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig } from '../utils/scholarshipBadges';
 import { getCountryFlag, createGoogleCalendarUrl, evaluateEligibilityMatrix, MatrixBadgeType } from './UpcomingInternshipsCalendar';
 import { 
@@ -260,22 +261,23 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
     }
 
     if (activeStatusTab === 'OPEN_NOW') {
-      list = list.filter(c => c.currentStatus === 'OPEN_NOW');
+      list = list.filter(c => c.currentStatus === 'OPEN_NOW' || c.neverHide || c.isReferenceCard);
       list.sort((a, b) => (a.daysRemaining ?? 0) - (b.daysRemaining ?? 0));
     } else if (activeStatusTab === 'OPENING_SOON') {
-      list = list.filter(c => c.currentStatus === 'UPCOMING' && (c.daysRemaining !== undefined && c.daysRemaining <= 30));
+      list = list.filter(c => (c.currentStatus === 'UPCOMING' && (c.daysRemaining !== undefined && c.daysRemaining <= 30)) || c.neverHide || c.isReferenceCard);
       list.sort((a, b) => (a.daysRemaining ?? 999) - (b.daysRemaining ?? 999));
     } else if (activeStatusTab === 'UPCOMING_SEASON') {
-      list = list.filter(c => c.currentStatus === 'UPCOMING' && (c.daysRemaining === undefined || c.daysRemaining > 30));
+      list = list.filter(c => (c.currentStatus === 'UPCOMING' && (c.daysRemaining === undefined || c.daysRemaining > 30)) || c.neverHide || c.isReferenceCard);
       list.sort((a, b) => (a.daysRemaining ?? 999) - (b.daysRemaining ?? 999));
     } else if (activeStatusTab === 'PASSED_THIS_CYCLE') {
-      list = list.filter(c => c.currentStatus === 'PASSED_THIS_CYCLE');
+      list = list.filter(c => c.currentStatus === 'PASSED_THIS_CYCLE' || c.neverHide || c.isReferenceCard);
     } else if (activeStatusTab === 'TRACKED') {
       list = list.filter(c => trackedCycleIds.includes(c.id));
     }
 
     if (matrixFilter !== 'all') {
       list = list.filter(cycle => {
+        if (cycle.neverHide || cycle.isReferenceCard) return true;
         const evalRes = evaluateEligibilityMatrix(cycle, studentBatch, referenceDate);
         return evalRes.type === matrixFilter;
       });
@@ -465,12 +467,13 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
                 <span className="text-[11px] font-mono font-bold text-slate-300">
                   Current Viewing Date:
                 </span>
-                <span className={`text-xs font-mono font-black px-2 py-0.5 rounded border ${
+                <span className={`text-xs font-mono font-black px-2 py-0.5 rounded border flex items-center gap-1.5 ${
                   isSimulatingDate 
                     ? 'bg-amber-950/80 text-amber-300 border-amber-600' 
                     : 'bg-emerald-950/80 text-emerald-300 border-emerald-700'
                 }`}>
-                  📅 {formattedReferenceDate}
+                  <DynamicCalendarIcon date={referenceDate} size="sm" />
+                  <span>{formattedReferenceDate}</span>
                 </span>
                 {isSimulatingDate && (
                   <span className="text-[10px] font-mono text-amber-400 bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-800">
@@ -1037,6 +1040,13 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
                     <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                   </span>
 
+                  {/* Prompt 54: Reference Card Badge */}
+                  {cycle.isReferenceCard && (
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-black bg-amber-950/80 text-amber-300 border border-amber-700/70 flex items-center gap-1 shadow-sm">
+                      <span>📌 Reference Card</span>
+                    </span>
+                  )}
+
                   {/* Prompt 37: Study Level Badge */}
                   {cycle.studyLevel && (() => {
                     const levelBadge = getStudyLevelBadgeConfig(cycle.studyLevel);
@@ -1172,6 +1182,22 @@ export const ResearchPortal: React.FC<ResearchPortalProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {/* Prompt 54: Disclaimer Notice (Aggregator reports, verify on official page, etc.) */}
+                {cycle.disclaimerNotice && (
+                  <div className="mt-2.5 p-2 rounded-lg bg-amber-950/30 border border-amber-800/50 text-[11px] font-mono text-amber-200/90 flex items-start gap-1.5 leading-snug">
+                    <Info className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>{cycle.disclaimerNotice}</span>
+                  </div>
+                )}
+
+                {/* Prompt 54: Action Tip / Research Strategy */}
+                {cycle.actionTip && (
+                  <div className="mt-2 p-2 rounded-lg bg-emerald-950/30 border border-emerald-800/40 text-[11px] font-mono text-emerald-200/90 flex items-start gap-1.5 leading-snug">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                    <span>{cycle.actionTip}</span>
+                  </div>
+                )}
               </div>
 
               {/* Bottom Actions Bar */}

@@ -75,10 +75,10 @@ export const StudentOnboardingModal: React.FC<StudentOnboardingModalProps> = ({
   const [email, setEmail] = useState(initialProfile.email || '');
   const [phoneNumber, setPhoneNumber] = useState(initialProfile.phoneNumber || '');
   const [collegeName, setCollegeName] = useState(initialProfile.collegeName || '');
-  const [degree, setDegree] = useState(initialProfile.degree || 'B.Tech (Computer Science)');
+  const [degree, setDegree] = useState(initialProfile.degree || '');
   const [customDegree, setCustomDegree] = useState('');
   const [graduationYear, setGraduationYear] = useState<number>(initialProfile.graduationYear || 2026);
-  const [currentCgpa, setCurrentCgpa] = useState(initialProfile.currentCgpa || '8.5');
+  const [currentCgpa, setCurrentCgpa] = useState(initialProfile.currentCgpa || '');
   const [primarySkills, setPrimarySkills] = useState<string[]>(
     initialProfile.primarySkills?.length ? initialProfile.primarySkills : ['Python', 'React.js', 'Data Structures & Algorithms']
   );
@@ -169,9 +169,10 @@ export const StudentOnboardingModal: React.FC<StudentOnboardingModalProps> = ({
       primarySkills,
       preferredRoles,
       workAuthorization,
-      githubUrl: githubUrl.trim() || `https://github.com/${fullName.toLowerCase().replace(/\s+/g, '')}`,
-      linkedinUrl: linkedinUrl.trim() || `https://linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, '-')}`,
+      githubUrl: githubUrl.trim() || (fullName ? `https://github.com/${fullName.toLowerCase().replace(/\s+/g, '')}` : ''),
+      linkedinUrl: linkedinUrl.trim() || (fullName ? `https://linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, '-')}` : ''),
       portfolioUrl: portfolioUrl.trim(),
+      resumeFileName: initialProfile.resumeFileName || (fullName.trim() ? `${fullName.trim().replace(/\s+/g, '_')}_Resume.pdf` : 'Candidate_Resume.pdf'),
     };
 
     setTimeout(() => {
@@ -245,7 +246,7 @@ export const StudentOnboardingModal: React.FC<StudentOnboardingModalProps> = ({
                     required
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Akhilesh Singh"
+                    placeholder="e.g. Candidate Full Name"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono focus:outline-none focus:border-cyan-500"
                   />
                 </div>
@@ -288,6 +289,7 @@ export const StudentOnboardingModal: React.FC<StudentOnboardingModalProps> = ({
                     onChange={(e) => setDegree(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono focus:outline-none focus:border-cyan-500 cursor-pointer"
                   >
+                    <option value="">Select Degree / Major Track...</option>
                     {COMMON_DEGREES.map((d) => (
                       <option key={d} value={d}>{d}</option>
                     ))}
@@ -519,9 +521,9 @@ export const StudentOnboardingModal: React.FC<StudentOnboardingModalProps> = ({
             <button
               type="button"
               onClick={onDismiss}
-              className="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 text-xs font-mono transition-colors"
+              className="px-4 py-2 rounded-xl text-slate-400 hover:text-slate-200 text-xs font-mono transition-colors border border-slate-800 hover:border-slate-700 hover:bg-slate-900/60"
             >
-              Set up later
+              Skip for now (Explore Opportunities)
             </button>
 
             {step !== 'verification' ? (

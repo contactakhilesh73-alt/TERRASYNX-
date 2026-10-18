@@ -15,6 +15,7 @@ import { UrlHealthResolver } from '../services/urlHealthResolver';
 import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
 import { LinkHealthBadge } from './LinkHealthBadge';
+import { DynamicCalendarIcon } from './DynamicCalendarIcon';
 import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig } from '../utils/scholarshipBadges';
 import { getCountryFlag, createGoogleCalendarUrl, evaluateEligibilityMatrix, MatrixBadgeType } from './UpcomingInternshipsCalendar';
 import { 
@@ -429,12 +430,13 @@ export const InternshipsPortal: React.FC<InternshipsPortalProps> = ({
                 <span className="text-[11px] font-mono font-bold text-slate-300">
                   Current Viewing Date:
                 </span>
-                <span className={`text-xs font-mono font-black px-2 py-0.5 rounded border ${
+                <span className={`text-xs font-mono font-black px-2 py-0.5 rounded border flex items-center gap-1.5 ${
                   isSimulatingDate 
                     ? 'bg-amber-950/80 text-amber-300 border-amber-600' 
                     : 'bg-blue-950/80 text-blue-300 border-blue-700'
                 }`}>
-                  📅 {formattedReferenceDate}
+                  <DynamicCalendarIcon date={referenceDate} size="sm" />
+                  <span>{formattedReferenceDate}</span>
                 </span>
                 {isSimulatingDate && (
                   <span className="text-[10px] font-mono text-amber-400 bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-800">

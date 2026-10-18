@@ -222,6 +222,8 @@ export interface UpcomingInternshipCycle {
   selectionCriteria?: string; // Formal selection parameters (e.g. GPA cutoff, PR history, research proposal, interview)
   isGlobalFullRide?: boolean; // True for prestigious ₹3 - 4 Crore+ ($350k - $450k) undergraduate full-ride scholarships
   isPreUniversityFullRide?: boolean; // True for Class 12 / Pre-University full-ride scholarships (Need-Blind Ivy+, Named & Govt Schemes)
+  isReferenceCard?: boolean; // Reference program card (e.g. Stanford SURF Bay Area)
+  neverHide?: boolean; // When true, portal filters never hide this card
   disclaimerNotice?: string; // Mandatory official confirmation disclaimer notice
   seatQuotaInfo?: string; // Explicit seat quota (e.g. "Varies year to year, check official page")
   fundingAmountText?: string; // Formatted value badge (e.g. "₹3.2 - ₹3.6 Crore ($360,000+ Full-Ride)")

@@ -226,6 +226,7 @@ export interface OtpSendResponse {
   message: string;
   cooldownSeconds?: number;
   dispatchedViaRealGateway?: boolean;
+  previewOtp?: string;
 }
 
 export async function sendOtpCode(
@@ -272,6 +273,71 @@ export async function verifyOtpCode(
     displayName: data.user.displayName,
     email: data.user.email,
     phoneNumber: data.user.phoneNumber,
+    token: data.token,
+    verifiedAt: data.user.verifiedAt || Date.now(),
+  };
+
+  saveStudentSession(session);
+  return session;
+}
+
+/**
+ * Registers new candidate via Email and Password
+ */
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  displayName?: string
+): Promise<AuthUserSession> {
+  const res = await fetch('/api/auth/password/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password, displayName }),
+  });
+
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'Registration failed');
+  }
+
+  const session: AuthUserSession = {
+    uid: data.user.uid,
+    channel: data.user.channel || 'email',
+    identifier: data.user.identifier,
+    displayName: data.user.displayName,
+    email: data.user.email,
+    token: data.token,
+    verifiedAt: data.user.verifiedAt || Date.now(),
+  };
+
+  saveStudentSession(session);
+  return session;
+}
+
+/**
+ * Authenticates candidate via Email and Password
+ */
+export async function signInWithPassword(
+  email: string,
+  password: string
+): Promise<AuthUserSession> {
+  const res = await fetch('/api/auth/password/signin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'Sign in failed');
+  }
+
+  const session: AuthUserSession = {
+    uid: data.user.uid,
+    channel: data.user.channel || 'email',
+    identifier: data.user.identifier,
+    displayName: data.user.displayName,
+    email: data.user.email,
     token: data.token,
     verifiedAt: data.user.verifiedAt || Date.now(),
   };

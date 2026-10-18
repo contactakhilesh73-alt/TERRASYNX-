@@ -245,7 +245,7 @@ describe('Trust-Critical Guardrails & Regression Tests', () => {
         testOpportunity,
         DEFAULT_STUDENT_PROFILE,
         { sponsorshipStatus: 'Authorized to work without sponsorship' },
-        'Akhilesh_Singh_Tailored.pdf',
+        'Candidate_Tailored_Resume.pdf',
         2.5
       );
 

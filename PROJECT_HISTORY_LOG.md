@@ -432,3 +432,90 @@ Early open-source multi-agent job search workflows running across Claude Code, G
   - `lint_applet` (`tsc --noEmit`): 0 errors, 0 warnings.
   - `compile_applet` (`vite build`): Clean production bundle generation with 0 errors.
   - Vitest test suite: **38 test files, 247 tests, 100% passing**.
+
+---
+### Organizer Entries & Watchlist Integration: Chainlink & Google/Devpost Gemini (Completed)
+- **Removed Specific / Past Edition Entries:**
+  - Strictly ensured `"Global AI Innovators Challenge"`, `"Gemini Multimodal Innovation Challenge"`, `"AI Engineer World Summit Hackathon"`, and `"Chainlink Block Magic"` are completely removed/excluded from recurring hackathons list.
+- **Added Organizer Entries (`NOT_ANNOUNCED`):**
+  - **Chainlink (`hack_chainlink`):**
+    - Organizer: `Chainlink`
+    - Status: `NOT_ANNOUNCED`
+    - Verbatim note: `"Hackathon name changes every year; 2026 edition \"Convergence\" ran 6-8 February with a $120,000 prize pool per a community newsletter; next edition NOT_ANNOUNCED. Confirm on the official page."`
+    - Official URL: `https://chain.link/hackathon`
+    - `prizeText`: `'not listed'`
+    - `source`: `'recurring-series'`
+  - **Google/Devpost Gemini Hackathons (`hack_google_devpost_gemini`):**
+    - Organizer: `Google & Devpost`
+    - Status: `NOT_ANNOUNCED`
+    - Verbatim note: `"2026: Gemini 3 Hackathon, Gemini Live Agent Challenge; all closed. Confirm on the official page."`
+    - Official URL: `https://devpost.com`
+    - `prizeText`: `'not listed'`
+    - `source`: `'recurring-series'`
+- **Watcher Watchlist & Link Allowlist Sentinel:**
+  - Added `https://chain.link/hackathon` to `OFFICIAL_HACKATHON_WATCHLIST` in `src/services/officialPageWatcherService.ts`.
+  - Added `chain.link` to `coreAtsHostnames` in `src/services/linkAllowlistService.ts` with verified SSRF guard validation.
+- **Verification & Test Coverage:**
+  - Created automated test suite `src/tests/chainlinkAndGeminiOrganizerHackathons.test.ts` (6 tests).
+  - Updated integrity test suites (`prompt48Prompt49Integrity.test.tsx`, `prompt42HackathonsPortal.test.ts`).
+
+---
+### Real Date Dynamic Calendar, Auth Gate, Multi-User Profile Isolation & 90% Completeness Gating (Completed)
+- **Dynamic Calendar Icon Real Date Fix:**
+  - Removed static fallback dates (`18`, `'OCT'`) from `DynamicCalendarIcon.tsx`.
+  - Icon now resolves directly to the actual real date passed or current live date (`new Date()`), matching the adjacent formatted date string perfectly with zero desync.
+- **Universal De-Hardcoding & Zero Data Leakage:**
+  - Removed all hardcoded degrees, CGPAs, and personal credentials across onboarding and default profile generators.
+  - Per-user profile isolation in `RadarEngine`: profiles are isolated per user session (`terrasynx_profile_${uid}`).
+  - New users and guest visitors see clean, blank default templates without data contamination from previous sessions.
+- **Mandatory Authentication Gate:**
+  - Unauthenticated visitors are gated at `AuthModal` in gate mode before entering the inner portal.
+  - Supports Email OTP (Gmail with 6-digit code), Password Sign In & Sign Up, SMS OTP, and Google 1-Tap authentication.
+- **Profile Completion & Skip Flow:**
+  - After login/sign up, if profile is incomplete (<90%), candidates are prompted to complete their profile with a clear "Skip for now (Explore Opportunities)" option to browse freely.
+- **Application Gating Sentinel (90-100% Required):**
+  - Application submissions (Fast Apply on Opportunities, Hackathons Fast Apply, and Self-Report Apply) require at least 90% profile completeness.
+  - If < 90%, application is blocked and `ProfileCompletionGateModal` shows missing fields with a direct shortcut to complete the profile.
+- **Test Suite & Build Health:**
+  - All 40 test files (256 tests) passing 100%.
+  - `lint_applet` (`tsc --noEmit`): 0 errors.
+  - `compile_applet` (`vite build`): Succeeded with 0 errors.
+
+  - Total test suite: **41 test files, 261 tests, 100% passing**.
+  - TypeScript lint (`tsc --noEmit`) and production compilation (`vite build`) 100% clean with 0 errors.
+
+---
+### Prompt 54: Premier Research Programs — EPFL Switzerland & Stanford SURF Reference Card (Completed)
+- **1. EPFL Life Sciences Summer Research Program:**
+  - `studyLevel`: `'summer_research'`
+  - `country`: `'Switzerland'`
+  - `rateType`: `'MARKET_ESTIMATED'`
+  - Official Link: `https://www.epfl.ch/schools/sv/education/summer-research-program/` (official `epfl.ch` only)
+  - Details: Deadline reported 15 Nov 2026, stipend reported CHF 3,600 plus airfare support.
+  - Guardrails: Explicit `"confirm on the official page"` and `"dates reported by aggregators"`.
+- **2. EPFL Excellence in Engineering Internship:**
+  - `studyLevel`: `'summer_research'`
+  - `country`: `'Switzerland'`
+  - `rateType`: `'MARKET_ESTIMATED'`
+  - Official Link: `https://eee.epfl.ch/` (official `epfl.ch` only)
+  - Details: Deadline reported 1 Nov 2026.
+  - Guardrails: Explicit `"confirm on the official page"` and `"dates reported by aggregators"`.
+- **3. Summer@EPFL Computer and Communication Sciences:**
+  - `studyLevel`: `'summer_research'`
+  - `country`: `'Switzerland'`
+  - `rateType`: `'MARKET_ESTIMATED'`
+  - Official Link: `https://www.epfl.ch/schools/ic/education/summer-at-epfl/` (official `epfl.ch` only)
+  - Details: Deadline reported 29 Nov 2026.
+  - Guardrails: Explicit `"confirm on the official page"` and `"dates reported by aggregators"`.
+- **4. Stanford SURF Bay Area Reference Card:**
+  - `country`: `'USA'`
+  - `studyLevel`: `'summer_research'`
+  - `rateType`: `'MARKET_ESTIMATED'`
+  - Reference Card: `isReferenceCard: true`, `neverHide: true`
+  - Explicit Copy: `"US-enrolled undergraduates only; international applicants are not eligible for 2026; stipend $6,000"`.
+  - Retention Guard: Never hidden by status tab filters or matrix filters.
+- **5. ResearchPortal UI & Disclaimers:**
+  - Rendered `disclaimerNotice` and `actionTip` on ResearchPortal cards.
+  - Added full test coverage in `src/tests/prompt54ResearchPrograms.test.ts`.
+  - All 41 test files (261 tests) passing 100%. TypeScript (`tsc --noEmit`) and Vite compilation 100% clean.
+

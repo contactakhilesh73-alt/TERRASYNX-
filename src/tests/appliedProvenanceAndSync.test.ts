@@ -83,7 +83,7 @@ describe('Applied Application Provenance & Multi-Route Tracking', () => {
   });
 
   it('records direct official ATS submission with authentic route provenance and applicant email', async () => {
-    const studentEmail = 'kakhileshsingh310@gmail.com';
+    const studentEmail = 'candidate.test@terrasynx.org';
     const studentUid = 'usr_google_test_123';
 
     const record = await AppliedDossierService.recordDirectAtsApplication(
@@ -110,7 +110,7 @@ describe('Applied Application Provenance & Multi-Route Tracking', () => {
   });
 
   it('records fast-apply assistant submission with terrasynx_assisted provenance', () => {
-    const studentEmail = 'kakhileshsingh310@gmail.com';
+    const studentEmail = 'candidate.test@terrasynx.org';
     const mockReceipt: FastApplyReceipt = {
       confirmationId: 'CONF-2026-ROBLOX-8841X',
       sha256Hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
@@ -119,7 +119,7 @@ describe('Applied Application Provenance & Multi-Route Tracking', () => {
       jobTitle: 'Software Engineer, Early Career 2026',
       submittedAt: Date.now(),
       portalType: 'Greenhouse',
-      candidateName: 'Akhilesh Singh',
+      candidateName: 'Test Candidate',
       candidateEmail: studentEmail,
       workAuthSelected: 'US Citizen / Green Card',
       tailoredResumeUsed: 'Distributed Systems & Microservices',

@@ -46,15 +46,19 @@ import { HackathonFastApplyModal } from './HackathonFastApplyModal';
 import { HackathonWhitePageModal } from './HackathonWhitePageModal';
 import { CompanyLogo } from './CompanyLogo';
 import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
+import { ProfileCompletionGateModal } from './ProfileCompletionGateModal';
+import { calculateProfileCompletion } from '../utils/profileCompletion';
 
 interface HackathonsPortalProps {
   onNavigateToCalendar?: () => void;
   studentProfile?: StudentProfile;
+  onOpenProfileEditor?: () => void;
 }
 
 export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   onNavigateToCalendar,
-  studentProfile
+  studentProfile,
+  onOpenProfileEditor,
 }) => {
   // Live Date Reference State (defaults to current live time)
   const [referenceDate, setReferenceDate] = useState<Date>(() => new Date());
@@ -91,6 +95,22 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   // Modals state for Fast Apply Assistant & Official White Page
   const [fastApplyHackathon, setFastApplyHackathon] = useState<Hackathon | null>(null);
   const [whitePageHackathon, setWhitePageHackathon] = useState<Hackathon | null>(null);
+
+  // Profile Completion Gating State (90-100% required to apply)
+  const [isGateModalOpen, setIsGateModalOpen] = useState<boolean>(false);
+  const [gateTargetTitle, setGateTargetTitle] = useState<string>('');
+  const [gateCompletion, setGateCompletion] = useState(() => calculateProfileCompletion(studentProfile));
+
+  const handleFastApplyClick = (hackathon: Hackathon) => {
+    const completion = calculateProfileCompletion(studentProfile);
+    if (!completion.isCompleteForApply) {
+      setGateCompletion(completion);
+      setGateTargetTitle(hackathon.name);
+      setIsGateModalOpen(true);
+      return;
+    }
+    setFastApplyHackathon(hackathon);
+  };
 
   // Tracked Hackathon Application Records from HackathonTrackingService
   const [hackathonApplications, setHackathonApplications] = useState<HackathonApplicationRecord[]>(() => {
@@ -1171,7 +1191,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                     {/* Fast Apply Assistant Button */}
                     <button
                       type="button"
-                      onClick={() => setFastApplyHackathon(hackathon)}
+                      onClick={() => handleFastApplyClick(hackathon)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-mono font-bold text-xs transition-all shadow-md shadow-orange-950/50 cursor-pointer"
                       title="Open Fast Apply form pre-fill assistant & requirement checker"
                     >
@@ -1253,6 +1273,20 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
           applicationRecord={HackathonTrackingService.getApplicationForHackathon(whitePageHackathon.id, studentProfile?.email)}
         />
       )}
+
+      {/* Profile Completion Gate Modal (90-100% required to apply) */}
+      <ProfileCompletionGateModal
+        isOpen={isGateModalOpen}
+        onClose={() => setIsGateModalOpen(false)}
+        onOpenProfileEditor={() => {
+          setIsGateModalOpen(false);
+          if (onOpenProfileEditor) {
+            onOpenProfileEditor();
+          }
+        }}
+        completion={gateCompletion}
+        targetOpportunityTitle={gateTargetTitle}
+      />
     </div>
   );
 };

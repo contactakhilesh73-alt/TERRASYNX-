@@ -239,11 +239,11 @@ export class RecruiterRadarService {
 
 I noticed your work leading engineering recruitment for ${recruiter.departmentFocus} at ${recruiter.companyName}. I'm reaching out directly regarding the "${opportunity.title}" requisition (${reqId}).
 
-I am currently completing my degree at ${college} (Class of ${gradYear}, GPA: ${studentProfile.currentCgpa || '8.9/10'}), focusing on ${anchorSkills}.
+I am currently completing my degree at ${college} (Class of ${gradYear}${studentProfile.currentCgpa ? `, GPA: ${studentProfile.currentCgpa}` : ''}), focusing on ${anchorSkills}.
 
 Key proof of work aligned with your team's stack:
-• Production Systems Repository: ${studentProfile.githubUrl || 'https://github.com/akhileshsingh'} (Demonstrated sub-5ms low latency architecture & Raft consensus implementation)
-• Full verified ATS application package & portfolio: ${studentProfile.linkedinUrl}
+• Production Systems Repository: ${studentProfile.githubUrl || studentProfile.portfolioUrl || 'Available on candidate profile'} (Demonstrated sub-5ms low latency architecture & Raft consensus implementation)
+• Full verified ATS application package & portfolio: ${studentProfile.linkedinUrl || 'Available on candidate profile'}
 
 Given your active hiring for ${opportunity.title}, I would appreciate the opportunity to be evaluated in your upcoming interview slate. My verified portfolio is fully prepared for immediate review.
 
@@ -268,7 +268,7 @@ ${studentProfile.linkedinUrl}`;
         action: 'Send brief 2-sentence update if unread/unanswered after 4 business days',
         readyTemplate: `Hi ${recruiterFirstName},
 
-Following up briefly on my note regarding the ${opportunity.title} role (${reqId}). I recently added a live latency benchmark stress-test to my systems repository (${studentProfile.githubUrl || 'https://github.com/akhileshsingh'}) testing 50,000 req/sec throughput.
+Following up briefly on my note regarding the ${opportunity.title} role (${reqId}). I recently added a live latency benchmark stress-test to my systems repository (${studentProfile.githubUrl || studentProfile.portfolioUrl || 'available on profile'}) testing 50,000 req/sec throughput.
 
 Would welcome 5 minutes of your time if the early-career slate is still accepting candidates.
 
@@ -291,8 +291,8 @@ ${candidateName}`
     const proofOfWorkEmbeds = [
       {
         label: 'Engineering GitHub Repo',
-        url: studentProfile.githubUrl || 'https://github.com/akhileshsingh',
-        description: 'Verified repository showcasing Raft consensus and high-throughput networking'
+        url: studentProfile.githubUrl || studentProfile.portfolioUrl || 'https://github.com',
+        description: 'Verified repository showcasing high-throughput networking'
       },
       {
         label: 'Candidate LinkedIn Profile',

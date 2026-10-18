@@ -151,7 +151,7 @@ export const SelfReportApplyModal: React.FC<SelfReportApplyModalProps> = ({
                 setEmailInput(e.target.value);
                 if (error) setError(null);
               }}
-              placeholder="e.g. kakhileshsingh310@gmail.com"
+              placeholder="e.g. candidate@university.edu"
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-slate-100 placeholder-slate-500 font-mono focus:outline-none focus:border-cyan-500 transition-colors"
               required
             />

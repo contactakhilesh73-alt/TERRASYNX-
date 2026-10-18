@@ -221,9 +221,9 @@ I am currently a ${profile.degree} student at ${profile.collegeName} (Class of $
 
 I have already submitted my official application on the portal. If you feel comfortable, I would be deeply grateful for an internal referral or any quick advice on how best to stand out for this specific team.
 
-My resume and GitHub are attached below for quick review:
-• Portfolio & Projects: ${profile.portfolioUrl || 'https://github.com/akhileshsingh'}
-• LinkedIn: ${profile.linkedinUrl}
+My resume and projects are attached below for quick review:
+• Portfolio & Projects: ${profile.portfolioUrl || profile.githubUrl || 'Available upon request'}
+• LinkedIn: ${profile.linkedinUrl || 'Available on candidate profile'}
 
 Thank you so much for your time and guidance!
 

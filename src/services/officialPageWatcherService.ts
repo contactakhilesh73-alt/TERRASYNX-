@@ -83,6 +83,10 @@ export const OFFICIAL_HACKATHON_WATCHLIST: WatchlistItem[] = [
     organizer: 'Smart India Hackathon',
     officialListingUrl: 'https://sih.gov.in',
   },
+  {
+    organizer: 'Chainlink',
+    officialListingUrl: 'https://chain.link/hackathon',
+  },
 ];
 
 /**

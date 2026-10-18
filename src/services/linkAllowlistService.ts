@@ -169,6 +169,14 @@ function buildProgramAllowlist(): { allowedHostnames: Set<string>; allowedRoots:
     'calhacks.io',
     'pennapps.com',
     'hackjunction.com',
+    // Chainlink Watcher & Hackathons domain
+    'chain.link',
+    // Prompt 54: EPFL Switzerland & Stanford SURF domains
+    'epfl.ch',
+    'eee.epfl.ch',
+    'sv.epfl.ch',
+    'stanford.edu',
+    'surf.stanford.edu',
   ];
   for (const h of coreAtsHostnames) {
     ingest(h);

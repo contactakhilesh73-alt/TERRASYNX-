@@ -19,48 +19,37 @@ const STORAGE_KEYS = {
   ARCHIVED_IDS: 'terrasynx_archived_jobs_v1',
 };
 
-// Default Initial Student Profile (Isolated & Customizable, Req #12 & Req #18)
-export const DEFAULT_STUDENT_PROFILE: StudentProfile = {
-  id: 'usr_stud_2026_01',
-  fullName: 'Akhilesh Singh',
-  email: 'kakhileshsingh310@gmail.com',
-  collegeName: 'Indian Institute of Information Technology',
-  degree: 'B.Tech in Computer Science',
+// Default Initial Student Profile (General, non-hardcoded template)
+export const createDefaultStudentProfile = (
+  id: string = 'usr_guest',
+  email: string = '',
+  fullName: string = ''
+): StudentProfile => ({
+  id,
+  fullName,
+  email,
+  collegeName: '',
+  degree: '',
   graduationYear: 2026,
-  currentCgpa: '8.9 / 10.0',
-  targetBatch: [2025, 2026],
-  primarySkills: ['TypeScript', 'Python', 'React', 'Node.js', 'Distributed Systems', 'Tailwind CSS'],
-  secondarySkills: ['Docker', 'PostgreSQL', 'FastAPI', 'Redis', 'LLM Prompt Engineering', 'Git'],
-  projects: [
-    {
-      id: 'proj_01',
-      title: 'Real-Time Distributed Job Verification Crawler',
-      techStack: ['TypeScript', 'Node.js', 'Redis', 'Docker'],
-      description: 'Engineered an asynchronous ATS ingestion engine querying official company boards with rate-limiting and cryptographic checksumming.',
-      githubUrl: 'https://github.com/akhileshsingh/job-verification-crawler',
-      metricsAchieved: 'Sub-200ms latency, zero false-positive job detections'
-    },
-    {
-      id: 'proj_02',
-      title: 'Full-Stack Performance Analytics Cockpit',
-      techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Web Crypto API'],
-      description: 'Developed an interactive career telemetry dashboard featuring client-side cryptographic receipt generation and live fitment metrics.',
-      githubUrl: 'https://github.com/akhileshsingh/career-telemetry-cockpit',
-      metricsAchieved: '60fps rendering across 500+ data nodes'
-    }
-  ],
-  githubUrl: 'https://github.com/akhileshsingh',
-  linkedinUrl: 'https://linkedin.com/in/akhileshsingh',
-  portfolioUrl: 'https://akhilesh-portfolio.dev',
-  resumeFileName: 'Akhilesh_Singh_SWE_Resume_2026.pdf',
-  workAuthorization: 'F-1 (OPT / CPT Eligible)',
-  preferredRoles: ['Software Engineer', 'Systems Engineer', 'AI/ML Engineer'],
+  currentCgpa: '',
+  targetBatch: [2026, 2027],
+  primarySkills: ['Python', 'TypeScript', 'React', 'Node.js'],
+  secondarySkills: ['PostgreSQL', 'Docker', 'Git'],
+  projects: [],
+  githubUrl: '',
+  linkedinUrl: '',
+  portfolioUrl: '',
+  resumeFileName: '',
+  workAuthorization: 'India / APAC Domestic Only',
+  preferredRoles: ['Software Engineer', 'Full Stack Developer', 'AI/ML Engineer'],
   preferredWorkMode: 'any',
-  targetLocations: ['United States', 'Remote', 'India'],
+  targetLocations: ['Remote', 'India', 'United States'],
   emailAlertsEnabled: true,
   dailyDigestTime: 'both',
   urgentAlertThresholdHours: 72,
-};
+});
+
+export const DEFAULT_STUDENT_PROFILE: StudentProfile = createDefaultStudentProfile();
 
 // Verified Canonical Opportunities Seed Database (Strict Zero-Fake Policy)
 // All 6 hardcoded demo listings (OpenAI, Google, Anthropic, Stripe, Perplexity, Microsoft)
@@ -71,8 +60,56 @@ export const SEED_OPPORTUNITIES: Opportunity[] = [];
 export class RadarEngine {
   private static opportunities: Opportunity[] = [];
   private static studentProfile: StudentProfile = DEFAULT_STUDENT_PROFILE;
+  private static activeUserKey: string | null = null;
   private static listeners: Set<() => void> = new Set();
   private static pulseIntervalId: number | null = null;
+
+  // Set the active authenticated user and load their strictly isolated profile
+  public static setActiveUser(user: { uid?: string; email?: string; displayName?: string } | null): void {
+    if (!user) {
+      this.activeUserKey = null;
+      this.studentProfile = createDefaultStudentProfile();
+      this.notify();
+      return;
+    }
+
+    const rawKey = user.uid || (user.email ? user.email.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'guest');
+    this.activeUserKey = rawKey;
+    const userStorageKey = `terrasynx_profile_${rawKey}`;
+
+    // Purge legacy global key if it exists to prevent contamination
+    try {
+      localStorage.removeItem(STORAGE_KEYS.PROFILE);
+    } catch {
+      // ignore
+    }
+
+    const cached = localStorage.getItem(userStorageKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        this.studentProfile = {
+          ...createDefaultStudentProfile(user.uid || 'usr_guest', user.email || '', user.displayName || ''),
+          ...parsed,
+        };
+      } catch {
+        this.studentProfile = createDefaultStudentProfile(user.uid || 'usr_guest', user.email || '', user.displayName || '');
+      }
+    } else {
+      this.studentProfile = createDefaultStudentProfile(
+        user.uid || 'usr_guest',
+        user.email || '',
+        user.displayName || ''
+      );
+      try {
+        localStorage.setItem(userStorageKey, JSON.stringify(this.studentProfile));
+      } catch {
+        // ignore
+      }
+    }
+
+    this.notify();
+  }
 
   // Comprehensive Deduplication Guard (Multi-Key: ID, URL, Requisition ID, Company+Title)
   public static deduplicateOpportunities(opps: Opportunity[]): Opportunity[] {
@@ -175,14 +212,24 @@ export class RadarEngine {
       }, 50);
     }
 
-    // Load persisted profile
-    const cachedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    if (cachedProfile) {
-      try {
-        this.studentProfile = { ...DEFAULT_STUDENT_PROFILE, ...JSON.parse(cachedProfile) };
-      } catch {
-        this.studentProfile = DEFAULT_STUDENT_PROFILE;
+    // Purge legacy global profile key to prevent cross-user leakage
+    try {
+      localStorage.removeItem(STORAGE_KEYS.PROFILE);
+    } catch {
+      // ignore
+    }
+
+    // Load persisted profile for active session if present
+    try {
+      const rawSession = localStorage.getItem('terrasynx_auth_session_v1');
+      if (rawSession) {
+        const session = JSON.parse(rawSession);
+        this.setActiveUser(session);
+      } else {
+        this.setActiveUser(null);
       }
+    } catch {
+      this.setActiveUser(null);
     }
 
     // Start Live Real-Time Pulse (Strict Rule #3: Zero-Refresh Pulse)
@@ -366,7 +413,19 @@ export class RadarEngine {
 
   public static updateStudentProfile(updated: Partial<StudentProfile>): void {
     this.studentProfile = { ...this.studentProfile, ...updated };
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(this.studentProfile));
+    if (this.activeUserKey) {
+      try {
+        localStorage.setItem(`terrasynx_profile_${this.activeUserKey}`, JSON.stringify(this.studentProfile));
+      } catch {
+        // ignore
+      }
+    } else {
+      try {
+        localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(this.studentProfile));
+      } catch {
+        // ignore
+      }
+    }
     
     // Dynamically recalculate 10-D Fitment scores across all opportunities (Req #17 & #18)
     this.opportunities = this.opportunities.map(opp => {
@@ -386,11 +445,23 @@ export class RadarEngine {
     AtsLiveService.clearCache();
     AtsClosureDetectionService.resetTracking();
     this.opportunities = [];
-    this.studentProfile = DEFAULT_STUDENT_PROFILE;
+    const cleanDefault = createDefaultStudentProfile(
+      this.activeUserKey || 'usr_guest',
+      this.studentProfile.email || '',
+      this.studentProfile.fullName || ''
+    );
+    this.studentProfile = cleanDefault;
+    if (this.activeUserKey) {
+      try {
+        localStorage.removeItem(`terrasynx_profile_${this.activeUserKey}`);
+      } catch {
+        // ignore
+      }
+    }
     localStorage.removeItem(STORAGE_KEYS.MUTED_ALERTS);
     localStorage.removeItem(STORAGE_KEYS.SIMULATED_EMAILS);
     this.persistOpportunities();
-    this.updateStudentProfile(DEFAULT_STUDENT_PROFILE);
+    this.updateStudentProfile(cleanDefault);
     this.scanLiveAtsBoards().catch(() => {});
     this.notify();
   }
