@@ -9,7 +9,7 @@
  * - Honest Empty State when filters yield 0 matches
  */
 
-import { Hackathon, HackathonMode, HackathonSource, HackathonStatusTab, HackathonStatus, HackathonType } from '../types';
+import { Hackathon, HackathonMode, HackathonSource, HackathonStatusTab, HackathonStatus, HackathonType, DateConfidence } from '../types';
 
 export const HACKATHONS_DATABASE: Hackathon[] = [
   {
@@ -27,6 +27,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '2026-11-14',
     endDate: '2026-11-15',
     registrationDeadline: '2026-11-15',
+    dateConfidence: 'OFFICIAL',
     datesNote: 'Registration open since 26 August, challenge statements 28 October; some local events full; confirm on the official page',
     lastEditionNote: 'Worldwide local events, registration open since 26 August, challenge statements 28 October, free, open to all ages, teams up to 6, some local events are full. Confirm on the official page.',
     officialUrl: 'https://www.spaceappschallenge.org',
@@ -50,6 +51,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Runs twice per year (spring and autumn). Next edition NOT_ANNOUNCED; confirm on the official page',
     lastEditionNote: 'Online, two main editions per year (spring and autumn); 2026 spring edition "Frontier" ran 6 April to 11 May with a $2.5M venture fund; next edition NOT_ANNOUNCED. Confirm on the official page.',
     officialUrl: 'https://www.colosseum.org',
@@ -69,16 +71,16 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     eligibilityText: 'Undergraduate and collegiate students worldwide. Free entry.',
     entryFeeText: 'Free',
     prizeText: '$200,000+',
-    dates: 'Confirm on the official page',
+    dates: 'Dates not announced',
     startDate: '',
     endDate: '',
     registrationDeadline: '',
-    datesNote: '2026 not confirmed; confirm on the official page',
-    lastEditionNote: '2025 edition 24-26 Oct 2025, prize "$200,000+" per its own site; 2026 not confirmed. Confirm on the official page.',
+    dateConfidence: 'UNKNOWN',
+    lastEditionNote: '2025 edition: 24-26 October 2025, $200,000+ prizes per its own site; a third-party listing gives 3-6 October 2026, unconfirmed (24-26 Oct 2025; 2026 not confirmed; confirm on the official page).',
     officialUrl: 'https://calhacks.io',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
-    description: 'World’s largest collegiate hackathon hosted at UC Berkeley, uniting builders across global engineering tracks.',
+    description: 'World’s largest collegiate hackathon hosted at UC Berkeley, uniting builders across global engineering tracks. 2025 edition: 24-26 October 2025, $200,000+ prizes per its own site; a third-party listing gives 3-6 October 2026, unconfirmed. Confirm on the official page.',
     locationDetails: 'San Francisco Bay Area / Berkeley, CA'
   },
   {
@@ -92,16 +94,16 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     eligibilityText: 'College and university students globally. Travel reimbursements and mentorship provided.',
     entryFeeText: 'Free',
     prizeText: 'not listed',
-    dates: 'Confirm on the official page',
+    dates: 'Dates not announced',
     startDate: '',
     endDate: '',
     registrationDeadline: '',
-    datesNote: 'Runs twice a year, each edition has its own site; 2026 fall not confirmed; confirm on the official page',
+    dateConfidence: 'UNKNOWN',
     lastEditionNote: 'Runs twice a year, each edition has its own site; 2026 fall not confirmed. Confirm on the official page.',
     officialUrl: 'https://pennapps.com',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
-    description: 'The nation’s first student-run college hackathon, hosted by the University of Pennsylvania twice per year.',
+    description: 'The nation’s first student-run college hackathon, hosted by the University of Pennsylvania twice per year. Confirm on the official page.',
     locationDetails: 'Philadelphia, PA, USA'
   },
   {
@@ -119,6 +121,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'Premier Ethereum hackathon series. Confirm on the official page.',
     officialUrl: 'https://ethglobal.com/events',
@@ -126,6 +129,30 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     status: 'NOT_ANNOUNCED',
     description: 'Premier Ethereum hackathon series bringing together top Web3 builders, core protocol devs, and startups globally.',
     locationDetails: 'Global Events & Online Streams'
+  },
+  {
+    id: 'hack_ethglobal_mumbai',
+    name: 'ETHGlobal Mumbai',
+    organizer: 'ETHGlobal',
+    type: 'hackathon',
+    mode: 'in-person',
+    country: 'India',
+    themes: ['Web3 / Blockchain', 'Ethereum', 'Smart Contracts', 'DeFi'],
+    eligibilityText: 'Application and approval required. Open to Web3 developers, researchers, and builders worldwide.',
+    entryFeeText: 'Small refundable crypto stake (application and approval required)',
+    prizeText: 'not listed',
+    dates: '5-7 November 2026 / 6-8 November 2026 reported (Conflicting)',
+    startDate: '',
+    endDate: '',
+    registrationDeadline: '2026-11-03',
+    dateConfidence: 'CONFLICTING',
+    reportedDates: ['5-7 November 2026', '6-8 November 2026'],
+    officialUrl: 'https://ethglobal.com',
+    source: 'recurring-series',
+    status: 'ANNOUNCED_UNCONFIRMED',
+    description: 'Application and approval required, small refundable crypto stake, registration reported to close 3 November: confirm on the official page. Conflicting dates reported: 5-7 November and 6-8 November.',
+    lastEditionNote: 'Application and approval required, small refundable crypto stake, registration reported to close 3 November: confirm on the official page. 5-7 November and 6-8 November reported.',
+    locationDetails: 'Mumbai, India'
   },
   {
     id: 'hack_google_solution_challenge',
@@ -142,6 +169,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'Last edition submission deadline 20 April 2026 PT. Confirm on the official page.',
     officialUrl: 'https://developers.google.com/community/gdsc-solution-challenge',
@@ -165,6 +193,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'Last edition 19-20 Sept 2026, selective application, travel terms vary by year. Confirm on the official page.',
     officialUrl: 'https://hackmit.org',
@@ -188,6 +217,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'Last edition 18-20 Sept 2026, Waterloo. Confirm on the official page.',
     officialUrl: 'https://hackthenorth.com',
@@ -207,16 +237,16 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     eligibilityText: 'Open to all undergraduate and graduate students globally. Flight reimbursements provided for accepted hackers.',
     entryFeeText: '100% Free Entry + Travel scholarships available',
     prizeText: 'not listed',
-    dates: 'Confirm on the official page',
+    dates: 'Dates not announced',
     startDate: '',
     endDate: '',
     registrationDeadline: '',
-    datesNote: 'Dates change every edition, confirm on the official page',
+    dateConfidence: 'UNKNOWN',
     lastEditionNote: 'Last edition 13-15 Feb 2026; 2027 not confirmed, prize figures differ between sources, do not state one. Confirm on the official page.',
     officialUrl: 'https://treehacks.com',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
-    description: 'Stanford University’s premier hackathon convening elite student builders to tackle urgent global problems.',
+    description: 'Stanford University’s premier hackathon convening elite student builders to tackle urgent global problems. Confirm on the official page.',
     locationDetails: 'Stanford University, Stanford, CA'
   },
   {
@@ -234,6 +264,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '2026-11-13',
     endDate: '2026-11-15',
     registrationDeadline: '2026-09-06',
+    dateConfidence: 'REPORTED',
     lastEditionNote: '13-15 Nov 2026, Espoo, Finland, free entry, travel grants listed by the organizer, registration closed 6 Sept 2026. Confirm on the official page.',
     officialUrl: 'https://hackjunction.com',
     source: 'recurring-series',
@@ -252,16 +283,16 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     eligibilityText: 'Open to students worldwide 16+ enrolled in high school, undergraduate, or graduate programs.',
     entryFeeText: '100% Free Entry + Azure Cloud Sponsorship',
     prizeText: '$100,000 USD and mentorship per 2025/2026 official pages',
-    dates: 'Confirm on the official page',
+    dates: 'Dates not announced',
     startDate: '',
     endDate: '',
     registrationDeadline: '',
-    datesNote: '2027 dates: confirm on the official page',
+    dateConfidence: 'UNKNOWN',
     lastEditionNote: 'Prize $100,000 and mentorship per 2025/2026 official pages, 2027 dates: confirm on the official page. Confirm on the official page.',
     officialUrl: 'https://imaginecup.microsoft.com',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
-    description: 'Student technology competition empowering young innovators to launch viable AI startups.',
+    description: 'Student technology competition empowering young innovators to launch viable AI startups. Confirm on the official page.',
     locationDetails: 'Virtual / Online Global'
   },
   {
@@ -279,6 +310,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'OFFICIAL',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'Recurring global week-long hackathon series. Confirm on the official page.',
     officialUrl: 'https://ghw.mlh.com',
@@ -302,6 +334,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'OFFICIAL',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'Collegiate hackathon league running hundreds of student-run hackathons throughout the academic year. Confirm on the official page.',
     officialUrl: 'https://mlh.com/events',
@@ -326,6 +359,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Dates change every edition, confirm on the official page',
     lastEditionNote: 'College SPOC only. Entry strictly through institute Single Point of Contact nomination. Confirm on the official page.',
     officialUrl: 'https://sih.gov.in',
@@ -349,6 +383,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: 'Hackathon name changes every year; 2026 edition "Convergence" ran 6-8 February with a $120,000 prize pool per a community newsletter; confirm on the official page',
     lastEditionNote: 'Hackathon name changes every year; 2026 edition "Convergence" ran 6-8 February with a $120,000 prize pool per a community newsletter; next edition NOT_ANNOUNCED. Confirm on the official page.',
     officialUrl: 'https://chain.link/hackathon',
@@ -372,6 +407,7 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     startDate: '',
     endDate: '',
     registrationDeadline: '',
+    dateConfidence: 'REPORTED',
     datesNote: '2026: Gemini 3 Hackathon, Gemini Live Agent Challenge; all closed; confirm on the official page',
     lastEditionNote: '2026: Gemini 3 Hackathon, Gemini Live Agent Challenge; all closed. Confirm on the official page.',
     officialUrl: 'https://devpost.com',
@@ -394,7 +430,8 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     dates: 'Confirm on the official portal',
     startDate: '',
     endDate: '',
-    registrationDeadline: '',
+    registrationDeadline: '2026-11-13',
+    dateConfidence: 'REPORTED',
     datesNote: 'Season 14 dates reported by third-party sources (registration deadline 13 November 2026, MockVita 23-24 October and 13-14 November, Pre-Qualifier 11-12 December); prize figures differ between sources; confirm on the official portal',
     lastEditionNote: 'Season 14 dates reported by third-party sources (registration deadline 13 November 2026, MockVita 23-24 October and 13-14 November, Pre-Qualifier 11-12 December); prize figures differ between sources; confirm on the official portal. Confirm on the official page.',
     officialUrl: 'https://codevita.tcsapps.com',
@@ -414,16 +451,16 @@ export const HACKATHONS_DATABASE: Hackathon[] = [
     eligibilityText: 'Main track age 18+, high-school division needs parental consent, subject to official terms',
     entryFeeText: 'Free',
     prizeText: 'not listed',
-    dates: 'Confirm on the official Hacker Cup page',
+    dates: 'Dates not announced',
     startDate: '',
     endDate: '',
     registrationDeadline: '',
-    datesNote: '2026 season not announced as of the last check; confirm on the official Hacker Cup page.',
+    dateConfidence: 'UNKNOWN',
     lastEditionNote: '2025 season: registration opened 3 October 2025, free, main track age 18+, high-school division needs parental consent, prizes include T-shirts and cash for finalists, some countries excluded from prize shipping. 2026 season not announced as of the last check; confirm on the official Hacker Cup page.',
     officialUrl: 'https://www.facebook.com/codingcompetitions/hacker-cup',
     source: 'recurring-series',
     status: 'NOT_ANNOUNCED',
-    description: 'Annual global algorithmic programming contest hosted by Meta for competitors across multiple online rounds.',
+    description: 'Annual global algorithmic programming contest hosted by Meta for competitors across multiple online rounds. Confirm on the official Hacker Cup page.',
     locationDetails: 'Virtual / Online Global'
   }
 ];
@@ -440,10 +477,17 @@ export interface HackathonFilters {
 
 export class HackathonsService {
   /**
-   * Return the entire verified hackathons list.
+   * Return the entire verified hackathons list with guaranteed dateConfidence.
    */
   public static getAllHackathons(): Hackathon[] {
-    return [...HACKATHONS_DATABASE];
+    return HACKATHONS_DATABASE.map(h => ({
+      ...h,
+      dateConfidence: h.dateConfidence || (
+        h.status === 'ANNOUNCED_VERIFIED' || h.id === 'hack_nasa_space_apps' || h.id.includes('mlh')
+          ? 'OFFICIAL'
+          : 'REPORTED'
+      ),
+    }));
   }
 
   /**
@@ -456,7 +500,9 @@ export class HackathonsService {
       sourceUrl: string;
       detectedOn: string;
       status: HackathonStatus;
-      isStale: boolean;
+      isStale?: boolean;
+      consecutiveMatches?: number;
+      dateConfidence?: DateConfidence;
       grounded?: {
         name?: string | null;
         dates?: string | null;
@@ -475,8 +521,21 @@ export class HackathonsService {
     }
 
     return hackathons.map(h => {
-      const snap = snapshotMap.get(h.organizer.toLowerCase().trim());
+      const snap = snapshotMap.get(h.organizer.toLowerCase().trim()) ||
+                   snapshotMap.get(h.name.toLowerCase().trim());
       if (!snap) return h;
+
+      // Prompt 60: The watcher may mark a date OFFICIAL only after the grounding check and two consistent runs.
+      const hasGroundedDate = Boolean(snap.grounded?.dates && snap.grounded.dates.trim().length > 0);
+      const isTwoRuns = (snap.consecutiveMatches || 0) >= 2;
+      let newDateConfidence = h.dateConfidence;
+      if (snap.dateConfidence) {
+        newDateConfidence = snap.dateConfidence;
+      } else if (hasGroundedDate && isTwoRuns) {
+        newDateConfidence = 'OFFICIAL';
+      } else if (hasGroundedDate) {
+        newDateConfidence = 'REPORTED';
+      }
 
       return {
         ...h,
@@ -485,6 +544,7 @@ export class HackathonsService {
         isStale: typeof snap.isStale === 'boolean' ? snap.isStale : h.isStale,
         status: snap.status || h.status,
         dates: snap.grounded?.dates || h.dates,
+        dateConfidence: newDateConfidence,
         registrationDeadline: snap.grounded?.deadline || h.registrationDeadline,
         name: snap.grounded?.name || h.name,
       };
@@ -493,11 +553,16 @@ export class HackathonsService {
 
   /**
    * Determine whether a hackathon is OPEN_NOW, UPCOMING, or PASSED based on a given reference date.
-   * - OPEN_NOW: Currently active hacking period OR registration is open right now.
-   * - UPCOMING: Scheduled in the future (starts in future, registration has not yet closed or is scheduled).
-   * - PASSED: Both hackathon ending date and registration deadline have concluded in the past.
+   * Prompt 57: Compute status (Open Now / Upcoming / Passed) from the current date ONLY when dateConfidence is OFFICIAL or REPORTED.
+   * For CONFLICTING or UNKNOWN, returns null (status is not computed from date).
    */
-  public static getHackathonStatus(hackathon: Hackathon, referenceDate: Date = new Date()): HackathonStatusTab {
+  public static getHackathonStatus(hackathon: Hackathon, referenceDate: Date = new Date()): HackathonStatusTab | null {
+    // Prompt 57: Compute status ONLY when dateConfidence is OFFICIAL or REPORTED
+    const conf = hackathon.dateConfidence || (hackathon.status === 'ANNOUNCED_VERIFIED' ? 'OFFICIAL' : 'REPORTED');
+    if (conf === 'CONFLICTING' || conf === 'UNKNOWN') {
+      return null;
+    }
+
     // Prompt 44: Recurring series with no fixed dates (or datesNote) are active ongoing recurring programs
     if (hackathon.datesNote || !hackathon.startDate || !hackathon.endDate) {
       return 'OPEN_NOW';
@@ -505,10 +570,12 @@ export class HackathonsService {
 
     const now = referenceDate.getTime();
     
-    // Parse ISO dates with safety
-    const end = new Date(hackathon.endDate + 'T23:59:59Z').getTime();
-    const deadline = new Date(hackathon.registrationDeadline + 'T23:59:59Z').getTime();
-    const start = new Date(hackathon.startDate + 'T00:00:00Z').getTime();
+    // Parse ISO dates with safety (handles both YYYY-MM-DD and YYYY-MM-DDTHH:mm:ss.sssZ)
+    const end = new Date(hackathon.endDate.includes('T') ? hackathon.endDate : hackathon.endDate + 'T23:59:59Z').getTime();
+    const deadline = hackathon.registrationDeadline 
+      ? new Date(hackathon.registrationDeadline.includes('T') ? hackathon.registrationDeadline : hackathon.registrationDeadline + 'T23:59:59Z').getTime()
+      : end;
+    const start = new Date(hackathon.startDate.includes('T') ? hackathon.startDate : hackathon.startDate + 'T00:00:00Z').getTime();
 
     // 1. If the hackathon end date has passed, it is PASSED
     if (now > end) {
@@ -551,7 +618,7 @@ export class HackathonsService {
       // 1. Status Tab filter ('OPEN_NOW' | 'UPCOMING' | 'PASSED')
       if (filters.statusTab) {
         const computedStatus = this.getHackathonStatus(hackathon, referenceDate);
-        if (computedStatus !== filters.statusTab) {
+        if (!computedStatus || computedStatus !== filters.statusTab) {
           return false;
         }
       }
@@ -724,7 +791,12 @@ export class HackathonsService {
     const lower = entryFeeText.toLowerCase().trim();
 
     // Explicitly refunded/refundable stake on check-in is not a net entry fee
-    if (lower.includes('refunded stake') || lower.includes('refundable stake') || lower.includes('100% refunded')) {
+    if (
+      lower.includes('refunded stake') || 
+      lower.includes('refundable stake') || 
+      lower.includes('100% refunded') ||
+      (lower.includes('refundable') && lower.includes('stake'))
+    ) {
       return false;
     }
 
@@ -779,7 +851,12 @@ export class HackathonsService {
       hackathon.lastEditionNote
     ].filter(Boolean).join(' ').toLowerCase();
 
-    if (combined.includes('refunded stake') || combined.includes('refundable stake') || combined.includes('100% refunded')) {
+    if (
+      combined.includes('refunded stake') || 
+      combined.includes('refundable stake') || 
+      combined.includes('100% refunded') ||
+      (combined.includes('refundable') && combined.includes('stake'))
+    ) {
       return false;
     }
 

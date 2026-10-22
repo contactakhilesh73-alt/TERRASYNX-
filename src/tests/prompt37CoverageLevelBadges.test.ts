@@ -10,7 +10,7 @@ describe('Prompt 37: Coverage and Level Badges & Scholarships Level Filter', () 
     expect(allCycles.length).toBeGreaterThan(0);
 
     const validStudyLevels: StudyLevel[] = ['class12_ug', 'postgraduate', 'summer_research', 'internship'];
-    const validCoverageTypes: CoverageType[] = ['FULL_RIDE', 'FULL_TUITION', 'STIPEND_ONLY', 'TRAVEL_ONLY', 'PARTIAL_GRANT'];
+    const validCoverageTypes: CoverageType[] = ['FULL_RIDE', 'FULL_TUITION', 'STIPEND_ONLY', 'TRAVEL_ONLY', 'PARTIAL_GRANT', 'NON_CASH'];
 
     allCycles.forEach(cycle => {
       expect(cycle.studyLevel, `Missing studyLevel in ${cycle.id}`).toBeDefined();
@@ -136,7 +136,7 @@ describe('Prompt 37: Coverage and Level Badges & Scholarships Level Filter', () 
       return isScholarship && !isCorporate && !isResearch && !isOpenSource;
     });
 
-    expect(scholarshipCycles.length).toBe(46);
+    expect(scholarshipCycles.length).toBe(50);
 
     // Filter by 'postgraduate'
     const pgScholarships = scholarshipCycles.filter(c => c.studyLevel === 'postgraduate');
@@ -149,9 +149,9 @@ describe('Prompt 37: Coverage and Level Badges & Scholarships Level Filter', () 
 
     // Filter by 'class12_ug'
     const ugScholarships = scholarshipCycles.filter(c => c.studyLevel === 'class12_ug');
-    expect(ugScholarships.length).toBe(33);
+    expect(ugScholarships.length).toBe(37);
 
     // Sum matches total
-    expect(pgScholarships.length + ugScholarships.length).toBe(46);
+    expect(pgScholarships.length + ugScholarships.length).toBe(50);
   });
 });

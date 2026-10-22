@@ -31,10 +31,10 @@ describe('Prompt 34C: ScholarshipsPortal (Scholarships Only)', () => {
     });
   };
 
-  it('shows ONLY scholarship_12th, global_full_ride, and pre_university_full_ride entries (count: 46 with Prompt 39 batch)', () => {
+  it('shows ONLY scholarship_12th, global_full_ride, and pre_university_full_ride entries (count: 50 with Prompt 39 and Prompt 55 batches)', () => {
     const scholarships = getScholarshipCycles();
 
-    expect(scholarships.length).toBe(46);
+    expect(scholarships.length).toBe(50);
 
     let preUni = 0;
     let globalFull = 0;
@@ -52,8 +52,8 @@ describe('Prompt 34C: ScholarshipsPortal (Scholarships Only)', () => {
 
     expect(preUni).toBe(18);
     expect(globalFull).toBe(7);
-    expect(sch12th).toBe(21);
-    expect(preUni + globalFull + sch12th).toBe(46);
+    expect(sch12th).toBe(25);
+    expect(preUni + globalFull + sch12th).toBe(50);
   });
 
   it('strictly excludes all corporate internships, research labs, and open-source grants', () => {
@@ -103,9 +103,10 @@ describe('Prompt 34C: ScholarshipsPortal (Scholarships Only)', () => {
       counts[c] = (counts[c] || 0) + 1;
     }
 
-    expect(counts['USA']).toBe(20);
-    expect(counts['India']).toBe(9);
-    expect(counts['Global/Remote']).toBe(6);
+    expect(counts['USA']).toBe(21);
+    expect(counts['India']).toBe(10);
+    expect(counts['Global/Remote']).toBe(7);
+    expect(counts['APAC']).toBe(1);
     expect(counts['UK']).toBe(6);
     expect(counts['Canada']).toBe(1);
     expect(counts['UAE']).toBe(1);

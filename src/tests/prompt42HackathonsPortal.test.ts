@@ -6,7 +6,7 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
   const allHackathons = HackathonsService.getAllHackathons();
 
   it('validates that all hackathons conform to the Hackathon type specification', () => {
-    expect(allHackathons.length).toBe(18);
+    expect(allHackathons.length).toBe(19);
 
     for (const h of allHackathons) {
       expect(typeof h.id).toBe('string');
@@ -65,7 +65,7 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
     const notAnnounced = HackathonsService.filterHackathons(allHackathons, { status: 'NOT_ANNOUNCED' });
 
     expect(verified.length).toBe(1); // NASA International Space Apps Challenge
-    expect(unconfirmed.length).toBe(2); // Junction & TCS CodeVita
+    expect(unconfirmed.length).toBe(3); // Junction, TCS CodeVita & ETHGlobal Mumbai
     expect(notAnnounced.length).toBe(15); // All 15 other recurring series & contests
 
     expect(verified.length + unconfirmed.length + notAnnounced.length).toBe(allHackathons.length);
@@ -77,7 +77,7 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
     const recurring = allHackathons.filter(h => h.source === 'recurring-series');
 
     expect(devpostInStatic.length).toBe(0); // ZERO fake devpost-live in static catalog!
-    expect(recurring.length).toBe(18); // Exactly the recurring series and contests
+    expect(recurring.length).toBe(19); // Exactly the recurring series and contests
   });
 
   it('contains hackathons across all 3 modes: online, in-person, hybrid', () => {
@@ -104,11 +104,13 @@ describe('Prompt 42: Hackathons Portal & Data Specification', () => {
       refDate
     );
 
-    expect(openNow.length).toBe(17);
+    expect(openNow.length).toBe(12);
     expect(upcoming.length).toBe(1); // Junction (event Nov 13-15 2026, registration closed Sept 6 2026)
 
-    // Sum should equal total hackathons
-    expect(openNow.length + upcoming.length).toBe(allHackathons.length);
+    // Sum + Conflicting (Prompt 57) + Unknown (Prompt 59) should equal total hackathons
+    const conflicting = allHackathons.filter(h => h.dateConfidence === 'CONFLICTING');
+    const unknown = allHackathons.filter(h => h.dateConfidence === 'UNKNOWN');
+    expect(openNow.length + upcoming.length + conflicting.length + unknown.length).toBe(allHackathons.length);
   });
 
   it('filters by mode, country, theme, and query without error', () => {

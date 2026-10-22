@@ -16,7 +16,7 @@ import { CalendarSyncService } from '../services/calendarSyncService';
 import { CompanyLogo } from './CompanyLogo';
 import { LinkHealthBadge } from './LinkHealthBadge';
 import { DynamicCalendarIcon } from './DynamicCalendarIcon';
-import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig } from '../utils/scholarshipBadges';
+import { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig, getDateConfidenceBadgeConfig } from '../utils/scholarshipBadges';
 import { getCountryFlag, createGoogleCalendarUrl, evaluateEligibilityMatrix, MatrixBadgeType } from './UpcomingInternshipsCalendar';
 import { 
   Calendar, 
@@ -28,6 +28,7 @@ import {
   Compass, 
   DollarSign,
   AlertCircle,
+  AlertTriangle,
   CalendarClock,
   History,
   Info,
@@ -1006,11 +1007,13 @@ export const InternshipsPortal: React.FC<InternshipsPortalProps> = ({
                     </div>
                   </div>
 
-                  <div className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border shrink-0 flex items-center gap-1.5 ${statusBadge.containerClass}`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${statusBadge.dotColor}`} />
-                    <StatusIcon className="w-3 h-3" />
-                    <span>{statusBadge.label}</span>
-                  </div>
+                  {(cycle.dateConfidence === 'OFFICIAL' || cycle.dateConfidence === 'REPORTED') && cycle.currentStatus && (
+                    <div className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border shrink-0 flex items-center gap-1.5 ${statusBadge.containerClass}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${statusBadge.dotColor}`} />
+                      <StatusIcon className="w-3 h-3" />
+                      <span>{statusBadge.label}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Country Pill, Study Level Badge, Coverage Type Badge, Tier Badge, Rate Tag */}
@@ -1019,6 +1022,22 @@ export const InternshipsPortal: React.FC<InternshipsPortalProps> = ({
                     <MapPin className="w-2.5 h-2.5 text-blue-400" />
                     <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                   </span>
+
+                  {/* Prompt 57: Date Confidence Badge */}
+                  {(() => {
+                    const conf = cycle.dateConfidence || 'REPORTED';
+                    const confBadge = getDateConfidenceBadgeConfig(conf);
+                    const ConfIcon = confBadge.icon;
+                    return (
+                      <span
+                        data-testid="program-date-confidence-badge"
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1 ${confBadge.className}`}
+                      >
+                        <ConfIcon className="w-3 h-3" />
+                        <span>{confBadge.label}</span>
+                      </span>
+                    );
+                  })()}
 
                   {/* Prompt 37: Study Level Badge */}
                   {cycle.studyLevel && (() => {
@@ -1109,15 +1128,43 @@ export const InternshipsPortal: React.FC<InternshipsPortalProps> = ({
 
                 {/* Application Window & Compensation Stats */}
                 <div className="grid grid-cols-2 gap-2 mt-3">
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Application Window</span>
-                    <span className="text-xs font-mono font-bold text-blue-300 block mt-0.5">
-                      📅 {cycle.exactWindowText || cycle.expectedAnnouncementMonth}
-                    </span>
-                    <span className="text-[10px] font-mono text-slate-500 block mt-0.5">
-                      {cycle.expectedWindowDuration}
-                    </span>
-                  </div>
+                  {cycle.dateConfidence === 'UNKNOWN' ? (
+                    <div 
+                      data-testid="program-date-unknown"
+                      className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-500"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                      <span>Dates not announced</span>
+                    </div>
+                  ) : cycle.dateConfidence === 'CONFLICTING' ? (
+                    <div 
+                      data-testid="program-date-conflicting"
+                      className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1 text-[11px] font-mono"
+                    >
+                      <div className="flex items-center gap-1.5 text-amber-400 font-semibold">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Reported Dates:</span>
+                      </div>
+                      <div className="text-amber-200 text-xs">
+                        {cycle.reportedDates && cycle.reportedDates.length > 0
+                          ? cycle.reportedDates.join(', ')
+                          : (cycle.exactWindowText || cycle.expectedAnnouncementMonth || 'Multiple reported dates')}
+                      </div>
+                      <div className="text-amber-300/90 font-bold text-[10px]">
+                        Confirm on the official page
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Application Window</span>
+                      <span className="text-xs font-mono font-bold text-blue-300 block mt-0.5">
+                        📅 {cycle.exactWindowText || cycle.expectedAnnouncementMonth}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500 block mt-0.5">
+                        {cycle.expectedWindowDuration}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
                     <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block">Verified Comp</span>

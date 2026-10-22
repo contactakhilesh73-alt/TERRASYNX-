@@ -48,6 +48,7 @@ import { CompanyLogo } from './CompanyLogo';
 import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
 import { ProfileCompletionGateModal } from './ProfileCompletionGateModal';
 import { calculateProfileCompletion } from '../utils/profileCompletion';
+import { getDateConfidenceBadgeConfig } from '../utils/scholarshipBadges';
 
 interface HackathonsPortalProps {
   onNavigateToCalendar?: () => void;
@@ -849,16 +850,34 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                         </span>
                       )}
 
-                      {/* Status Tag (Open Now / Upcoming / Passed) */}
-                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${
-                        computedStatus === 'OPEN_NOW'
-                          ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-800'
-                          : computedStatus === 'UPCOMING'
-                          ? 'bg-sky-950/90 text-sky-300 border border-sky-800'
-                          : 'bg-slate-800 text-slate-400 border border-slate-700'
-                      }`}>
-                        {computedStatus === 'OPEN_NOW' ? 'Open Now' : computedStatus === 'UPCOMING' ? 'Upcoming' : 'Passed'}
-                      </span>
+                      {/* Prompt 57: Date Confidence Badge */}
+                      {(() => {
+                        const conf = hackathon.dateConfidence || 'REPORTED';
+                        const confBadge = getDateConfidenceBadgeConfig(conf);
+                        const ConfIcon = confBadge.icon;
+                        return (
+                          <span
+                            data-testid="hackathon-date-confidence-badge"
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1 ${confBadge.className}`}
+                          >
+                            <ConfIcon className="w-3 h-3" />
+                            <span>{confBadge.label}</span>
+                          </span>
+                        );
+                      })()}
+
+                      {/* Status Tag (Open Now / Upcoming / Passed) - ONLY when dateConfidence is OFFICIAL or REPORTED */}
+                      {(hackathon.dateConfidence === 'OFFICIAL' || hackathon.dateConfidence === 'REPORTED') && computedStatus && (
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold ${
+                          computedStatus === 'OPEN_NOW'
+                            ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-800'
+                            : computedStatus === 'UPCOMING'
+                            ? 'bg-sky-950/90 text-sky-300 border border-sky-800'
+                            : 'bg-slate-800 text-slate-400 border border-slate-700'
+                        }`}>
+                          {computedStatus === 'OPEN_NOW' ? 'Open Now' : computedStatus === 'UPCOMING' ? 'Upcoming' : 'Passed'}
+                        </span>
+                      )}
 
                       {/* Prompt 42 Lifecycle Status Badge */}
                       <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold border ${
@@ -1037,8 +1056,34 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                     );
                   })()}
 
-                  {/* Dates Matrix or Schedule Note (Prompt 44) */}
-                  {(hackathon.datesNote || !hackathon.startDate) ? (
+                  {/* Dates Matrix, Schedule Note, or Date Confidence Handling (Prompt 57) */}
+                  {hackathon.dateConfidence === 'UNKNOWN' ? (
+                    <div 
+                      data-testid="hackathon-date-unknown"
+                      className="p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/80 flex items-center gap-2 text-[11px] font-mono text-slate-400"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <span>Dates not announced</span>
+                    </div>
+                  ) : hackathon.dateConfidence === 'CONFLICTING' ? (
+                    <div 
+                      data-testid="hackathon-date-conflicting"
+                      className="p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/30 space-y-1 text-[11px] font-mono"
+                    >
+                      <div className="flex items-center gap-1.5 text-amber-400 font-semibold">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Reported Dates:</span>
+                      </div>
+                      <div className="text-amber-200">
+                        {hackathon.reportedDates && hackathon.reportedDates.length > 0
+                          ? hackathon.reportedDates.join(', ')
+                          : (hackathon.dates || 'Multiple reported dates')}
+                      </div>
+                      <div className="text-amber-300/90 font-bold text-[10px]">
+                        Confirm on the official page
+                      </div>
+                    </div>
+                  ) : (hackathon.datesNote || !hackathon.startDate) ? (
                     <div className="p-2.5 rounded-xl bg-orange-950/20 border border-orange-500/30 flex items-start gap-2 text-[11px] font-mono">
                       <Calendar className="w-3.5 h-3.5 text-orange-400 shrink-0 mt-0.5" />
                       <div>
@@ -1067,7 +1112,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                         </span>
                         {(() => {
                           const isDeadlinePassed = hackathon.registrationDeadline && 
-                            new Date(hackathon.registrationDeadline + 'T23:59:59Z').getTime() < referenceDate.getTime();
+                            new Date(hackathon.registrationDeadline.includes('T') ? hackathon.registrationDeadline : hackathon.registrationDeadline + 'T23:59:59Z').getTime() < referenceDate.getTime();
                           if (isDeadlinePassed) {
                             return (
                               <span className="font-semibold text-rose-400 flex items-center gap-1">

@@ -7,8 +7,8 @@ import { Hackathon } from '../types';
 
 describe('Prompt 48: Strict HACKATHONS_DATABASE Integrity & Zero-Fake Tolerance', () => {
   it('contains the permitted recurring series entries with no extra or fake entries', () => {
-    // Permitted recurring series entries under Prompt 48 (naya version) + coding contests + organizer entries:
-    expect(HACKATHONS_DATABASE.length).toBe(18);
+    // Permitted recurring series entries under Prompt 48 (naya version) + coding contests + organizer entries + Prompt 58 additions:
+    expect(HACKATHONS_DATABASE.length).toBe(19);
 
     const names = HACKATHONS_DATABASE.map(h => h.name);
     expect(names).toContain('NASA International Space Apps Challenge');
@@ -16,6 +16,7 @@ describe('Prompt 48: Strict HACKATHONS_DATABASE Integrity & Zero-Fake Tolerance'
     expect(names).toContain('Cal Hacks');
     expect(names).toContain('PennApps');
     expect(names).toContain('ETHGlobal');
+    expect(names).toContain('ETHGlobal Mumbai');
     expect(names).toContain('Google Solution Challenge');
     expect(names).toContain('HackMIT');
     expect(names).toContain('Hack the North');

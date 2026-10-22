@@ -1,5 +1,5 @@
-import { LucideIcon, GraduationCap, Award, Sparkles, Briefcase, Star, Landmark, Plane, Coins } from 'lucide-react';
-import { StudyLevel, CoverageType } from '../types';
+import { LucideIcon, GraduationCap, Award, Sparkles, Briefcase, Star, Landmark, Plane, Coins, ShieldCheck, Calendar, AlertTriangle, HelpCircle } from 'lucide-react';
+import { StudyLevel, CoverageType, DateConfidence } from '../types';
 
 export interface BadgeConfig {
   label: string;
@@ -73,6 +73,12 @@ export function getCoverageTypeBadgeConfig(coverageType?: CoverageType): BadgeCo
         icon: Coins,
         className: 'bg-teal-950/80 text-teal-300 border border-teal-600/70 font-black',
       };
+    case 'NON_CASH':
+      return {
+        label: 'Non-Cash Award',
+        icon: Award,
+        className: 'bg-purple-950/80 text-purple-300 border border-purple-600/70 font-black',
+      };
     case 'STIPEND_ONLY':
     default:
       return {
@@ -82,3 +88,38 @@ export function getCoverageTypeBadgeConfig(coverageType?: CoverageType): BadgeCo
       };
   }
 }
+
+/**
+ * Prompt 57: Date Confidence Badge Configuration
+ * Values: 'OFFICIAL' | 'REPORTED' | 'CONFLICTING' | 'UNKNOWN'
+ */
+export function getDateConfidenceBadgeConfig(confidence?: DateConfidence): BadgeConfig {
+  switch (confidence) {
+    case 'OFFICIAL':
+      return {
+        label: 'Official Date',
+        icon: ShieldCheck,
+        className: 'bg-emerald-950/80 text-emerald-300 border border-emerald-600/70 font-semibold',
+      };
+    case 'REPORTED':
+      return {
+        label: 'Reported Date',
+        icon: Calendar,
+        className: 'bg-sky-950/80 text-sky-300 border border-sky-600/70 font-semibold',
+      };
+    case 'CONFLICTING':
+      return {
+        label: 'Conflicting Dates',
+        icon: AlertTriangle,
+        className: 'bg-amber-950/80 text-amber-300 border border-amber-600/70 font-semibold',
+      };
+    case 'UNKNOWN':
+    default:
+      return {
+        label: 'Date Unknown',
+        icon: HelpCircle,
+        className: 'bg-slate-900 text-slate-400 border border-slate-700 font-semibold',
+      };
+  }
+}
+

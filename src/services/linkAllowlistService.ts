@@ -171,12 +171,33 @@ function buildProgramAllowlist(): { allowedHostnames: Set<string>; allowedRoots:
     'hackjunction.com',
     // Chainlink Watcher & Hackathons domain
     'chain.link',
+    // Prompt 60: Official Page Watcher watchlist domains
+    'treehacks.com',
+    'imaginecup.microsoft.com',
+    'microsoft.com',
     // Prompt 54: EPFL Switzerland & Stanford SURF domains
     'epfl.ch',
     'eee.epfl.ch',
     'sv.epfl.ch',
     'stanford.edu',
     'surf.stanford.edu',
+    // Prompt 55: Women in Tech domains (Google BuildYourFuture, AnitaB.org, GHC)
+    'buildyourfuture.withgoogle.com',
+    'anitab.org',
+    'ghc.anitab.org',
+    'ghcindia.anitab.org',
+    'gracehopper.anitab.org',
+    // Prompt 56: Quant & HFT firms
+    'hudsonrivertrading.com',
+    'janestreet.com',
+    'imc.com',
+    'optiver.com',
+    'jumptrading.com',
+    'tower-research.com',
+    'fiverings.com',
+    // Prompt 57: Date Confidence additions
+    'icpc.global',
+    'a-star.edu.sg',
   ];
   for (const h of coreAtsHostnames) {
     ingest(h);

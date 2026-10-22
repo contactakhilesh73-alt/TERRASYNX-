@@ -148,9 +148,9 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
         expect(c.country).toBe('Germany');
       }
 
-      // USA filter (39 standard + Caltech SURF + Stanford SURF from Prompt 54)
+      // USA filter (39 standard + Caltech SURF + Stanford SURF + Kamala Scholars + 6 Quant Internships from Prompt 56)
       const usaCycles = allCycles.filter(c => c.country === 'USA');
-      expect(usaCycles.length).toBe(41);
+      expect(usaCycles.length).toBe(48);
       for (const c of usaCycles) {
         expect(c.country).toBe('USA');
       }
@@ -284,7 +284,7 @@ describe('Prompt 32: Country field in UpcomingInternshipCycle', () => {
     it('ensures every single scholarship has a high-stakes disclaimer requirement fulfilled', () => {
       const allCycles = UpcomingInternshipsService.getAllUpcomingCycles();
       const scholarshipCycles = allCycles.filter(c => UpcomingInternshipsService.isCycleInPortal(c, 'scholarships'));
-      expect(scholarshipCycles.length).toBe(46);
+      expect(scholarshipCycles.length).toBe(50);
 
       // Verify that every scholarship cycle is flagged as a scholarship or has disclaimer notice
       for (const c of scholarshipCycles) {

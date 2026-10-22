@@ -18,7 +18,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
-import { Hackathon, HackathonStatus, HackathonMode } from '../types';
+import { Hackathon, HackathonStatus, HackathonMode, DateConfidence } from '../types';
 import { HONEST_USER_AGENT, isHostnameAllowed, validateSafeTargetUrl } from './linkAllowlistService';
 import { logger } from '../utils/logger';
 
@@ -45,6 +45,7 @@ export interface WatcherSnapshot {
   status: HackathonStatus;
   isStale: boolean;
   consecutiveMatches: number;
+  dateConfidence?: DateConfidence;
   extracted: WatcherExtractedData;
   grounded: WatcherExtractedData;
   lastVerifiedOn?: string;
@@ -53,7 +54,7 @@ export interface WatcherSnapshot {
   error?: string;
 }
 
-// Watchlist of top recurring organizers on verified allowlist domains
+// Watchlist of top recurring organizers on verified allowlist domains (Prompt 46 & Prompt 60)
 export const OFFICIAL_HACKATHON_WATCHLIST: WatchlistItem[] = [
   {
     organizer: 'ETHGlobal',
@@ -86,6 +87,31 @@ export const OFFICIAL_HACKATHON_WATCHLIST: WatchlistItem[] = [
   {
     organizer: 'Chainlink',
     officialListingUrl: 'https://chain.link/hackathon',
+  },
+  // Prompt 60: Watcher watchlist official pages
+  {
+    organizer: 'TreeHacks',
+    officialListingUrl: 'https://treehacks.com',
+  },
+  {
+    organizer: 'PennApps',
+    officialListingUrl: 'https://pennapps.com',
+  },
+  {
+    organizer: 'Cal Hacks',
+    officialListingUrl: 'https://calhacks.io',
+  },
+  {
+    organizer: 'Microsoft Imagine Cup',
+    officialListingUrl: 'https://imaginecup.microsoft.com',
+  },
+  {
+    organizer: 'TCS CodeVita',
+    officialListingUrl: 'https://codevita.tcsapps.com',
+  },
+  {
+    organizer: 'NASA Space Apps',
+    officialListingUrl: 'https://spaceappschallenge.org',
   },
 ];
 
@@ -231,26 +257,41 @@ export function groundExtractedData(extracted: WatcherExtractedData, pageText: s
 }
 
 /**
- * Determines hackathon status according to Prompt 46 rules:
+ * Prompt 60 Rule:
+ * The watcher may mark a date OFFICIAL only after the grounding check and two consistent runs.
+ */
+export function isDateMarkedOfficial(
+  grounded: WatcherExtractedData,
+  consecutiveMatches: number
+): boolean {
+  if (!grounded.dates || grounded.dates.trim().length === 0) {
+    return false;
+  }
+  return consecutiveMatches >= 2;
+}
+
+/**
+ * Determines hackathon status and date confidence according to Prompt 46 & Prompt 60 rules:
  * - If JS shell with no readable text: UNKNOWN
  * - ANNOUNCED_UNCONFIRMED if no date is grounded.
- * - ANNOUNCED_VERIFIED only after two consecutive consistent extractions.
+ * - ANNOUNCED_VERIFIED and dateConfidence OFFICIAL only after grounding check and two consistent runs.
  */
 export function determineWatcherStatus(
   grounded: WatcherExtractedData,
   previousSnapshot?: WatcherSnapshot | null,
   isJsShellFlag?: boolean
-): { status: HackathonStatus; consecutiveMatches: number } {
+): { status: HackathonStatus; consecutiveMatches: number; dateConfidence: DateConfidence } {
   if (isJsShellFlag) {
-    return { status: 'UNKNOWN', consecutiveMatches: 0 };
+    return { status: 'UNKNOWN', consecutiveMatches: 0, dateConfidence: 'UNKNOWN' };
   }
 
-  // If no date is grounded, status is strictly ANNOUNCED_UNCONFIRMED
+  // If no date is grounded, status is strictly ANNOUNCED_UNCONFIRMED and dateConfidence is UNKNOWN
   if (!grounded.dates || grounded.dates.trim().length === 0) {
-    return { status: 'ANNOUNCED_UNCONFIRMED', consecutiveMatches: 0 };
+    return { status: 'ANNOUNCED_UNCONFIRMED', consecutiveMatches: 0, dateConfidence: 'UNKNOWN' };
   }
 
   // Date is grounded! Check if we have a consistent previous extraction
+  // Prompt 60: The watcher may mark a date OFFICIAL only after the grounding check and two consistent runs.
   if (previousSnapshot && !previousSnapshot.isStale && previousSnapshot.grounded.dates) {
     const prevDateNorm = previousSnapshot.grounded.dates.toLowerCase().replace(/\s+/g, ' ').trim();
     const currDateNorm = grounded.dates.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -261,12 +302,13 @@ export function determineWatcherStatus(
       return {
         status: consecutive >= 2 ? 'ANNOUNCED_VERIFIED' : 'ANNOUNCED_UNCONFIRMED',
         consecutiveMatches: consecutive,
+        dateConfidence: consecutive >= 2 ? 'OFFICIAL' : 'REPORTED',
       };
     }
   }
 
-  // First time date is observed, or inconsistent with previous
-  return { status: 'ANNOUNCED_UNCONFIRMED', consecutiveMatches: 1 };
+  // First time date is observed, or inconsistent with previous: grounded but only 1 run -> REPORTED, not OFFICIAL
+  return { status: 'ANNOUNCED_UNCONFIRMED', consecutiveMatches: 1, dateConfidence: 'REPORTED' };
 }
 
 export class OfficialPageWatcherService {
@@ -753,7 +795,8 @@ ${pageText.slice(0, 8000)}
         const grounded = groundExtractedData(extracted, readableText);
 
         // Step 8: Determine status (ANNOUNCED_UNCONFIRMED if no date grounded, ANNOUNCED_VERIFIED after two consecutive consistent extractions)
-        const { status, consecutiveMatches } = determineWatcherStatus(grounded, previousSnapshot, false);
+        // Prompt 60: The watcher may mark a date OFFICIAL only after the grounding check and two consistent runs.
+        const { status, consecutiveMatches, dateConfidence } = determineWatcherStatus(grounded, previousSnapshot, false);
 
         const newSnapshot: WatcherSnapshot = {
           organizer: item.organizer,
@@ -763,6 +806,7 @@ ${pageText.slice(0, 8000)}
           status,
           isStale: false,
           consecutiveMatches,
+          dateConfidence,
           extracted,
           grounded,
           lastVerifiedOn: status === 'ANNOUNCED_VERIFIED' ? today : previousSnapshot?.lastVerifiedOn,

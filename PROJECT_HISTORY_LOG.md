@@ -519,3 +519,233 @@ Early open-source multi-agent job search workflows running across Claude Code, G
   - Added full test coverage in `src/tests/prompt54ResearchPrograms.test.ts`.
   - All 41 test files (261 tests) passing 100%. TypeScript (`tsc --noEmit`) and Vite compilation 100% clean.
 
+---
+### Prompt 55: Women in Tech Scholarships (Completed)
+- **1. Generation Google Scholarship APAC (`cycle_generation_google_scholarship_apac`):**
+  - Title: `Generation Google Scholarship APAC` (Google)
+  - Replaces the old Women Techmakers name.
+  - One-time award reported at USD 2,500; `rateType: 'MARKET_ESTIMATED'`.
+  - Eligibility: 2nd/3rd-year undergraduates (`targetBatches: [2027, 2028]`).
+  - 2026 deadline reported 31 August 2026, passed (`PASSED_THIS_CYCLE`).
+  - Income/marks conditions: confirm on the official page.
+  - Month-only window: `July - August` (no day numbers in announcement/window text).
+  - Official Link: `https://buildyourfuture.withgoogle.com/scholarships/generation-google-scholarship-apac`
+- **2. AnitaB.org Advancing Inclusion Student Scholarship (`cycle_anitab_advancing_inclusion`):**
+  - `coverageType: 'NON_CASH'`: free GHC registration and membership.
+  - Eligibility: GPA 2.5+.
+  - `rateType: 'MARKET_ESTIMATED'`.
+  - Month-only window: `May - June`.
+  - Official Link: `https://ghc.anitab.org/`
+- **3. AnitaB.org Kamala Scholars (`cycle_anitab_kamala_scholars`):**
+  - Eligibility: 3rd/4th-year undergraduates (`targetBatches: [2026, 2027]`).
+  - `coverageType: 'TRAVEL_ONLY'`: travel funded for GHC.
+  - 2026 deadline 8 September passed (`PASSED_THIS_CYCLE`); eligibility: confirm.
+  - `rateType: 'MARKET_ESTIMATED'`.
+  - Month-only window: `August - September`.
+  - Official Link: `https://ghc.anitab.org/`
+- **4. GHC India scholarship (`cycle_ghc_india_scholarship`):**
+  - 2025 value reported as Rs 25,000; 2026 not confirmed.
+  - `coverageType: 'STIPEND_ONLY'`.
+  - `country: 'India'`.
+  - `rateType: 'MARKET_ESTIMATED'`.
+  - Month-only window: `August - September`.
+  - Official Link: `https://ghcindia.anitab.org/`
+- **5. Types, Badges & Link Security:**
+  - Expanded `CoverageType` union with `'NON_CASH'` and added badge config in `scholarshipBadges.ts`.
+  - Added `case 'APAC': return '🌏';` in `getCountryFlag`.
+  - Registered `buildyourfuture.withgoogle.com`, `anitab.org`, `ghc.anitab.org`, `ghcindia.anitab.org`, and `gracehopper.anitab.org` in `linkAllowlistService.ts`.
+  - Added dedicated test suite `src/tests/prompt55WomenInTech.test.ts`.
+  - All **42 test files (266 tests) passing 100%**. TypeScript and Vite production builds 100% clean.
+
+---
+### Prompt 56: Premier Quant Internships (Completed)
+- **1. Hudson River Trading (`cycle_hrt_quant_intern`):**
+  - Company: Hudson River Trading (HRT)
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Required disclaimer verbatim: `"Base pay as shown in job ads checked September 2026; varies by office; visa and eligibility not verified; highly selective"`
+  - Pay figures: `"New York $5,800 per week, Singapore SGD 7,650 per week, London GBP 4,350 per week"`
+  - Preserved weekly rates (no conversion to hourly figures)
+  - Official URL: `https://www.hudsonrivertrading.com/careers/`
+- **2. Jane Street (`cycle_jane_street_quant_research_intern`):**
+  - Company: Jane Street
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Required disclaimer verbatim included
+  - Pay figures: `"New York quant research $300,000 yearly base"`
+  - Preserved yearly rates (no conversion to hourly figures)
+  - Official URL: `https://www.janestreet.com/join-jane-street/`
+- **3. IMC (`cycle_imc_quant_research_intern`):**
+  - Company: IMC
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Required disclaimer verbatim included
+  - Pay figures: `"Chicago quant research (BS/MS) $250,000 stated base"`
+  - Preserved stated base (no conversion to hourly figures)
+  - Official URL: `https://www.imc.com/us/careers/`
+- **4. Optiver (`cycle_optiver_quant_intern`):**
+  - Company: Optiver
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Required disclaimer verbatim included
+  - Pay figures: `"Chicago $70,000-$88,000 base"`
+  - Preserved base range (no conversion to hourly figures)
+  - Official URL: `https://optiver.com/working-at-optiver/career-opportunities/`
+- **5. Jump (`cycle_jump_quant_intern`):**
+  - Company: Jump
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Required disclaimer verbatim included
+  - Pay figures: `"$300,000 yearly base"`
+  - Preserved yearly base (no conversion to hourly figures)
+  - Official URL: `https://www.jumptrading.com/careers/`
+- **6. Tower Research Capital (`cycle_tower_research_quant_intern`):**
+  - Company: Tower Research
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Pay noted as `"pay not verified"`
+  - Required disclaimer verbatim included
+  - Official URL: `https://www.tower-research.com/open-positions`
+- **7. Five Rings (`cycle_five_rings_quant_intern`):**
+  - Company: Five Rings
+  - `tierCategory: 'quant_hft'`, `rateType: 'MARKET_ESTIMATED'`
+  - Pay noted as `"pay not verified"`
+  - Required disclaimer verbatim included
+  - Official URL: `https://fiverings.com/careers/`
+- **8. Verification & Allowlist Integrity:**
+  - Added official domains to `linkAllowlistService.ts`: `hudsonrivertrading.com`, `janestreet.com`, `imc.com`, `optiver.com`, `jumptrading.com`, `tower-research.com`, `fiverings.com`.
+  - Filter category `quant_hft` and corporate internships portal resolution verified for all 7 firms.
+  - Test suite `src/tests/prompt56QuantInternships.test.ts` added and passing 100%.
+  - Total test suite: **43 test files, 273 tests, 100% passing**.
+  - TypeScript lint (`tsc --noEmit`) and Vite compilation 100% clean.
+
+---
+### Prompt 57: Date ka confidence (Completed)
+- **1. Data Architecture & Types:**
+  - Introduced `DateConfidence = 'OFFICIAL' | 'REPORTED' | 'CONFLICTING' | 'UNKNOWN'` union in `src/types.ts`.
+  - Added `dateConfidence` and `reportedDates` to both `UpcomingInternshipCycle` and `Hackathon` models.
+  - Ensured dates are stored as standard ISO strings (`YYYY-MM-DD` or full ISO 8601 string) across all programs and hackathons.
+  - Resolved `dateConfidence` across all programs in `UpcomingInternshipsService.getAllUpcomingCycles()` and all hackathons in `HackathonsService.getAllHackathons()` and `HACKATHONS_DATABASE`.
+- **2. Status Calculation Rules:**
+  - Status (`OPEN_NOW` / `UPCOMING` / `PASSED`) computed against reference/current date **only when `dateConfidence` is `OFFICIAL` or `REPORTED`**.
+  - For `CONFLICTING` or `UNKNOWN`, status is not computed (returns `undefined` / `null`), preventing deceptive status claims when dates are unresolved.
+  - Updated both `evaluateInternshipCycle`, `calculateStatus`, `calculateInternshipCycleStatus`, and `getHackathonStatus`.
+- **3. UI Badges & Portal Rendering:**
+  - Implemented `getDateConfidenceBadgeConfig` in `src/utils/scholarshipBadges.ts` returning distinct labels, icons, and styling for all 4 confidence tiers:
+    - `OFFICIAL`: `Official Date` (ShieldCheck, emerald)
+    - `REPORTED`: `Reported Date` (Calendar, sky)
+    - `CONFLICTING`: `Conflicting Dates` (AlertTriangle, amber)
+    - `UNKNOWN`: `Date Unknown` (HelpCircle, slate)
+  - Displayed confidence badge as a small badge on program and hackathon cards across:
+    - `HackathonsPortal.tsx`
+    - `InternshipsPortal.tsx`
+    - `ScholarshipsPortal.tsx`
+    - `ResearchPortal.tsx`
+    - `OpenSourcePortal.tsx`
+    - `UpcomingInternshipsCalendar.tsx`
+  - In date display sections:
+    - For `CONFLICTING`: displays every reported date and `"Confirm on the official page"`.
+    - For `UNKNOWN`: displays no date (`"Dates not announced"` with no date strings).
+    - For `OFFICIAL` / `REPORTED`: displays the validated window/event dates with days remaining / countdown.
+- **4. Verification & Quality:**
+  - Dedicated comprehensive unit test suite created in `src/tests/prompt57DateConfidence.test.ts` (8 tests passing 100%).
+  - Total test suite: **44 test files, 281 tests, 100% passing**.
+  - TypeScript (`tsc --noEmit`) and Vite production builds 100% clean with zero errors.
+
+---
+### Prompt 58: Dates wale entries (Completed)
+- **1. EPFL Life Sciences Summer Research Program (`cycle_epfl_life_sciences`):**
+  - Country: `Switzerland`, `studyLevel: 'summer_research'`.
+  - Target Audience: `life sciences students only (not computer science)`.
+  - Deadline: `15 November 2026 23:59 CET` (`dateConfidence: 'REPORTED'`, `endDate: '2026-11-15'`).
+  - Program Duration: `5 July to 27 August 2027`.
+  - Stipend: `CHF 3,600` (`rateType: 'MARKET_ESTIMATED'`).
+  - Cost coverage: housing/living covered by the stipend, airfare support reported by some sources: confirm, no fee.
+  - Quota: `seatQuotaInfo: '20-25 places'`.
+  - Aggregator note: `"dates from aggregators, confirm on epfl.ch"`.
+- **2. EPFL Excellence in Engineering & Summer@EPFL:**
+  - `cycle_epfl_excellence_engineering`: deadline reported `1 November 2026` (`endDate: '2026-11-01'`), `dateConfidence: 'REPORTED'`, note `"dates from aggregators, confirm on epfl.ch"`.
+  - `cycle_epfl_summer_ic`: deadline reported `29 November 2026` (`endDate: '2026-11-29'`), `dateConfidence: 'REPORTED'`, note `"dates from aggregators, confirm on epfl.ch"`.
+- **3. ETHGlobal Mumbai (`hack_ethglobal_mumbai`):**
+  - Added to `HACKATHONS_DATABASE` with `dateConfidence: 'CONFLICTING'`.
+  - Reported dates: `['5-7 November 2026', '6-8 November 2026']`.
+  - Requirements: `Application and approval required, small refundable crypto stake`.
+  - Registration deadline: reported to close `3 November 2026` (`registrationDeadline: '2026-11-03'`).
+  - Status computation returns `null` for conflicting dates, preventing misleading Open Now/Upcoming labels.
+- **4. NASA Space Apps Challenge (`hack_nasa_space_apps`):**
+  - Dates: `14-15 November 2026`.
+  - `dateConfidence: 'OFFICIAL'`.
+- **5. TCS CodeVita (`contest_tcs_codevita`):**
+  - Registration deadline: `13 November 2026` (`registrationDeadline: '2026-11-13'`).
+  - `dateConfidence: 'REPORTED'`.
+- **6. Verification & Quality:**
+  - Dedicated comprehensive unit test suite `src/tests/prompt58DatesWaleEntries.test.ts` (6 tests passing 100%).
+  - Total test suite: **45 test files, 287 tests, 100% passing**.
+  - TypeScript compilation and Vite build 100% clean.
+
+---
+### Prompt 59: Jinke dates unknown hain (Completed)
+- **1. Target Entries & Configuration:**
+  - **TreeHacks (`hack_treehacks_stanford`)**:
+    - `status: 'NOT_ANNOUNCED'`
+    - `dateConfidence: 'UNKNOWN'`
+    - `dates: 'Dates not announced'`, `startDate: ''`, `endDate: ''`, `registrationDeadline: ''`
+    - Removed `datesNote` so recurring series filters and status computation remain coherent.
+  - **PennApps (`hack_pennapps`)**:
+    - `status: 'NOT_ANNOUNCED'`
+    - `dateConfidence: 'UNKNOWN'`
+    - `dates: 'Dates not announced'`, `startDate: ''`, `endDate: ''`, `registrationDeadline: ''`
+    - Removed `datesNote`.
+  - **Microsoft Imagine Cup (`hack_microsoft_imagine_cup`)**:
+    - `status: 'NOT_ANNOUNCED'`
+    - `dateConfidence: 'UNKNOWN'`
+    - `dates: 'Dates not announced'`, `startDate: ''`, `endDate: ''`, `registrationDeadline: ''`
+    - Removed `datesNote`.
+  - **Meta Hacker Cup (`contest_meta_hacker_cup`)**:
+    - `status: 'NOT_ANNOUNCED'`
+    - `dateConfidence: 'UNKNOWN'`
+    - `dates: 'Dates not announced'`, `startDate: ''`, `endDate: ''`, `registrationDeadline: ''`
+    - Removed `datesNote`.
+  - **Cal Hacks (`hack_cal_hacks`)**:
+    - `status: 'NOT_ANNOUNCED'`
+    - `dateConfidence: 'UNKNOWN'`
+    - `dates: 'Dates not announced'`, `startDate: ''`, `endDate: ''`, `registrationDeadline: ''`
+    - `lastEditionNote`: `"2025 edition: 24-26 October 2025, $200,000+ prizes per its own site; a third-party listing gives 3-6 October 2026, unconfirmed. 2026 not confirmed; confirm on the official page."`
+- **2. UI Date Display Discipline:**
+  - When `dateConfidence === 'UNKNOWN'`, no date, date range, or countdown is rendered in the UI.
+  - Cards display a subtle `Date Unknown` badge (slate) and a clean `Dates not announced` tag.
+  - Status evaluation returns `null` so no false "Open Now" or "Upcoming" labels are displayed.
+- **3. Test Suite & Verification:**
+  - Created automated test suite `src/tests/prompt59UnknownDates.test.ts` (4 tests).
+  - Maintained 100% pass across all existing hackathon, portal, and integrity test suites.
+  - TypeScript compilation and Vite build 100% clean.
+
+---
+### Prompt 60: Watcher watchlist (Completed)
+- **1. Official Page Watcher Watchlist (`OFFICIAL_HACKATHON_WATCHLIST`):**
+  - Updated `src/services/officialPageWatcherService.ts` to include all requested official pages:
+    1. `ethglobal.com/events` (`https://ethglobal.com/events`)
+    2. `hackthenorth.com` (`https://hackthenorth.com`)
+    3. `treehacks.com` (`https://treehacks.com`)
+    4. `pennapps.com` (`https://pennapps.com`)
+    5. `calhacks.io` (`https://calhacks.io`)
+    6. `imaginecup.microsoft.com` (`https://imaginecup.microsoft.com`)
+    7. `codevita.tcsapps.com` (`https://codevita.tcsapps.com`)
+    8. `chain.link/hackathon` (`https://chain.link/hackathon`)
+    9. `spaceappschallenge.org` (`https://spaceappschallenge.org`)
+  - Preserved backward-compatible entries for Google Developer Groups, HackMIT, MLH GHW, MLH Season, and Smart India Hackathon.
+- **2. Link Allowlist Verification:**
+  - Ensured every single host is approved on the link allowlist in `src/services/linkAllowlistService.ts`:
+    - Added `treehacks.com`, `imaginecup.microsoft.com`, and `microsoft.com` to `coreAtsHostnames`.
+    - Verified `isHostnameAllowed` passes for all 9 hostnames without exception.
+- **3. Grounding & Consecutive Runs Rule:**
+  - Enforced the requirement: "The watcher may mark a date OFFICIAL only after the grounding check and two consistent runs."
+  - Implemented `isDateMarkedOfficial(grounded, consecutiveMatches)` helper in `src/services/officialPageWatcherService.ts`:
+    - Checks `grounded?.dates` (verbatim string present in page content) AND `consecutiveMatches >= 2`.
+    - If either is not met, confidence is marked `REPORTED` (1 match) or `UNKNOWN` (no grounded dates).
+  - Added `dateConfidence` to `WatcherSnapshot` interface and populated in `determineWatcherStatus` and `runWatcher`.
+  - Updated `HackathonsService.enrichWithWatcherSnapshots` to honor this condition when reconciling hackathon dates.
+- **4. Verification & Automated Test Suite:**
+  - Created `src/tests/prompt60WatcherWatchlist.test.ts` (7 tests covering watchlist presence, link allowlist pass, 2-run grounding rule, drop-back on discrepancy, and enrichment).
+  - All 47 test suites (298+ unit tests) pass 100%.
+  - `lint_applet` (`tsc --noEmit`) and `compile_applet` pass with zero errors.
+
+
+
+
+
+

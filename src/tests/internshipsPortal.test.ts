@@ -17,7 +17,7 @@ describe('Prompt 34B: InternshipsPortal (Corporate Internships Only)', () => {
     });
 
     expect(corporateCycles.length).toBeGreaterThan(0);
-    expect(corporateCycles.length).toBe(63);
+    expect(corporateCycles.length).toBe(70);
 
     // Verify every single item has corporate tier category
     for (const cycle of corporateCycles) {

@@ -59,9 +59,10 @@ export type ScholarshipLevelFilter = 'all' | StudyLevel;
 
 import { 
   getStudyLevelBadgeConfig, 
-  getCoverageTypeBadgeConfig 
+  getCoverageTypeBadgeConfig,
+  getDateConfidenceBadgeConfig
 } from '../utils/scholarshipBadges';
-export { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig };
+export { getStudyLevelBadgeConfig, getCoverageTypeBadgeConfig, getDateConfidenceBadgeConfig };
 
 const CORPORATE_TIERS = new Set(['tech_giant', 'quant_hft', 'frontier_ai', 'early_undergrad_exclusive']);
 
@@ -1185,11 +1186,13 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
                     </div>
                   </div>
 
-                  <div className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border shrink-0 flex items-center gap-1.5 ${statusBadge.containerClass}`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${statusBadge.dotColor}`} />
-                    <StatusIcon className="w-3 h-3" />
-                    <span>{statusBadge.label}</span>
-                  </div>
+                  {(cycle.dateConfidence === 'OFFICIAL' || cycle.dateConfidence === 'REPORTED') && cycle.currentStatus && (
+                    <div className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold border shrink-0 flex items-center gap-1.5 ${statusBadge.containerClass}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${statusBadge.dotColor}`} />
+                      <StatusIcon className="w-3 h-3" />
+                      <span>{statusBadge.label}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Country Pill, Study Level Badge, Coverage Type Badge, Tier Badge, Rate Tag */}
@@ -1198,6 +1201,22 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
                     <MapPin className="w-2.5 h-2.5 text-amber-400" />
                     <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                   </span>
+
+                  {/* Prompt 57: Date Confidence Badge */}
+                  {(() => {
+                    const conf = cycle.dateConfidence || 'REPORTED';
+                    const confBadge = getDateConfidenceBadgeConfig(conf);
+                    const ConfIcon = confBadge.icon;
+                    return (
+                      <span
+                        data-testid="program-date-confidence-badge"
+                        className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase tracking-wider border flex items-center gap-1 ${confBadge.className}`}
+                      >
+                        <ConfIcon className="w-3 h-3" />
+                        <span>{confBadge.label}</span>
+                      </span>
+                    );
+                  })()}
 
                   {/* Prompt 37: Study Level Badge */}
                   {cycle.studyLevel && (() => {
@@ -1272,15 +1291,43 @@ export const ScholarshipsPortal: React.FC<ScholarshipsPortalProps> = ({
 
                 {/* Announcement Timeline & Target Batches */}
                 <div className="mt-3 space-y-1.5 bg-slate-950/50 p-3 rounded-xl border border-slate-800/60">
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-slate-400 flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Recruitment Window:</span>
-                    </span>
-                    <span className="text-slate-200 font-bold text-right">
-                      {cycle.exactWindowText || cycle.expectedAnnouncementMonth}
-                    </span>
-                  </div>
+                  {cycle.dateConfidence === 'UNKNOWN' ? (
+                    <div 
+                      data-testid="program-date-unknown"
+                      className="flex items-center gap-2 text-xs font-mono text-slate-500"
+                    >
+                      <Calendar className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+                      <span>Dates not announced</span>
+                    </div>
+                  ) : cycle.dateConfidence === 'CONFLICTING' ? (
+                    <div 
+                      data-testid="program-date-conflicting"
+                      className="space-y-1 text-xs font-mono"
+                    >
+                      <div className="flex items-center gap-1.5 text-amber-400 font-semibold">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                        <span>Reported Dates:</span>
+                      </div>
+                      <div className="text-amber-200">
+                        {cycle.reportedDates && cycle.reportedDates.length > 0
+                          ? cycle.reportedDates.join(', ')
+                          : (cycle.exactWindowText || cycle.expectedAnnouncementMonth || 'Multiple conflicting dates')}
+                      </div>
+                      <div className="text-amber-300/90 font-bold text-[10px]">
+                        Confirm on the official page
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-400 flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Recruitment Window:</span>
+                      </span>
+                      <span className="text-slate-200 font-bold text-right">
+                        {cycle.exactWindowText || cycle.expectedAnnouncementMonth}
+                      </span>
+                    </div>
+                  )}
 
                   {cycle.daysRemaining !== undefined && cycle.currentStatus === 'UPCOMING' && (
                     <div className="flex items-center justify-between text-xs font-mono">

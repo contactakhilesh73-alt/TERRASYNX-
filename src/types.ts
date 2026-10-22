@@ -199,11 +199,13 @@ export interface StudentProject {
   metricsAchieved?: string; // e.g. "40% latency reduction, 10k daily requests"
 }
 
+export type DateConfidence = 'OFFICIAL' | 'REPORTED' | 'CONFLICTING' | 'UNKNOWN';
+
 // Predictable Annual Recurring Internship Cycle (Truth-Anchored Seasonal Calendar)
 export type InternshipCycleCurrentStatus = 'OPEN_NOW' | 'UPCOMING' | 'PASSED_THIS_CYCLE';
 
 export type StudyLevel = 'class12_ug' | 'postgraduate' | 'summer_research' | 'internship';
-export type CoverageType = 'FULL_RIDE' | 'FULL_TUITION' | 'STIPEND_ONLY' | 'TRAVEL_ONLY' | 'PARTIAL_GRANT';
+export type CoverageType = 'FULL_RIDE' | 'FULL_TUITION' | 'STIPEND_ONLY' | 'TRAVEL_ONLY' | 'PARTIAL_GRANT' | 'NON_CASH';
 
 export interface UpcomingInternshipCycle {
   id: string;
@@ -218,6 +220,10 @@ export interface UpcomingInternshipCycle {
   studyLevel?: StudyLevel;
   coverageType?: CoverageType;
   rateType?: 'OFFICIAL_CONFIRMED' | 'MARKET_ESTIMATED'; // 'OFFICIAL_CONFIRMED' if exact stipend is verified, 'MARKET_ESTIMATED' if stipend is estimated/variable
+  dateConfidence?: DateConfidence; // Prompt 57: 'OFFICIAL' | 'REPORTED' | 'CONFLICTING' | 'UNKNOWN'
+  startDate?: string; // Prompt 57: Stored as ISO string (e.g. '2026-07-01')
+  endDate?: string; // Prompt 57: Stored as ISO string (e.g. '2026-10-31')
+  reportedDates?: string[]; // Prompt 57: Every reported date for CONFLICTING
   eligibility?: string; // e.g. "UG 2nd/3rd/4th yr", "UG 3rd/4th yr", or "No Degree Barrier"
   selectionCriteria?: string; // Formal selection parameters (e.g. GPA cutoff, PR history, research proposal, interview)
   isGlobalFullRide?: boolean; // True for prestigious ₹3 - 4 Crore+ ($350k - $450k) undergraduate full-ride scholarships
@@ -1130,6 +1136,8 @@ export interface Hackathon {
   startDate?: string;
   endDate?: string;
   registrationDeadline: string;
+  dateConfidence?: DateConfidence; // Prompt 57: 'OFFICIAL' | 'REPORTED' | 'CONFLICTING' | 'UNKNOWN'
+  reportedDates?: string[]; // Prompt 57: Every reported date for CONFLICTING
   officialUrl: string;
   source: HackathonSource;
   status: HackathonStatus;

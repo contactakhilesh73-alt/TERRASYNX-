@@ -182,8 +182,8 @@ describe('Prompt 38: Postgraduate Scholarships Batch', () => {
       return isScholarship && !isCorporate && !isResearch && !isOpenSource;
     });
 
-    // Total scholarships is at least 44 (46 with Prompt 39 undergrad merit batch)
-    expect(scholarshipCycles.length).toBe(46);
+    // Total scholarships is at least 44 (50 with Prompt 39 and Prompt 55 batches)
+    expect(scholarshipCycles.length).toBe(50);
 
     // Postgraduate subset contains all 9 new scholarships plus 4 pre-existing schemes
     const pgScholarships = scholarshipCycles.filter(c => c.studyLevel === 'postgraduate');
