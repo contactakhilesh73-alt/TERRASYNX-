@@ -1094,7 +1094,7 @@ export interface CompanyRedFlag {
   description: string;
   whyThisMatters: string; // Exactly one line
   confidence: 'verified' | 'unverified';
-  unverifiedNote?: string; // "Unverified signal — apna khud research bhi karein"
+  unverifiedNote?: string; // "Unverified signal — please conduct your own due diligence"
 }
 
 export interface CompanyRedFlagReport {

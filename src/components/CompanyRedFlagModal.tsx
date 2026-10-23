@@ -317,7 +317,7 @@ export const CompanyRedFlagModal: React.FC<CompanyRedFlagModalProps> = ({
                                 className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-800"
                                 title="Unverified signal based on informal employee sentiment — verify during interview"
                               >
-                                {flag.unverifiedNote || 'Unverified signal — apna khud research bhi karein'}
+                                {flag.unverifiedNote || 'Unverified signal — please conduct your own due diligence'}
                               </span>
                             ) : (
                               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-800 text-slate-300 border border-slate-700">

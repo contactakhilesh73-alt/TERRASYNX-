@@ -744,6 +744,28 @@ Early open-source multi-agent job search workflows running across Claude Code, G
   - All 47 test suites (298+ unit tests) pass 100%.
   - `lint_applet` (`tsc --noEmit`) and `compile_applet` pass with zero errors.
 
+---
+---
+### Phone & Email OTP Security Hardening & Zero-Leak Authentication (Completed)
+- **1. Zero-Leak OTP Security Enforcement:**
+  - Removed all on-screen OTP previewing, dev sandbox banners, and auto-fill mechanics from both client and server.
+  - As per strict security requirements, the verification code is **never** sent in client responses or displayed on the login page; it must strictly be received on the user's actual phone via SMS or email inbox.
+  - Eliminated account takeover vulnerability where any user could enter another candidate's phone number or email and see the code on the screen.
+- **2. Safe JSON Parsing & HTML 502/503 Protection:**
+  - Fixed `Unexpected token '<', "<html><hea"... is not valid JSON` by introducing `parseJsonResponse` in `src/firebaseConfig.ts`.
+  - Safely reads raw response text before JSON parsing; if an upstream proxy or server error returns HTML, it gracefully surfaces an informative English error instead of crashing the JSON parser.
+- **3. Real Gateway Dispatch & Honest Degradation:**
+  - When SMS gateway (Twilio) is configured, dispatches real carrier SMS. When not configured, honestly informs the user via English message to use Email OTP, Password, or Google Sign-In.
+  - When email dispatch fails (e.g. Resend free tier restrictions on unverified domains), returns clean English error guidance.
+- **4. 100% English Codebase Compliance:**
+  - Replaced all remaining Hinglish phrases across the codebase (`'Unverified signal — apna khud research bhi karein'`) with clean, professional English (`'Unverified signal — please conduct your own due diligence'`) across `src/services/companyRedFlagService.ts`, `src/components/CompanyRedFlagModal.tsx`, `src/types.ts`, and `server.ts`.
+- **5. Testing & Verification:**
+  - Updated `src/tests/phoneOtpDelivery.test.ts` (6 tests covering zero OTP leakage, safe HTML/JSON response handling, carrier dispatch, unconfigured gateway errors, and session lifecycle).
+  - All 48 test suites (304 tests) passing 100%.
+  - `lint_applet` (`tsc --noEmit`) and `compile_applet` pass with zero errors.
+
+
+
 
 
 

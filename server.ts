@@ -1115,7 +1115,7 @@ Output Requirements:
   * description: 1-2 objective, factual sentences detailing what is reported or observed.
   * whyThisMatters: EXACTLY ONE LINE explaining why this matters specifically to a student, intern, or engineer joining this company.
   * confidence: 'verified' (if backed by major news, documented WARN notices, or consistent widespread reports) OR 'unverified' (if anecdotal, unconfirmed Glassdoor/Reddit sentiment).
-  * unverifiedNote: If confidence is 'unverified', you MUST explicitly provide: "Unverified signal — apna khud research bhi karein" (strictly adhering to the transparent estimate-labeling principle). If verified, set to null.
+  * unverifiedNote: If confidence is 'unverified', you MUST explicitly provide: "Unverified signal — please conduct your own due diligence" (strictly adhering to the transparent estimate-labeling principle). If verified, set to null.
 - riskLevel: 'clean' | 'low' | 'moderate' | 'elevated' | 'high'
 - overallScore: integer from 0 to 100 (100 = completely clean and healthy culture, 30 = severe red flags)
 - summaryVerdict: 2-3 sentences evaluating whether this company is genuinely good to work for from an early-career perspective.
@@ -2950,21 +2950,26 @@ app.post('/api/auth/otp/send', async (req, res) => {
             logger.info('Server:AuthOtp', `Successfully sent verification email to ${cleanDestination} via Resend. ID: ${(resendData as any).id}`, { destination: cleanDestination, resendId: (resendData as any).id });
           } else {
             const errDetails = (resendData as any)?.message || 'Gateway transmission rejected';
-            logger.error('Server:AuthOtp', 'Resend rejected dispatch', resendData, { destination: cleanDestination });
             if ((resendData as any)?.statusCode === 403 && typeof errDetails === 'string' && errDetails.includes('only send testing emails')) {
-              return res.status(403).json({
+              logger.warn('Server:AuthOtp', `Resend test-mode restricted recipient ${cleanDestination}: ${errDetails}`);
+              return res.json({
                 success: false,
-                error: `${errDetails} (Or use Google 1-Tap sign in).`,
+                error: `Resend test mode only permits sending to the account owner (contact.akhilesh73@gmail.com). To send to ${cleanDestination}, please verify your custom domain at resend.com/domains, or sign in using Password or Google Sign-In.`,
               });
             } else {
-              return res.status(502).json({
+              logger.warn('Server:AuthOtp', `Resend email dispatch rejected for ${cleanDestination}: ${errDetails}`);
+              return res.json({
                 success: false,
-                error: `Email delivery failed via Resend: ${errDetails}`,
+                error: `Email delivery failed via Resend: ${errDetails}. Please use Password or Google Sign-In.`,
               });
             }
           }
-        } catch (mailErr) {
-          logger.error('Server:AuthOtp', 'Error dispatching via Resend', mailErr, { destination: cleanDestination });
+        } catch (mailErr: any) {
+          logger.warn('Server:AuthOtp', `Network error dispatching via Resend for ${cleanDestination}`, { error: mailErr?.message });
+          return res.json({
+            success: false,
+            error: `Failed to dispatch email: ${mailErr?.message || 'Network error'}. Please use Password or Google Sign-In.`,
+          });
         }
       } else if (smtpHost && smtpUser && smtpPass) {
         try {
@@ -2993,17 +2998,25 @@ app.post('/api/auth/otp/send', async (req, res) => {
           });
           dispatchedViaRealGateway = true;
           logger.info('Server:AuthOtp', `Sent verification email to ${cleanDestination} via SMTP (${smtpHost})`, { destination: cleanDestination, smtpHost });
-        } catch (smtpErr) {
+        } catch (smtpErr: any) {
           logger.error('Server:AuthOtp', 'Error dispatching via SMTP', smtpErr, { destination: cleanDestination, smtpHost });
+          return res.json({
+            success: false,
+            error: `Failed to dispatch email via SMTP: ${smtpErr?.message || 'SMTP error'}`,
+          });
         }
       } else {
-        logger.info('Server:AuthOtp', `Security OTP generated and stored for ${cleanDestination} (no SMTP/Resend configured in env)`, { destination: cleanDestination });
+        logger.warn('Server:AuthOtp', `No email service configured for ${cleanDestination}`);
+        return res.json({
+          success: false,
+          error: 'Email delivery service is currently not configured on this server. Please use Password or Google Sign-In.',
+        });
       }
     } else if (channel === 'phone') {
       const accountSid = process.env.TWILIO_ACCOUNT_SID;
       const authToken = process.env.TWILIO_AUTH_TOKEN;
       const fromPhone = process.env.TWILIO_PHONE_NUMBER;
-      if (accountSid && authToken && fromPhone) {
+      if (accountSid && accountSid !== 'N/A' && authToken && fromPhone) {
         try {
           const authHeader = Buffer.from(`${accountSid}:${authToken}`).toString('base64');
           const params = new URLSearchParams({
@@ -3011,7 +3024,7 @@ app.post('/api/auth/otp/send', async (req, res) => {
             From: fromPhone,
             Body: `[TERRASYNX] Your student verification code is ${otp}. Valid strictly for 10 minutes. Do not share with anyone.`,
           });
-          await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
+          const twilioRes = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`, {
             method: 'POST',
             headers: {
               'Authorization': `Basic ${authHeader}`,
@@ -3019,13 +3032,31 @@ app.post('/api/auth/otp/send', async (req, res) => {
             },
             body: params.toString(),
           });
-          dispatchedViaRealGateway = true;
-          logger.info('Server:AuthOtp', `Sent SMS to ${cleanDestination} via Twilio`, { destination: cleanDestination });
-        } catch (smsErr) {
+          const twilioData = await twilioRes.json().catch(() => ({}));
+          if (twilioRes.ok && (twilioData as any)?.sid) {
+            dispatchedViaRealGateway = true;
+            logger.info('Server:AuthOtp', `Sent SMS to ${cleanDestination} via Twilio`, { destination: cleanDestination, sid: (twilioData as any).sid });
+          } else {
+            const errDetails = (twilioData as any)?.message || 'Twilio rejected transmission';
+            logger.error('Server:AuthOtp', 'Twilio rejected SMS dispatch', twilioData, { destination: cleanDestination });
+            return res.json({
+              success: false,
+              error: `SMS transmission failed via Twilio: ${errDetails}`,
+            });
+          }
+        } catch (smsErr: any) {
           logger.error('Server:AuthOtp', 'Error dispatching via Twilio', smsErr, { destination: cleanDestination });
+          return res.json({
+            success: false,
+            error: `SMS transmission error: ${smsErr?.message || 'Network error'}`,
+          });
         }
       } else {
-        logger.info('Server:AuthOtp', `Security OTP generated and stored for ${cleanDestination} (no Twilio configured in env)`, { destination: cleanDestination });
+        logger.warn('Server:AuthOtp', `SMS gateway not configured for ${cleanDestination}`);
+        return res.json({
+          success: false,
+          error: 'SMS carrier service is not configured on this server (Twilio credentials required). Please sign in using Password or Google Sign-In.',
+        });
       }
     }
 
@@ -3033,15 +3064,10 @@ app.post('/api/auth/otp/send', async (req, res) => {
       success: true,
       channel,
       destination: cleanDestination,
-      dispatchedViaRealGateway,
+      dispatchedViaRealGateway: true,
       message: channel === 'phone'
-        ? (dispatchedViaRealGateway
-            ? `6-digit verification code has been dispatched to your mobile number via SMS.`
-            : `SMS carrier gateway not configured. Please use Gmail OTP or Password login.`)
-        : (dispatchedViaRealGateway
-            ? `6-digit verification code has been dispatched to ${cleanDestination}. Please check your inbox or spam.`
-            : `Verification code generated for ${cleanDestination}. (Preview Code: ${otp})`),
-      previewOtp: dispatchedViaRealGateway ? undefined : otp,
+        ? `Verification code has been dispatched to ${cleanDestination} via SMS.`
+        : `Verification code has been dispatched to ${cleanDestination}. Please check your inbox or spam folder.`,
       cooldownSeconds: 20,
       expiresInSeconds: 600,
     });

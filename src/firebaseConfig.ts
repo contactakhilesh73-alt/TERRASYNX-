@@ -14,6 +14,10 @@ import {
   signInWithPopup, 
   signOut, 
   onAuthStateChanged,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  updateProfile,
+  type ConfirmationResult,
   type User 
 } from 'firebase/auth';
 import { 
@@ -22,21 +26,24 @@ import {
   setDoc, 
   getDoc,
   collection,
-  getDocs,
+  getDocs, 
   serverTimestamp 
 } from 'firebase/firestore';
 import { StudentProfile, AuthUserSession } from './types';
 
-// Public Firebase Client configuration
+// Export ConfirmationResult type for UI consumers
+export type { ConfirmationResult };
+
+// Public Firebase Client configuration (dynamically populated from VITE_FIREBASE_* env vars)
 export const firebaseConfig = {
-  projectId: "sincere-planet-zjk7s",
-  appId: "1:824121224635:web:932244f2d874c7e726689e",
-  apiKey: "AIzaSyDEJKRl7Zhp61uWzJlOf32_ddCO1RNDI0o",
-  authDomain: "sincere-planet-zjk7s.firebaseapp.com",
-  firestoreDatabaseId: "ai-studio-627a627c-3bc4-4c9b-af1a-32547bc62dcf",
-  storageBucket: "sincere-planet-zjk7s.firebasestorage.app",
-  messagingSenderId: "824121224635",
-  measurementId: "",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "terrasynx",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:558660833153:web:409644e994ea3c04ef6280",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCQ7LHleojXXoL3Ff7JRx18GDm7h9y_cGw",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "terrasynx.firebaseapp.com",
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "terrasynx.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "558660833153",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-W3315MV6FR",
   oAuthClientId: "824121224635-5q8g6ermqppeqovgp099i2hrqodl42hd.apps.googleusercontent.com",
 };
 
@@ -218,6 +225,140 @@ export function clearStudentSession(): void {
   }
 }
 
+// ============================================================================
+// FIREBASE CLIENT PHONE AUTH & RECAPTCHA ENGINE
+// ============================================================================
+
+let activeRecaptchaVerifier: RecaptchaVerifier | null = null;
+
+/**
+ * Resets the active reCAPTCHA verifier instance to prevent DOM attachment errors
+ */
+export function clearRecaptchaVerifier(): void {
+  if (activeRecaptchaVerifier) {
+    try {
+      activeRecaptchaVerifier.clear();
+    } catch {
+      // Ignore cleanup error if already disposed
+    }
+    activeRecaptchaVerifier = null;
+  }
+}
+
+/**
+ * Initializes or retrieves an invisible reCAPTCHA verifier attached to a DOM element
+ */
+export function getOrInitRecaptchaVerifier(containerId: string = 'recaptcha-container'): RecaptchaVerifier {
+  if (typeof window === 'undefined') {
+    throw new Error('reCAPTCHA can only be initialized in browser environments');
+  }
+
+  const container = document.getElementById(containerId);
+  if (!container) {
+    throw new Error(`reCAPTCHA container #${containerId} was not found in the DOM`);
+  }
+
+  // Clear previous instance to prevent 'reCAPTCHA has already been rendered' error
+  clearRecaptchaVerifier();
+  container.innerHTML = '';
+
+  activeRecaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+    size: 'invisible',
+    callback: () => {
+      // reCAPTCHA solved automatically by invisible verifier
+    },
+    'expired-callback': () => {
+      clearRecaptchaVerifier();
+    },
+  });
+
+  return activeRecaptchaVerifier;
+}
+
+/**
+ * Dispatches a real telecom SMS OTP to a candidate mobile phone using Firebase Phone Auth & reCAPTCHA
+ */
+export async function sendFirebasePhoneOtp(
+  phoneNumber: string,
+  containerId: string = 'recaptcha-container'
+): Promise<ConfirmationResult> {
+  const appVerifier = getOrInitRecaptchaVerifier(containerId);
+
+  try {
+    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+    return confirmationResult;
+  } catch (err: any) {
+    clearRecaptchaVerifier();
+
+    if (err?.code === 'auth/operation-not-allowed') {
+      throw new Error(
+        'Phone authentication is not enabled in Firebase Console. Please visit Firebase Console > Authentication > Sign-in method and enable "Phone".'
+      );
+    }
+    if (err?.code === 'auth/invalid-phone-number') {
+      throw new Error('The phone number is invalid. Please make sure to include the correct country code (e.g. +91XXXXXXXXXX).');
+    }
+    if (err?.code === 'auth/too-many-requests') {
+      throw new Error('Too many requests have been sent from this device. Please wait a few moments and try again.');
+    }
+    if (err?.code === 'auth/quota-exceeded') {
+      throw new Error('Firebase SMS daily quota exceeded. Please check your project billing or quota limits.');
+    }
+    if (err?.code === 'auth/captcha-check-failed') {
+      throw new Error('reCAPTCHA security check failed. Please refresh the page and try again.');
+    }
+    throw new Error(err?.message || 'Failed to dispatch SMS verification code via Firebase.');
+  }
+}
+
+/**
+ * Confirms a Firebase Phone Auth OTP and returns an authenticated student session
+ */
+export async function confirmFirebasePhoneOtp(
+  confirmationResult: ConfirmationResult,
+  verificationCode: string,
+  displayName?: string
+): Promise<AuthUserSession> {
+  if (!confirmationResult) {
+    throw new Error('No active verification session found. Please request a new verification code.');
+  }
+
+  try {
+    const userCredential = await confirmationResult.confirm(verificationCode);
+    const user = userCredential.user;
+
+    if (displayName && displayName.trim() && !user.displayName) {
+      try {
+        await updateProfile(user, { displayName: displayName.trim() });
+      } catch {
+        // Non-fatal profile name update
+      }
+    }
+
+    const token = await user.getIdToken();
+    const session: AuthUserSession = {
+      uid: user.uid,
+      channel: 'phone',
+      identifier: user.phoneNumber || user.uid,
+      displayName: displayName?.trim() || user.displayName || 'Candidate',
+      phoneNumber: user.phoneNumber || undefined,
+      token,
+      verifiedAt: Date.now(),
+    };
+
+    saveStudentSession(session);
+    return session;
+  } catch (err: any) {
+    if (err?.code === 'auth/invalid-verification-code') {
+      throw new Error('The 6-digit verification code entered is incorrect. Please check the SMS and try again.');
+    }
+    if (err?.code === 'auth/code-expired') {
+      throw new Error('The verification code has expired. Please request a new code.');
+    }
+    throw new Error(err?.message || 'Failed to verify OTP code.');
+  }
+}
+
 /**
  * Dispatches 6-digit OTP to Phone or Gmail via server endpoint
  */
@@ -226,7 +367,32 @@ export interface OtpSendResponse {
   message: string;
   cooldownSeconds?: number;
   dispatchedViaRealGateway?: boolean;
-  previewOtp?: string;
+}
+
+/**
+ * Safely parses JSON responses from authentication endpoints,
+ * preventing 'Unexpected token <' HTML errors from uncaught server or proxy errors.
+ */
+async function parseJsonResponse<T = any>(res: Response, fallbackError: string): Promise<T> {
+  let rawText = '';
+  try {
+    rawText = await res.text();
+  } catch {
+    throw new Error('Failed to communicate with authentication service. Please check your network connection.');
+  }
+
+  let data: any;
+  try {
+    data = JSON.parse(rawText);
+  } catch {
+    throw new Error(`Authentication server returned an unexpected response (HTTP ${res.status}). Please try again in a few moments.`);
+  }
+
+  if (!res.ok || !data?.success) {
+    throw new Error(data?.error || fallbackError);
+  }
+
+  return data;
 }
 
 export async function sendOtpCode(
@@ -239,12 +405,7 @@ export async function sendOtpCode(
     body: JSON.stringify({ channel, destination }),
   });
 
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    throw new Error(data.error || 'Failed to dispatch verification code');
-  }
-
-  return data;
+  return parseJsonResponse<OtpSendResponse>(res, 'Failed to dispatch verification code');
 }
 
 /**
@@ -261,10 +422,7 @@ export async function verifyOtpCode(
     body: JSON.stringify({ channel, destination, otp }),
   });
 
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    throw new Error(data.error || 'Invalid verification code');
-  }
+  const data = await parseJsonResponse<any>(res, 'Invalid verification code');
 
   const session: AuthUserSession = {
     uid: data.user.uid,
@@ -295,10 +453,7 @@ export async function signUpWithPassword(
     body: JSON.stringify({ email, password, displayName }),
   });
 
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    throw new Error(data.error || 'Registration failed');
-  }
+  const data = await parseJsonResponse<any>(res, 'Registration failed');
 
   const session: AuthUserSession = {
     uid: data.user.uid,
@@ -327,10 +482,7 @@ export async function signInWithPassword(
     body: JSON.stringify({ email, password }),
   });
 
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    throw new Error(data.error || 'Sign in failed');
-  }
+  const data = await parseJsonResponse<any>(res, 'Sign in failed');
 
   const session: AuthUserSession = {
     uid: data.user.uid,

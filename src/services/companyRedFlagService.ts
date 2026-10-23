@@ -103,7 +103,7 @@ export class CompanyRedFlagService {
               description: rf.description || 'Observed sentiment from public employee feedback.',
               whyThisMatters: rf.whyThisMatters || 'Could impact your day-to-day workload and psychological safety.',
               confidence: rf.confidence || 'unverified',
-              unverifiedNote: rf.confidence === 'unverified' ? 'Unverified signal — apna khud research bhi karein' : undefined,
+              unverifiedNote: rf.confidence === 'unverified' ? 'Unverified signal — please conduct your own due diligence' : undefined,
             })) : [],
             interviewVettingQuestions: Array.isArray(rawReport.interviewVettingQuestions) 
               ? rawReport.interviewVettingQuestions 
@@ -208,7 +208,7 @@ export class CompanyRedFlagService {
         description: 'Internal employee discussions highlight intense pressure leading up to June and December calibration cycles to demonstrate visible business impact.',
         whyThisMatters: 'Projects with high internal visibility often take precedence over slow-burn architectural cleanup.',
         confidence: 'unverified',
-        unverifiedNote: 'Unverified signal — apna khud research bhi karein',
+        unverifiedNote: 'Unverified signal — please conduct your own due diligence',
       });
     } else if (cleanName.includes('google') || cleanName.includes('alphabet')) {
       riskLevel = 'low';
@@ -234,7 +234,7 @@ export class CompanyRedFlagService {
         description: 'Internal Blind and Reddit threads note that the GRAD evaluation system has tightened L3-to-L4 and L4-to-L5 progression speed.',
         whyThisMatters: 'Promotions may require more cross-org alignment and demonstrable multi-team impact than in prior years.',
         confidence: 'unverified',
-        unverifiedNote: 'Unverified signal — apna khud research bhi karein',
+        unverifiedNote: 'Unverified signal — please conduct your own due diligence',
       });
     } else if (cleanName.includes('bytedance') || cleanName.includes('tiktok')) {
       riskLevel = 'elevated';
@@ -260,7 +260,7 @@ export class CompanyRedFlagService {
         description: 'Average tenure across US and Singapore engineering hubs is reported to be shorter than Western peer tech giants.',
         whyThisMatters: 'Institutional code knowledge may be sparse, meaning you might inherit undocumented microservices with departed authors.',
         confidence: 'unverified',
-        unverifiedNote: 'Unverified signal — apna khud research bhi karein',
+        unverifiedNote: 'Unverified signal — please conduct your own due diligence',
       });
       flags.push({
         id: 'rf_bd_3',
@@ -297,7 +297,7 @@ export class CompanyRedFlagService {
         description: 'Leading AI labs operate with high urgency; model launch windows frequently require temporary high-intensity work weeks.',
         whyThisMatters: 'Work-life balance is self-driven rather than rigidly bounded by corporate policies.',
         confidence: 'unverified',
-        unverifiedNote: 'Unverified signal — apna khud research bhi karein',
+        unverifiedNote: 'Unverified signal — please conduct your own due diligence',
       });
     } else {
       // General heuristic for startups and other tech employers
@@ -313,7 +313,7 @@ export class CompanyRedFlagService {
         description: 'Public reviews suggest engineering teams expect candidates to be autonomous problem solvers with minimal initial documentation.',
         whyThisMatters: 'Ensure you clarify during your interview what mentorship and pairing resources will be assigned in your first 60 days.',
         confidence: 'unverified',
-        unverifiedNote: 'Unverified signal — apna khud research bhi karein',
+        unverifiedNote: 'Unverified signal — please conduct your own due diligence',
       });
       flags.push({
         id: 'rf_gen_2',
@@ -324,7 +324,7 @@ export class CompanyRedFlagService {
         description: 'Standard product release cadences show occasional crunch periods ahead of fiscal quarter boundaries or customer pilot launches.',
         whyThisMatters: 'Check with hiring managers how sprint carry-overs and team bandwidth are realistically calculated.',
         confidence: 'unverified',
-        unverifiedNote: 'Unverified signal — apna khud research bhi karein',
+        unverifiedNote: 'Unverified signal — please conduct your own due diligence',
       });
     }
 

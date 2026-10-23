@@ -15,7 +15,18 @@ import {
   Lock,
   Info
 } from 'lucide-react';
-import { sendOtpCode, verifyOtpCode, signInWithGoogle, signUpWithPassword, signInWithPassword, OtpSendResponse } from '../firebaseConfig';
+import { 
+  sendOtpCode, 
+  verifyOtpCode, 
+  signInWithGoogle, 
+  signUpWithPassword, 
+  signInWithPassword,
+  sendFirebasePhoneOtp,
+  confirmFirebasePhoneOtp,
+  clearRecaptchaVerifier,
+  type ConfirmationResult,
+  OtpSendResponse 
+} from '../firebaseConfig';
 import { AuthUserSession } from '../types';
 import { CountryCodeSelector } from './CountryCodeSelector';
 
@@ -53,6 +64,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [phoneOtp, setPhoneOtp] = useState('');
   const [phoneOtpSent, setPhoneOtpSent] = useState(false);
   const [phoneCooldown, setPhoneCooldown] = useState(0);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
 
   // Email State
   const [emailAddress, setEmailAddress] = useState('');
@@ -77,9 +89,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     return () => clearInterval(timer);
   }, [phoneCooldown, emailCooldown]);
 
+  // Clean up reCAPTCHA verifier widget when tab changes or modal is closed
+  useEffect(() => {
+    return () => {
+      clearRecaptchaVerifier();
+    };
+  }, [activeTab, isOpen]);
+
   if (!isOpen) return null;
 
-  // Handlers for Phone OTP
+  // Handlers for Phone OTP via Firebase
   const handleSendPhoneOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setErrorMessage(null);
@@ -100,17 +119,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setIsLoading(true);
 
     try {
-      const res = await sendOtpCode('phone', fullDestination);
+      const confirmation = await sendFirebasePhoneOtp(fullDestination, 'recaptcha-container');
+      setConfirmationResult(confirmation);
       setPhoneOtpSent(true);
-      setPhoneCooldown(res.cooldownSeconds || 20);
-
-      if (res.dispatchedViaRealGateway) {
-        setSuccessMessage(`Live SMS carrier transmission active: Dispatched to ${fullDestination}`);
-      } else {
-        setSuccessMessage(`SMS OTP requested for ${fullDestination}. Please enter the code received.`);
-      }
+      setPhoneCooldown(60);
+      setSuccessMessage(`SMS verification code dispatched to ${fullDestination}. Please enter the 6-digit code received on your mobile device.`);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to dispatch SMS OTP.');
+      setErrorMessage(err.message || 'Failed to dispatch SMS verification code via Firebase.');
     } finally {
       setIsLoading(false);
     }
@@ -126,15 +141,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    const cleanNum = phoneNumber.replace(/[\s\-()]/g, '');
-    const fullDestination = `${countryCode}${cleanNum.startsWith('0') ? cleanNum.slice(1) : cleanNum}`;
+    if (!confirmationResult) {
+      setErrorMessage('No active verification session found. Please click "Resend OTP" to request a new code.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const session = await verifyOtpCode('phone', fullDestination, phoneOtp.trim());
-      if (authMode === 'signup' && fullName.trim()) {
-        session.displayName = fullName.trim();
-      }
+      const session = await confirmFirebasePhoneOtp(
+        confirmationResult,
+        phoneOtp.trim(),
+        authMode === 'signup' ? fullName.trim() : undefined
+      );
       setSuccessMessage('Phone identity verified successfully!');
       onAuthSuccess(session, authMode === 'signup');
       setTimeout(() => {
@@ -170,17 +189,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const res = await sendOtpCode('email', cleanEmail);
       setEmailOtpSent(true);
       setEmailCooldown(res.cooldownSeconds || 20);
-
-      if (res.previewOtp) {
-        setSuccessMessage(`Verification code sent to ${cleanEmail}. (Sandbox Code: ${res.previewOtp})`);
-        setEmailOtp(res.previewOtp);
-      } else if (res.dispatchedViaRealGateway) {
-        setSuccessMessage(`Verification email dispatched to ${cleanEmail}. Please check your inbox or spam folder.`);
-      } else {
-        setSuccessMessage(`Verification code sent to ${cleanEmail}. Check your inbox.`);
-      }
+      setSuccessMessage(`Verification code has been sent to ${cleanEmail}. Please check your inbox or spam folder.`);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to dispatch email OTP.');
+      setErrorMessage(err.message || 'Failed to dispatch email verification code.');
     } finally {
       setIsLoading(false);
     }
@@ -501,9 +512,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               {/* Status Alerts */}
               {errorMessage && (
-                <div className="p-3 rounded-xl bg-red-950/60 border border-red-800 text-red-300 text-xs flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                  <div className="flex-1 font-mono text-[11px] leading-tight">{errorMessage}</div>
+                <div className="p-3 rounded-xl bg-red-950/60 border border-red-800 text-red-300 text-xs flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <div className="flex-1 font-mono text-[11px] leading-tight">{errorMessage}</div>
+                  </div>
+                  {(errorMessage.includes('Password') || errorMessage.includes('Google')) && (
+                    <div className="flex items-center gap-2 pt-1.5 border-t border-red-900/40">
+                      {errorMessage.includes('Password') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('password');
+                            setErrorMessage(null);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-red-900/60 hover:bg-red-800 text-slate-200 text-[10px] font-mono cursor-pointer transition-colors"
+                        >
+                          Switch to Password
+                        </button>
+                      )}
+                      {errorMessage.includes('Google') && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('google');
+                            setErrorMessage(null);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-red-900/60 hover:bg-red-800 text-slate-200 text-[10px] font-mono cursor-pointer transition-colors"
+                        >
+                          Switch to Google Sign-In
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -537,6 +578,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       />
                     </div>
                   </div>
+
+                  {/* Invisible reCAPTCHA Anchor Container for Firebase Phone Auth */}
+                  <div id="recaptcha-container" className="my-1 flex justify-center"></div>
 
                   {!phoneOtpSent ? (
                     <button
@@ -594,7 +638,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                             <span>Destination: {countryCode} {phoneNumber}</span>
                           </div>
                           <p className="text-[10px] text-slate-500 leading-relaxed">
-                            Encrypted verification code dispatched. Enter the 6 digits to verify candidate identity.
+                            Encrypted verification code dispatched via Firebase Telecom SMS. Enter the 6 digits to verify candidate identity.
                           </p>
                         </div>
                       </div>
@@ -605,6 +649,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           onClick={() => {
                             setPhoneOtpSent(false);
                             setPhoneOtp('');
+                            setConfirmationResult(null);
+                            clearRecaptchaVerifier();
                           }}
                           className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-mono transition-colors"
                         >
