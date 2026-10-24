@@ -134,3 +134,8 @@
 .animate-float-reverse {
   animation: float-reverse 18s ease-in-out infinite;
 }
+
+/* Google reCAPTCHA invisible badge styling as per Google Terms */
+.grecaptcha-badge {
+  visibility: hidden;
+}

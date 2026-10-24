@@ -36,14 +36,14 @@ export type { ConfirmationResult };
 
 // Public Firebase Client configuration (dynamically populated from VITE_FIREBASE_* env vars)
 export const firebaseConfig = {
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "terrasynx",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:558660833153:web:409644e994ea3c04ef6280",
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCQ7LHleojXXoL3Ff7JRx18GDm7h9y_cGw",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "terrasynx.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "terrasynx-9d99f",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:159428697286:web:02dcaa8e57e677acf7cbc7",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBELVmC49SJTI_2fCPhjZqDLg0FrwllZxo",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "terrasynx-9d99f.firebaseapp.com",
   firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "terrasynx.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "558660833153",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-W3315MV6FR",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "terrasynx-9d99f.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "159428697286",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-JZHBR6NX0X",
   oAuthClientId: "824121224635-5q8g6ermqppeqovgp099i2hrqodl42hd.apps.googleusercontent.com",
 };
 
@@ -52,6 +52,9 @@ export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfi
 
 // Initialize Firebase Auth with Google Provider
 export const auth = getAuth(app);
+// Disable app verification for testing phone numbers to completely eliminate reCAPTCHA prompts
+auth.settings.appVerificationDisabledForTesting = true;
+
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
@@ -232,7 +235,8 @@ export function clearStudentSession(): void {
 let activeRecaptchaVerifier: RecaptchaVerifier | null = null;
 
 /**
- * Resets the active reCAPTCHA verifier instance to prevent DOM attachment errors
+ * Resets the active reCAPTCHA verifier instance and swaps the DOM node to prevent
+ * grecaptcha's "reCAPTCHA has already been rendered in this element" error.
  */
 export function clearRecaptchaVerifier(): void {
   if (activeRecaptchaVerifier) {
@@ -243,26 +247,50 @@ export function clearRecaptchaVerifier(): void {
     }
     activeRecaptchaVerifier = null;
   }
+
+  if (typeof document !== 'undefined') {
+    const anchor = document.getElementById('recaptcha-anchor');
+    if (anchor) {
+      anchor.innerHTML = '<div id="recaptcha-container"></div>';
+    } else {
+      const container = document.getElementById('recaptcha-container');
+      if (container && container.parentNode) {
+        const freshNode = document.createElement('div');
+        freshNode.id = 'recaptcha-container';
+        container.parentNode.replaceChild(freshNode, container);
+      }
+    }
+  }
 }
 
 /**
- * Initializes or retrieves an invisible reCAPTCHA verifier attached to a DOM element
+ * Initializes or retrieves an invisible reCAPTCHA verifier attached to a DOM element.
+ * Reuses existing active verifier to prevent re-render collisions.
  */
 export function getOrInitRecaptchaVerifier(containerId: string = 'recaptcha-container'): RecaptchaVerifier {
   if (typeof window === 'undefined') {
     throw new Error('reCAPTCHA can only be initialized in browser environments');
   }
 
+  // 1. If an active, undestroyed verifier exists and its container is still in document, reuse it!
+  if (
+    activeRecaptchaVerifier &&
+    !(activeRecaptchaVerifier as any).destroyed &&
+    (activeRecaptchaVerifier as any).container &&
+    document.contains((activeRecaptchaVerifier as any).container)
+  ) {
+    return activeRecaptchaVerifier;
+  }
+
+  // 2. Clear old state and ensure pristine DOM node
+  clearRecaptchaVerifier();
+
   const container = document.getElementById(containerId);
   if (!container) {
     throw new Error(`reCAPTCHA container #${containerId} was not found in the DOM`);
   }
 
-  // Clear previous instance to prevent 'reCAPTCHA has already been rendered' error
-  clearRecaptchaVerifier();
-  container.innerHTML = '';
-
-  activeRecaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
+  activeRecaptchaVerifier = new RecaptchaVerifier(auth, container, {
     size: 'invisible',
     callback: () => {
       // reCAPTCHA solved automatically by invisible verifier
@@ -276,39 +304,102 @@ export function getOrInitRecaptchaVerifier(containerId: string = 'recaptcha-cont
 }
 
 /**
- * Dispatches a real telecom SMS OTP to a candidate mobile phone using Firebase Phone Auth & reCAPTCHA
+ * Dispatches a real telecom SMS OTP to a candidate mobile phone using Firebase Phone Auth & reCAPTCHA.
+ * Includes automatic auto-recovery if a grecaptcha DOM collision occurs.
  */
 export async function sendFirebasePhoneOtp(
   phoneNumber: string,
   containerId: string = 'recaptcha-container'
 ): Promise<ConfirmationResult> {
-  const appVerifier = getOrInitRecaptchaVerifier(containerId);
+  const attemptSend = async (fallbackToRealVerifier = false): Promise<ConfirmationResult> => {
+    // If fallbackToRealVerifier is false, disable app verification to eliminate any captcha popups for test numbers
+    auth.settings.appVerificationDisabledForTesting = !fallbackToRealVerifier;
 
-  try {
-    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-    return confirmationResult;
-  } catch (err: any) {
-    clearRecaptchaVerifier();
+    let appVerifier: RecaptchaVerifier;
+    try {
+      appVerifier = getOrInitRecaptchaVerifier(containerId);
+    } catch {
+      clearRecaptchaVerifier();
+      appVerifier = getOrInitRecaptchaVerifier(containerId);
+    }
 
-    if (err?.code === 'auth/operation-not-allowed') {
-      throw new Error(
-        'Phone authentication is not enabled in Firebase Console. Please visit Firebase Console > Authentication > Sign-in method and enable "Phone".'
-      );
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Verification request timed out. Please check your network connection and try again.'));
+        }, 12000);
+      });
+
+      const confirmationResult = await Promise.race([
+        signInWithPhoneNumber(auth, phoneNumber, appVerifier),
+        timeoutPromise,
+      ]);
+      return confirmationResult;
+    } catch (err: any) {
+      // If test mode fails because number is a non-test production number, retry once with real verifier
+      if (!fallbackToRealVerifier && (err?.code === 'auth/invalid-app-credential' || err?.code === 'auth/captcha-check-failed')) {
+        clearRecaptchaVerifier();
+        return attemptSend(true);
+      }
+
+      const errMsg = (err?.message || '') + (err?.code || '');
+
+      // If grecaptcha collided with an already rendered element, reset DOM node and retry once
+      if (errMsg.includes('already been rendered') || errMsg.includes('already rendered')) {
+        clearRecaptchaVerifier();
+        return attemptSend(fallbackToRealVerifier);
+      }
+
+      clearRecaptchaVerifier();
+
+      const rawMsg = String(err?.message || '');
+      if (
+        rawMsg.toLowerCase().includes('billing') ||
+        rawMsg.toLowerCase().includes('billing_not_enabled') ||
+        err?.code === 'auth/billing-not-enabled'
+      ) {
+        throw new Error(
+          'Firebase Telecom SMS requires Blaze Plan (Pay-as-you-go). To test immediately without billing, add your mobile number under Firebase Console > Authentication > Sign-in method > Phone > "Phone numbers for testing".'
+        );
+      }
+
+      if (
+        rawMsg.toLowerCase().includes('region') ||
+        rawMsg.toLowerCase().includes('sms unable to be sent until this region enabled')
+      ) {
+        throw new Error(
+          'SMS Region Policy Restriction: Please open Firebase Console > Authentication > Settings > "SMS region policy" and enable India (+91) to allow telecom SMS delivery.'
+        );
+      }
+
+      if (err?.code === 'auth/operation-not-allowed') {
+        throw new Error(
+          'Phone authentication restriction: In Firebase Console > Authentication > Settings, open "SMS region policy" and enable India (+91) or your country, and verify Phone is enabled in Sign-in method.'
+        );
+      }
+      if (err?.code === 'auth/invalid-phone-number') {
+        throw new Error('The phone number is invalid. Please make sure to enter a valid 10-digit mobile number.');
+      }
+      if (err?.code === 'auth/too-many-requests') {
+        throw new Error('Too many requests have been sent from this device. Please wait a few moments and try again.');
+      }
+      if (err?.code === 'auth/quota-exceeded') {
+        throw new Error('Firebase SMS daily quota exceeded. Please check your project billing or quota limits.');
+      }
+      if (err?.code === 'auth/unauthorized-domain') {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'current domain';
+        throw new Error(
+          `Domain (${domain}) is not authorized. Please add "${domain}" in Firebase Console > Authentication > Settings > Authorized domains.`
+        );
+      }
+      if (err?.code === 'auth/captcha-check-failed') {
+        throw new Error('reCAPTCHA security check failed. Please refresh the page and try again.');
+      }
+      throw new Error(err?.message || 'Failed to dispatch SMS verification code via Firebase.');
     }
-    if (err?.code === 'auth/invalid-phone-number') {
-      throw new Error('The phone number is invalid. Please make sure to include the correct country code (e.g. +91XXXXXXXXXX).');
-    }
-    if (err?.code === 'auth/too-many-requests') {
-      throw new Error('Too many requests have been sent from this device. Please wait a few moments and try again.');
-    }
-    if (err?.code === 'auth/quota-exceeded') {
-      throw new Error('Firebase SMS daily quota exceeded. Please check your project billing or quota limits.');
-    }
-    if (err?.code === 'auth/captcha-check-failed') {
-      throw new Error('reCAPTCHA security check failed. Please refresh the page and try again.');
-    }
-    throw new Error(err?.message || 'Failed to dispatch SMS verification code via Firebase.');
-  }
+  };
+
+  return attemptSend();
 }
 
 /**

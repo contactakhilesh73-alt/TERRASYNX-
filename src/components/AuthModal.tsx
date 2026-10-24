@@ -29,6 +29,7 @@ import {
 } from '../firebaseConfig';
 import { AuthUserSession } from '../types';
 import { CountryCodeSelector } from './CountryCodeSelector';
+import { normalizeE164PhoneNumber } from '../utils/phoneUtils';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -89,12 +90,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     return () => clearInterval(timer);
   }, [phoneCooldown, emailCooldown]);
 
-  // Clean up reCAPTCHA verifier widget when tab changes or modal is closed
+  // Clean up reCAPTCHA verifier widget only when modal is closed
   useEffect(() => {
-    return () => {
+    if (!isOpen) {
       clearRecaptchaVerifier();
-    };
-  }, [activeTab, isOpen]);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -109,13 +110,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       return;
     }
 
-    const cleanNum = phoneNumber.replace(/[\s\-()]/g, '');
-    if (!cleanNum || cleanNum.length < 7) {
-      setErrorMessage('Please enter a valid mobile number.');
+    const rawDigits = phoneNumber.replace(/\D/g, '');
+    if (!rawDigits) {
+      setErrorMessage('Please enter your mobile phone number.');
       return;
     }
 
-    const fullDestination = `${countryCode}${cleanNum.startsWith('0') ? cleanNum.slice(1) : cleanNum}`;
+    if (countryCode === '+91') {
+      const tenDigits = rawDigits.length === 12 && rawDigits.startsWith('91') ? rawDigits.slice(2) : rawDigits;
+      if (tenDigits.length < 10) {
+        setErrorMessage(`Mobile number is too short (${tenDigits.length}/10 digits). Please enter all 10 digits.`);
+        return;
+      }
+      if (tenDigits.length > 10) {
+        setErrorMessage(`Mobile number has too many digits (${tenDigits.length} digits). Indian mobile numbers must be exactly 10 digits.`);
+        return;
+      }
+      if (!/^[6-9]/.test(tenDigits)) {
+        setErrorMessage('Valid Indian mobile numbers must start with 6, 7, 8, or 9.');
+        return;
+      }
+    }
+
+    const fullDestination = normalizeE164PhoneNumber(countryCode, phoneNumber);
+    if (!fullDestination || fullDestination.length < 9) {
+      setErrorMessage('Please enter a valid mobile number with standard digits.');
+      return;
+    }
     setIsLoading(true);
 
     try {
@@ -123,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setConfirmationResult(confirmation);
       setPhoneOtpSent(true);
       setPhoneCooldown(60);
-      setSuccessMessage(`SMS verification code dispatched to ${fullDestination}. Please enter the 6-digit code received on your mobile device.`);
+      setSuccessMessage('SMS verification code dispatched. Please enter the 6-digit code received on your mobile device.');
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to dispatch SMS verification code via Firebase.');
     } finally {
@@ -570,9 +591,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       />
                       <input
                         type="tel"
-                        placeholder="Mobile number (e.g. 9876543210)"
+                        placeholder="Enter 10-digit mobile number"
                         value={phoneNumber}
-                        onChange={(e) => setPhoneNumber(e.target.value.replace(/[^\d\s-]/g, ''))}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/[^\d\s\-+]/g, ''))}
                         disabled={phoneOtpSent || isLoading}
                         className="flex-1 h-11 px-3.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
                       />
@@ -580,7 +601,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
 
                   {/* Invisible reCAPTCHA Anchor Container for Firebase Phone Auth */}
-                  <div id="recaptcha-container" className="my-1 flex justify-center"></div>
+                  <div id="recaptcha-anchor" className="my-1 flex justify-center">
+                    <div id="recaptcha-container"></div>
+                  </div>
 
                   {!phoneOtpSent ? (
                     <button
@@ -631,14 +654,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                           className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-cyan-500/50 text-cyan-300 text-center tracking-[10px] text-lg font-mono focus:outline-none focus:border-cyan-400"
                         />
 
-                        {/* Security notice */}
+                        {/* Security notice (zero phone number disclosure) */}
                         <div className="mt-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 space-y-1">
                           <div className="flex items-center gap-1.5 text-cyan-300 font-mono font-medium">
                             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                            <span>Destination: {countryCode} {phoneNumber}</span>
+                            <span>Verification Code Sent</span>
                           </div>
                           <p className="text-[10px] text-slate-500 leading-relaxed">
-                            Encrypted verification code dispatched via Firebase Telecom SMS. Enter the 6 digits to verify candidate identity.
+                            Encrypted 6-digit verification code dispatched. Enter the 6 digits to verify candidate identity.
                           </p>
                         </div>
                       </div>

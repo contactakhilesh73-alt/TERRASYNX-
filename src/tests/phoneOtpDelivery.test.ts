@@ -10,6 +10,7 @@ import {
   type ConfirmationResult
 } from '../firebaseConfig';
 import { AuthUserSession } from '../types';
+import { normalizeE164PhoneNumber } from '../utils/phoneUtils';
 
 describe('Phone OTP Security & Dispatch Architecture', () => {
   const memoryStorage: Record<string, string> = {};
@@ -190,5 +191,32 @@ describe('Phone OTP Security & Dispatch Architecture', () => {
 
   it('cleans up reCAPTCHA verifier safely', () => {
     expect(() => clearRecaptchaVerifier()).not.toThrow();
+  });
+
+  describe('normalizeE164PhoneNumber', () => {
+    it('formats a standard 10-digit number with selected country code', () => {
+      expect(normalizeE164PhoneNumber('+91', '9876543210')).toBe('+919876543210');
+    });
+
+    it('prevents duplicate country code when candidate types 91 in input box', () => {
+      expect(normalizeE164PhoneNumber('+91', '919876543210')).toBe('+919876543210');
+    });
+
+    it('handles pasted numbers starting with + cleanly', () => {
+      expect(normalizeE164PhoneNumber('+91', '+91 98765 43210')).toBe('+919876543210');
+    });
+
+    it('strips leading trunk zero', () => {
+      expect(normalizeE164PhoneNumber('+91', '09876543210')).toBe('+919876543210');
+    });
+
+    it('correctly handles 10-digit Indian numbers starting with 91 without truncating', () => {
+      expect(normalizeE164PhoneNumber('+91', '9123456789')).toBe('+919123456789');
+    });
+
+    it('formats other international dial codes correctly without duplication', () => {
+      expect(normalizeE164PhoneNumber('+1', '4155552671')).toBe('+14155552671');
+      expect(normalizeE164PhoneNumber('+1', '14155552671')).toBe('+14155552671');
+    });
   });
 });
