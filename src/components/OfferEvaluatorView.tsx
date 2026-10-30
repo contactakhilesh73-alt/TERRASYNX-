@@ -14,6 +14,7 @@ import {
   CompensationBreakdown
 } from '../types';
 import { OfferEvaluationEngine } from '../services/offerEvaluationEngine';
+import { formatDualDeadline } from '../utils/timeService';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -346,8 +347,8 @@ export const OfferEvaluatorView: React.FC<OfferEvaluatorViewProps> = ({
               <span className="text-xs font-mono uppercase font-bold tracking-wider text-rose-400">
                 Official Exploding Offer Window
               </span>
-              <span className="text-[10px] font-mono text-slate-400">
-                Deadline: {new Date(activeOffer.deadlineDate).toLocaleDateString()}
+              <span className="text-[10px] font-mono text-slate-300">
+                Official: {formatDualDeadline(activeOffer.deadlineDate).officialText} • Local: {formatDualDeadline(activeOffer.deadlineDate).localText}
               </span>
             </div>
             <div className="text-xl font-extrabold font-mono text-white tracking-wider">

@@ -40,15 +40,19 @@ import {
   Info,
   RefreshCw,
   FileText,
-  Printer
+  Printer,
+  PlusCircle,
 } from 'lucide-react';
 import { HackathonFastApplyModal } from './HackathonFastApplyModal';
 import { HackathonWhitePageModal } from './HackathonWhitePageModal';
+import { SubmitHackathonModal } from './SubmitHackathonModal';
 import { CompanyLogo } from './CompanyLogo';
 import { HackathonTrackingService, HackathonApplicationRecord } from '../services/hackathonTrackingService';
+import { HackathonIntakeService } from '../services/hackathonIntakeService';
 import { ProfileCompletionGateModal } from './ProfileCompletionGateModal';
 import { calculateProfileCompletion } from '../utils/profileCompletion';
 import { getDateConfidenceBadgeConfig } from '../utils/scholarshipBadges';
+import { HackathonCoverageInfo } from '../types';
 
 interface HackathonsPortalProps {
   onNavigateToCalendar?: () => void;
@@ -131,6 +135,10 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   // Official Page Watcher Snapshots (Prompt 46)
   const [watcherSnapshots, setWatcherSnapshots] = useState<Record<string, any>>({});
 
+  // Prompt 68: Hackathon Intake & Live Coverage
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [coverageInfo, setCoverageInfo] = useState<HackathonCoverageInfo>(() => HackathonIntakeService.getCoverageInfo());
+
   const fetchLiveFeed = async (force: boolean = false) => {
     setIsLiveFeedLoading(true);
     try {
@@ -174,6 +182,12 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   useEffect(() => {
     fetchLiveFeed();
     fetchWatcherSnapshots();
+
+    // Subscribe to intake changes (verified items, submissions, last run times)
+    const unsub = HackathonIntakeService.subscribe(() => {
+      setCoverageInfo(HackathonIntakeService.getCoverageInfo());
+    });
+    return unsub;
   }, []);
 
   useEffect(() => {
@@ -214,13 +228,16 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
   };
 
   // Base list of all hackathons:
-  // Verified recurring programs + live Devpost feed (if available).
-  // STRICT RULE: Never add hardcoded fallback hackathons if live feed fails.
+  // Verified recurring programs + live Devpost feed (if available) + verified community submissions (Prompt 68).
+  // STRICT RULE: Only verified items are shown! Never add unverified/pending submissions or hardcoded fallback hackathons.
   const allHackathons = useMemo(() => {
     const staticList = HackathonsService.getAllHackathons();
+    // Prompt 68: Ingest verified community submissions (only verified items are shown!)
+    const verifiedSubmissions = HackathonIntakeService.getVerifiedSubmissions();
+    const combinedCurated = [...verifiedSubmissions, ...staticList];
 
     // Enrich static recurring hackathons with watcher snapshots if available (Prompt 46)
-    const enrichedStatic = staticList.map(item => {
+    const enrichedStatic = combinedCurated.map(item => {
       const snap = watcherSnapshots[item.organizer.toLowerCase().trim()];
       if (!snap) return item;
 
@@ -242,7 +259,7 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
       return [...uniqueLive, ...enrichedStatic];
     }
     return enrichedStatic;
-  }, [liveHackathons, watcherSnapshots]);
+  }, [liveHackathons, watcherSnapshots, coverageInfo]);
 
   // Compute status counts for the tabs
   const statusCounts = useMemo(() => {
@@ -418,6 +435,34 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
               </div>
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Prompt 68: Coverage Line and Submit Hackathon Action Bar */}
+      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-orange-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg shadow-orange-950/20 font-mono text-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-bold text-orange-400">Live Coverage:</span>
+            <span className="text-slate-300">
+              Tracking <strong className="text-white font-bold">{coverageInfo.trackingSourcesCount}</strong> sources, last run <span className="text-orange-300 font-semibold">{coverageInfo.lastRun}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsSubmitModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-slate-950 font-bold font-mono text-xs transition-all shadow-md shadow-orange-950/40 cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+            title="Submit a hackathon (name, official URL, organizer) for live verification"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-slate-950" />
+            <span>Submit a Hackathon</span>
+          </button>
         </div>
       </div>
 
@@ -947,6 +992,24 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
                         >
                           <span>{getDomainFromUrl(hackathon.officialUrl)}</span>
                         </a>
+
+                        {/* Prompt 64: Curated Verification Status Tag */}
+                        {hackathon.officialUrl && hackathon.officialUrl.trim().length > 0 ? (
+                          <span 
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-950/60 text-amber-300 border border-amber-500/40"
+                            title={`Status: UNVERIFIED_CURATED • Source: ${hackathon.officialUrl}`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                            <span>UNVERIFIED_CURATED</span>
+                          </span>
+                        ) : (
+                          <span 
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-700"
+                            title="No verifiable official source found; marked UNKNOWN."
+                          >
+                            <span>UNKNOWN</span>
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-lg font-bold text-white group-hover:text-orange-200 transition-colors leading-snug">
                         {hackathon.name}
@@ -1331,6 +1394,15 @@ export const HackathonsPortal: React.FC<HackathonsPortalProps> = ({
         }}
         completion={gateCompletion}
         targetOpportunityTitle={gateTargetTitle}
+      />
+
+      {/* Prompt 68: Submit Hackathon Modal */}
+      <SubmitHackathonModal
+        isOpen={isSubmitModalOpen}
+        onClose={() => setIsSubmitModalOpen(false)}
+        onHackathonVerified={() => {
+          setToastMessage('Verified hackathon published to live directory!');
+        }}
       />
     </div>
   );

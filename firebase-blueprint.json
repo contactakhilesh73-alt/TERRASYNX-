@@ -1,5 +1,36 @@
 {
   "entities": {
+    "sources": {
+      "path": "sources/{sourceId}",
+      "description": "Verified external publishers, company career portals, government agencies, and hackathon organizers (Prompt 64)",
+      "fields": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "officialUrls": { "type": "array" },
+        "category": { "type": "string" },
+        "country": { "type": "string" },
+        "parserType": { "type": "string" },
+        "createdAt": { "type": "number" }
+      }
+    },
+    "records": {
+      "path": "records/{recordId}",
+      "description": "Curated programs, hackathons, and opportunities migrated out of code with verified facts, evidence, and status (Prompt 64)",
+      "fields": {
+        "id": { "type": "string" },
+        "sourceId": { "type": "string" },
+        "sourceUrl": { "type": "string" },
+        "status": { "type": "string" },
+        "curatedOn": { "type": "number" },
+        "lastVerifiedAt": { "type": "number" },
+        "evidence": { "type": "string" },
+        "title": { "type": "string" },
+        "organizer": { "type": "string" },
+        "category": { "type": "string" },
+        "country": { "type": "string" },
+        "verifiedFacts": { "type": "object" }
+      }
+    },
     "students": {
       "path": "students/{userId}",
       "description": "Student profile and career fitment data securely owned by student UID",
@@ -62,7 +93,21 @@
         "customNotes": { "type": "string" },
         "updatedAt": { "type": "timestamp" }
       }
+    },
+    "hackathonSubmissions": {
+      "path": "hackathon_submissions/{submissionId}",
+      "description": "User-submitted hackathons queued for live verification and date extraction (Prompt 68)",
+      "fields": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "officialUrl": { "type": "string" },
+        "organizer": { "type": "string" },
+        "submittedAt": { "type": "number" },
+        "status": { "type": "string" },
+        "submitterEmail": { "type": "string" },
+        "verificationResult": { "type": "object" },
+        "verifiedHackathon": { "type": "object" }
+      }
     }
   }
 }
-

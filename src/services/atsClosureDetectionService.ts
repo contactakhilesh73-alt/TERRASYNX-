@@ -19,6 +19,7 @@
 
 import { Opportunity } from '../types';
 import { logger } from '../utils/logger';
+import { ClosureAlertService } from './closureAlertService';
 
 export const ATS_CLOSURE_BADGE_TEXT = 'Possibly closed, verify on official page';
 
@@ -227,12 +228,24 @@ export class AtsClosureDetectionService {
         });
 
         // Prompt 41B: Retain job for candidate review with advisory badge; DO NOT delete it!
-        resultMap.set(existingJob.id, {
+        const updatedOpp: Opportunity = {
           ...existingJob,
           possiblyClosed: isNowPossiblyClosed,
           closureStatus: isNowPossiblyClosed ? 'POSSIBLY_CLOSED' : (existingJob.closureStatus || 'ACTIVE'),
           consecutiveMissingFetches: newMissing,
-        });
+        };
+        resultMap.set(existingJob.id, updatedOpp);
+
+        // Prompt 67: When a tracked opportunity changes to POSSIBLY_CLOSED, add Alert Relay message
+        if (isNowPossiblyClosed && !existingJob.possiblyClosed) {
+          ClosureAlertService.dispatchClosureAlertIfTracked({
+            opportunity: updatedOpp,
+            previousStatus: existingJob.closureStatus || 'ACTIVE',
+            newStatus: 'POSSIBLY_CLOSED',
+            evidence: `Job requisition disappeared from ${newMissing} consecutive live ${srcType} API scan cycles.`,
+            detectedAt: now,
+          });
+        }
       } else {
         // Retain non-ATS or non-queried jobs untouched
         resultMap.set(existingJob.id, existingJob);

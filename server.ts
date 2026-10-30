@@ -14,6 +14,9 @@ import { HONEST_USER_AGENT, validateSafeTargetUrl, isHostnameAllowed, isPrivateO
 import { AtsClosureDetectionService } from './src/services/atsClosureDetectionService';
 import { Hackathon, HackathonMode, HackathonStatus } from './src/types';
 import { OfficialPageWatcherService, groundExtractedData, WatcherExtractedData } from './src/services/officialPageWatcherService';
+import { parseOfficialPageDeterministic, LiveParsersService } from './src/services/liveParsers';
+import { JanchSchedulerService } from './src/services/janchSchedulerService';
+import { HackathonIntakeService } from './src/services/hackathonIntakeService';
 
 const app = express();
 const PORT = 3000;
@@ -27,6 +30,18 @@ app.get('/api/health', (req, res) => {
     service: 'TERRASYNX Career Intelligence Engine',
     timestamp: Date.now(),
     geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+  });
+});
+
+// Prompt 62: Server-synchronized UTC Time API
+app.get('/api/time', (req, res) => {
+  const now = new Date();
+  res.json({
+    utcTime: now.toISOString(),
+    epochMs: now.getTime(),
+    serverTimezone: 'UTC',
+    officialTimezone: 'Asia/Kolkata',
+    officialTimezoneLabel: 'IST (UTC+05:30)',
   });
 });
 
@@ -455,6 +470,240 @@ app.post('/api/hackathons/watcher/run', async (req, res) => {
       success: false,
       error: err?.message || 'Watcher cycle execution failed',
     });
+  }
+});
+
+// PROMPT 68: Live Hackathon Submission Verification Endpoint
+app.post('/api/hackathons/verify-submission', async (req, res) => {
+  try {
+    const { name, officialUrl, organizer } = req.body || {};
+    if (!name || !officialUrl || !organizer) {
+      return res.status(400).json({
+        success: false,
+        error: 'name, officialUrl, and organizer are required',
+      });
+    }
+
+    // 1. Allowlist rules verification
+    const allowlistCheck = HackathonIntakeService.validateAllowlistUrl(officialUrl);
+    if (!allowlistCheck.allowed) {
+      return res.json({
+        success: true,
+        status: 'rejected',
+        verificationResult: {
+          isAllowedUrl: false,
+          allowlistReason: allowlistCheck.reason,
+          verifiedAt: Date.now(),
+          message: allowlistCheck.reason,
+        },
+      });
+    }
+
+    // 2. Live fetch of official page
+    let pageHtml = '';
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 6000);
+      const response = await fetch(officialUrl, {
+        headers: {
+          'User-Agent': HONEST_USER_AGENT,
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (response.ok) {
+        pageHtml = await response.text();
+      }
+    } catch (fetchErr) {
+      logger.warn('HackathonIntake', `Could not fetch ${officialUrl}`, fetchErr);
+    }
+
+    // 3. Read dates from official page
+    const dateExtraction = HackathonIntakeService.extractDatesFromPageContent(pageHtml);
+    if (!dateExtraction.hasDates) {
+      return res.json({
+        success: true,
+        status: 'rejected',
+        verificationResult: {
+          isAllowedUrl: true,
+          allowlistReason: `Domain "${allowlistCheck.hostname}" is allowlisted.`,
+          verifiedAt: Date.now(),
+          message: 'Verification failed: No verifiable start/end dates found on the official page.',
+        },
+      });
+    }
+
+    const verificationResult = {
+      isAllowedUrl: true,
+      allowlistReason: `Domain "${allowlistCheck.hostname}" is allowlisted and verified authentic.`,
+      datesDetected: {
+        startDate: dateExtraction.startDate,
+        endDate: dateExtraction.endDate,
+        datesText: dateExtraction.datesText,
+        deadline: dateExtraction.deadline,
+      },
+      dateConfidence: 'OFFICIAL' as const,
+      extractedFrom: dateExtraction.extractedFrom || 'json-ld',
+      verifiedAt: Date.now(),
+      message: `Verified on official page! Dates confirmed: ${dateExtraction.datesText || dateExtraction.startDate}.`,
+    };
+
+    return res.json({
+      success: true,
+      status: 'verified',
+      verificationResult,
+    });
+  } catch (err: any) {
+    logger.error('HackathonIntake', 'Verification endpoint error', err);
+    return res.status(500).json({ success: false, error: err?.message || 'Verification process failed' });
+  }
+});
+
+// PROMPT 68: Coverage Line Metric Endpoint
+app.get('/api/hackathons/coverage', (req, res) => {
+  try {
+    const coverage = HackathonIntakeService.getCoverageInfo();
+    return res.json({
+      success: true,
+      coverage,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err?.message });
+  }
+});
+
+// PROMPT 65: Deterministic Parsers Inspection Endpoint
+app.post('/api/live-parser/inspect', async (req, res) => {
+  try {
+    const { url, html, organizer, responseStatus, finalRedirectUrl, opportunity, currentAtsJobs, allowAiFallback } = req.body;
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ success: false, error: 'Missing target url parameter' });
+    }
+
+    let pageHtml = html;
+    let finalUrl = finalRedirectUrl;
+    let status = responseStatus;
+
+    // If html is not provided and no responseStatus is supplied, fetch safely from allowlisted official page
+    if (!pageHtml && typeof responseStatus !== 'number') {
+      const fetchResult = await LiveParsersService.fetchOfficialPageSafe(url);
+      status = fetchResult.statusCode;
+      finalUrl = fetchResult.finalUrl;
+      pageHtml = fetchResult.html;
+
+      if (!fetchResult.ok && fetchResult.error) {
+        return res.json({
+          success: true,
+          decision: await parseOfficialPageDeterministic({
+            url,
+            responseStatus: status,
+            finalRedirectUrl: finalUrl,
+            organizer,
+            opportunity,
+            currentAtsJobs,
+            allowAiFallback: false,
+          }),
+        });
+      }
+    }
+
+    const decision = await parseOfficialPageDeterministic({
+      url,
+      html: pageHtml,
+      responseStatus: status,
+      finalRedirectUrl: finalUrl,
+      organizer,
+      opportunity,
+      currentAtsJobs,
+      allowAiFallback: allowAiFallback !== false,
+    });
+
+    return res.json({
+      success: true,
+      decision,
+    });
+  } catch (err: any) {
+    logger.error('LiveParsers', 'Inspection error', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Deterministic parser inspection failed',
+    });
+  }
+});
+
+// ============================================================================
+// PROMPT 66: JANCH SCHEDULER & REFRESH ENDPOINTS
+// ============================================================================
+
+// POST /api/janch/run protected by secret header (JANCH_SECRET from .env)
+app.post('/api/janch/run', async (req, res) => {
+  try {
+    const secretHeader = (req.headers['x-janch-secret'] as string) || '';
+    const authHeader = (req.headers['authorization'] as string) || '';
+
+    // Verify secret
+    if (!JanchSchedulerService.verifySecret(secretHeader, authHeader)) {
+      logger.warn('JanchScheduler', 'Unauthorized attempt to trigger /api/janch/run');
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized: Invalid or missing Janch secret header (x-janch-secret)',
+      });
+    }
+
+    const { batchSize, targetCategory, forceAll } = req.body || {};
+    const summary = await JanchSchedulerService.runJanchCycle({
+      batchSize: typeof batchSize === 'number' ? batchSize : undefined,
+      targetCategory: typeof targetCategory === 'string' ? targetCategory : undefined,
+      forceAll: Boolean(forceAll),
+    });
+
+    return res.json(summary);
+  } catch (err: any) {
+    logger.error('JanchScheduler', 'Error executing Janch run cycle', err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Janch run execution failed',
+    });
+  }
+});
+
+// POST /api/janch/refresh-record: Refresh a stale record when a user opens it
+app.post('/api/janch/refresh-record', async (req, res) => {
+  try {
+    const { recordId, force } = req.body || {};
+    if (!recordId || typeof recordId !== 'string') {
+      return res.status(400).json({ success: false, error: 'Missing recordId parameter' });
+    }
+
+    const result = await JanchSchedulerService.refreshRecord(recordId, Boolean(force));
+    return res.json({
+      success: true,
+      result,
+    });
+  } catch (err: any) {
+    logger.error('JanchScheduler', `Error refreshing record: ${req.body?.recordId}`, err);
+    return res.status(500).json({
+      success: false,
+      error: err?.message || 'Record refresh failed',
+    });
+  }
+});
+
+// GET /api/janch/status: Scheduler status and priority counts
+app.get('/api/janch/status', (req, res) => {
+  try {
+    const batchInfo = JanchSchedulerService.getPrioritizedBatch({ batchSize: 5 });
+    res.json({
+      success: true,
+      service: 'Janch Scheduler Sentinel',
+      totalCandidates: batchInfo.totalCandidates,
+      priorityCounts: batchInfo.priorityCounts,
+      minHostIntervalMs: JanchSchedulerService.MIN_HOST_INTERVAL_MS,
+      userAgent: HONEST_USER_AGENT,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err?.message });
   }
 });
 

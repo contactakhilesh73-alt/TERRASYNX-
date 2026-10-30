@@ -1,125 +1,79 @@
-# Phone OTP Delivery Architecture: Real Telecom SMS & Sandbox Verification
+# TERRASYNX Platform Architecture & Delivery Milestones
 
-Resolve phone OTP delivery issues by establishing a robust dual-path authentication engine: enabling real carrier SMS dispatch via telecom gateway in production, paired with a seamless development sandbox mode with instant on-screen verification for local and staging environments.
+## Completed Milestones
 
-> [!IMPORTANT]
-> **User Review & Confirmed Choices:**
-> - **Primary Requirement**: Real telecom SMS dispatch to user mobile phones when configured in production.
-> - **Development Fallback**: Development sandbox mode with on-screen test OTP so testing and staging never get blocked when carrier credentials are not active.
-> - **Execution Posture**: Plan-only discussion mode requested by user ("Bhai ise code base me add na karna abhi sirf ek problem ko discuss kar rahe hai"). Zero source code will be modified until explicit approval is given.
+### 1. Prompt 62: Server-Synchronized Time Bar & Dual Deadlines
+- **UTC Server Endpoint**: Added `GET /api/time` returning `utcTime`, `epochMs`, `serverTimezone: 'UTC'`, and `officialTimezone: 'Asia/Kolkata' (IST)`.
+- **DateTimeStatusBar**: Displayed on every page beneath the header after authentication.
+  - Live clock synced with the server UTC time.
+  - Device clock skew detector alerting users with an amber badge whenever the client clock deviates by more than 2 minutes from server time.
+  - Active verification counters for live checks.
+- **Dual Deadlines**: All dates and deadlines are rendered in official IST time alongside the candidate's localized device time.
 
----
+### 2. Prompt 63: Comprehensive Verification Status Model
+- **Verification Status Domain**:
+  - `OPEN_VERIFIED`: Official portal active, verified within source freshness window.
+  - `OPEN_NOT_RECENTLY_VERIFIED`: Verification window exceeded pending fresh crawler probe.
+  - `CLOSING_SOON`: Less than 72 hours remaining until deadline.
+  - `POSSIBLY_CLOSED`: Portal indicates capacity or ambiguous closure indicators.
+  - `CLOSED_EARLY_BY_PORTAL`: Explicit early closure detected before stated deadline.
+  - `DEADLINE_PASSED`: Official stated deadline elapsed.
+  - `REMOVED_BY_PORTAL`: Requisition 404/deleted from careers portal.
+  - `CANCELLED_OR_POSTPONED`: Explicit postponement notice.
+  - `UNKNOWN`: No verifiable source URL available.
+- **Provenance Attributes**: `lastVerifiedAt`, `evidence` (human-readable proof snippet), and `sourceUrl` on every card.
+- **Grace Period & Archive Pipeline**: Closed requisitions stay visible with a styled closed banner for a grace period of several hours before moving to the Archive view.
 
-## 1. Overview & Core Concept
+### 3. Prompt 64: Data Out of Code (Firestore Sources & Records)
+- **Firestore Schema Architecture**:
+  - `/sources/{sourceId}`: `name`, `officialUrls`, `category`, `country`, `parserType`, `createdAt`.
+  - `/records/{recordId}`: `sourceId`, `sourceUrl`, `status`, `curatedOn`, `lastVerifiedAt`, `evidence`, `title`, `organizer`, `category`, `country`, `verifiedFacts`.
+- **Security Hardening (`firestore.rules`)**:
+  - Writes to `/sources` and `/records` are strictly locked down to admin only (`kakhileshsingh310@gmail.com`).
+  - Public reads are permitted so students and candidates can query opportunities in real time.
+- **Data Migration & Array Removal**:
+  - 19 hackathons and 155 recurring annual internship cycles migrated into Firestore collections.
+  - Every record tagged `UNVERIFIED_CURATED` with `curatedOn` timestamp and official source URL (or `UNKNOWN` if lacking verifiable source).
+  - Hardcoded arrays removed from `hackathonsService.ts` and `upcomingInternshipsService.ts`.
+  - Only rules, schemas, models, and type definitions remain in code.
 
-### What It Does
-Empowers students and candidates to register and log in via their mobile phone number using one-time passwords (OTP). When telecom gateway credentials (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`) are present in the environment, the server transmits a real SMS over carrier networks (Airtel, Jio, Vi, AT&T, etc.). When operating in development or preview mode without active SMS credits, the system transparently switches to **Sandbox Mode**, securely returning a test OTP token to the UI so developers and testers can verify auth flows without friction.
+### 4. Prompt 65: Deterministic Parsers
+- Created `src/services/liveParsers.ts`:
+  - JSON-LD structured data extraction for `JobPosting` (`validThrough`) and `Event` (`startDate`, `endDate`, `eventStatus` handling `EventCancelled`, `EventPostponed`, `EventRescheduled`, `EventMovedOnline`) from allowlisted official pages.
+  - HTTP 404 / 410 response status codes and portal homepage redirect detection as strict closure signals (`REMOVED_BY_PORTAL`, `CLOSED_EARLY_BY_PORTAL`).
+  - ATS listing diffing against live Greenhouse and Lever endpoints.
+  - Zero date hallucination guarantee: fall back to grounded Official Page Watcher AI only if deterministic signals do not apply.
 
-### Target Audience & Persona
-- **Students & Job Seekers**: Want fast, hassle-free authentication using either Phone OTP, Email OTP, Password, or Google 1-Tap.
-- **Recruiters & Evaluators**: Reviewing the candidate portal without having to configure third-party SMS telephony credentials.
+### 5. Prompt 66: Autonomous Janch Scheduler
+- Endpoint `POST /api/janch/run` protected by `JANCH_SECRET` header from `.env`.
+- Priority-based batching (urgent deadlines within 7 days checked first).
+- Per-host rate limiting, jitter (100–500ms), exponential backoff, robots.txt inspection, and authentic User-Agent header (`TERRASYNX-JanchScheduler/1.0`).
+- Persistent caching of last check times in memory; Firestore writes occur strictly when status or deadline dates change.
+- User-triggered cache bust: `POST /api/janch/refresh-record` for stale opportunities.
+- External cron documentation added to `README.md` (Cloud Scheduler, GitHub Actions, crontab).
 
-### Key Value
-- **Zero Blocked Logins**: Eliminates the current dead-end where users see "SMS requested" but never receive an SMS.
-- **Production-Ready & Enterprise-Grade**: Direct gateway integration for real phone verification with rate-limiting, SHA-256 hash validation, and 10-minute expiry windows.
+### 6. Prompt 67: Tracked Opportunity Closure Alerts
+- Created `ClosureAlertService` (`src/services/closureAlertService.ts`):
+  - Detects transitions to `POSSIBLY_CLOSED`, `CLOSED_EARLY_BY_PORTAL`, `REMOVED_BY_PORTAL`, and `CANCELLED_OR_POSTPONED`.
+  - Determines tracked opportunities via explicit tracking (`isTracked`), RadarEngine tracking registry, active pipeline stages (`applied`, `assessment`, `interview`, `offer`), or `AppliedDossierService`.
+  - Generates Alert Relay messages (`type: 'closure_alert'`) explicitly specifying **what changed** (prior vs new status and root reason) and **when it was detected** (ISO/UTC timestamp and human relative time).
+  - Wired into `RadarEngine.updateOpportunityVerification`, `AtsClosureDetectionService`, and `JanchSchedulerService`.
+  - Added "Closure Alerts" filter tab and card badge styling in `AlertRelayView.tsx` with reading pane closure callout.
+  - 17 unit tests in `src/tests/closureAlerts.test.ts` (total 53 test suites, 383 unit tests passing).
 
----
+### 7. Prompt 68: Hackathon Intake & Verification Engine
+- **Intake Flow ("Submit a hackathon")**:
+  - Modal intake component `SubmitHackathonModal.tsx` allowing submission of `name`, `officialUrl`, and `organizer`.
+  - Submissions enter a persistent queue stored in local storage and Firestore collection `hackathon_submissions`.
+- **Live Verification Engine (`src/services/hackathonIntakeService.ts` & `/api/hackathons/verify-submission`)**:
+  - Allowlist verification: enforces approved domains (Devpost, MLH, Unstop, Hackerearth, Kaggle, Devfolio, Taikai, DoraHacks, Gitcoin, GitHub events) plus legitimate academic/government institutions (`.edu`, `.edu.*`, `.ac.in`, `.gov`, `.gov.*`).
+  - Strict SSRF protection: rejects URL shorteners (`bit.ly`, `tinyurl`, `t.co`, etc.) and private/loopback IP blocks.
+  - Deterministic date extraction: extracts JSON-LD Schema.org `Event` dates (`startDate`, `endDate`), standard meta tags, and verified textual expressions with ISO parsing and strict date validation. Zero hallucinated dates allowed.
+- **Display Integrity Rule**:
+  - Only submissions with status `VERIFIED` are visible in the Hackathons portal listings (`HackathonIntakeService.getVerifiedSubmissions()`). Submissions with `PENDING` or `REJECTED` are isolated to the submission review tab.
+- **Coverage Line on Hackathons Page**:
+  - Displayed prominently at top of Hackathons portal: `"Tracking N sources, last run <time>"` with a live pulsing indicator and active source count.
+  - Backed by `HackathonIntakeService.getCoverageInfo()` and `GET /api/hackathons/coverage`.
+- **Comprehensive Unit Testing**:
+  - 16 test cases in `src/tests/hackathonIntake.test.ts` verifying allowlist rejection/acceptance, date extraction, queue lifecycle, strict display filtering, and coverage line computation.
 
-## 2. User Experience & Visual Design
-
-### User Interaction Flow
-1. **Phone Input & Country Code**:
-   - User opens the Auth Modal, selects the **Phone OTP** tab.
-   - Enters mobile number (e.g., `+91 98765 43210`) with country code dropdown pre-selected to `+91 (India)`.
-2. **Dispatch State**:
-   - Clicks **"Send Verification Code"**.
-   - **Production (Gateway Active)**: UI displays an emerald status badge: `"SMS dispatched via carrier network to +91 98765 43210"`.
-   - **Development (Sandbox Active)**: UI displays a subtle slate/cyan helper pill:
-     `"Dev Sandbox Mode: Your test code is [ 491823 ] (Click to auto-fill)"`.
-3. **Verification**:
-   - User enters or clicks to auto-fill the 6-digit code.
-   - Verification succeeds, authenticating the candidate into their Student Dossier and unlocking applied tracking.
-
-### UI Styling & Anti-Slop Guidelines
-- **No Floating Generic Cards**: Seamlessly embedded inside the existing high-contrast slate/navy `AuthModal`.
-- **Status Indicators**:
-  - Live Carrier: Emerald check with carrier icon (`"SMS sent via carrier"`).
-  - Dev Sandbox: Sky/slate helper notice with copyable monospaced 6-digit code (`font-mono tracking-widest`).
-- **Cooldown & Rate-Limiting**: Honest 25-second countdown timer preventing telecom spam or network congestion.
-
----
-
-## 3. Key Product Decisions & Trade-Offs
-
-### Decision 1: Hybrid Architecture (Real Gateway + Dev Sandbox)
-- **Chosen Approach**: Server checks environment configuration dynamically. If Twilio/telecom credentials are valid, it executes real carrier dispatch. If absent or in dev, it returns `sandboxMode: true` and `previewOtp` in the response payload.
-- **Why**: Real SMS costs money and requires carrier registration (DLT registration in India, 10DLC in the US). A sandbox mode ensures the app remains 100% testable in AI Studio preview while remaining fully equipped for live production SMS.
-- **Alternatives Considered**: 
-  - *Real SMS Only*: Fails for anyone running the preview without Twilio billing.
-  - *Firebase Phone Auth with reCAPTCHA*: Requires configuring reCAPTCHA domain whitelisting and SMS quotas in Google Cloud Console.
-
-### Decision 2: Security & Production Guardrails
-- **Chosen Approach**: The `previewOtp` is strictly suppressed in production environments (`process.env.NODE_ENV === 'production'` or when gateway is active) to prevent security leaks.
-- **Why**: Keeps authentication tamper-proof and prevents unauthorized access in live deployments.
-
----
-
-## 4. Technical Architecture & Data Strategy
-
-### System Architecture Diagram
-
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        TERRASYNX Auth Client                           │
-│  (AuthModal.tsx • CountryCodeSelector.tsx • firebaseConfig.ts)         │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │
-                     POST /api/auth/otp/send
-                     { channel: "phone", destination: "+91..." }
-                                   │
-                                   ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                       Express Server (server.ts)                       │
-│  - Normalizes phone number to E.164 format                             │
-│  - Enforces 25-second cooldown and 5-attempt rate limit                │
-│  - Generates secure 6-digit OTP & stores SHA-256 hash (10m TTL)        │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │
-                  ┌────────────────┴────────────────┐
-                  │ Are TWILIO credentials present? │
-                  └────────────────┬────────────────┘
-                         YES       │       NO
-             ┌─────────────────────┘       └─────────────────────┐
-             ▼                                                   ▼
-┌───────────────────────────────┐               ┌───────────────────────────────┐
-│     Twilio SMS Gateway API    │               │       Dev Sandbox Engine      │
-│  - POST to Twilio Messages    │               │  - Logs OTP to console        │
-│  - Real SMS delivered to phone│               │  - Returns previewOtp in JSON │
-│  - dispatchedViaGateway: true │               │  - dispatchedViaGateway: false│
-└───────────────────────────────┘               └───────────────────────────────┘
-```
-
-### Data Model & Endpoint Schema
-- **POST `/api/auth/otp/send` Response**:
-  ```json
-  {
-    "success": true,
-    "channel": "phone",
-    "destination": "+919876543210",
-    "dispatchedViaRealGateway": false,
-    "sandboxMode": true,
-    "previewOtp": "839201",
-    "message": "Dev Sandbox Mode: Use code 839201 to verify"
-  }
-  ```
-- **POST `/api/auth/otp/verify`**:
-  - Compares SHA-256 hash of submitted OTP against active hashes in memory.
-  - Returns authenticated `AuthUserSession` (`uid`, `phoneNumber`, `token`, `verifiedAt`).
-
----
-
-## 5. Next Steps
-Once you approve this plan, we can proceed to implement:
-1. Server-side environment detection and sandbox payload response in `server.ts`.
-2. AuthModal UI helper for 1-click test code auto-fill during sandbox mode.
-3. `.env.example` documentation with Twilio and Firebase SMS credentials setup guide for production rollout.

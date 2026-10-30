@@ -3,12 +3,23 @@
  * Conforming strictly to SYSTEM_SPEC (Rules #1-#5, Req #1-#22)
  */
 
-import React, { useMemo } from 'react';
-import { Opportunity } from '../types';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Opportunity, OpportunityVerificationModel } from '../types';
 import { CompanyLogo } from './CompanyLogo';
 import { LinkHealthBadge } from './LinkHealthBadge';
 import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { AppliedDossierService } from '../services/appliedDossierService';
+import { formatDualDeadline } from '../utils/timeService';
+import { 
+  resolveVerificationStatus, 
+  getStatusBadgeConfig, 
+  formatTimeAgo, 
+  getFreshnessWindowMs, 
+  isClosedStatus, 
+  isWithinGracePeriod, 
+  getGracePeriodRemainingMs, 
+  formatGracePeriodRemaining 
+} from '../services/verificationStatusService';
 import { 
   X, 
   ShieldCheck, 
@@ -31,7 +42,8 @@ import {
   Target,
   FileEdit,
   Mail,
-  Compass
+  Compass,
+  RefreshCw
 } from 'lucide-react';
 
 interface OpportunityDetailModalProps {
@@ -91,7 +103,48 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
     );
   }, [opportunity, allOpportunities]);
 
+  const [refreshedModel, setRefreshedModel] = useState<OpportunityVerificationModel | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
   const appliedRecord = isApplied ? AppliedDossierService.getRecordByOpportunityId(opportunity.id) : undefined;
+  const dualDeadline = useMemo(() => formatDualDeadline(opportunity.deadlineAt), [opportunity.deadlineAt]);
+  const baseVerificationModel = useMemo(() => resolveVerificationStatus(opportunity), [opportunity]);
+
+  // Prompt 66: The app must also refresh a stale record when a user opens it
+  useEffect(() => {
+    setRefreshedModel(null);
+    if (!opportunity) return;
+
+    const sourceType = opportunity.verification?.sourceType || 'direct_careers_domain';
+    const freshnessWindow = getFreshnessWindowMs(sourceType);
+    const isStale = (Date.now() - baseVerificationModel.lastVerifiedAt) > freshnessWindow;
+
+    if (isStale && opportunity.id) {
+      setIsRefreshing(true);
+      fetch('/api/janch/refresh-record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recordId: opportunity.id, force: true }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data?.result?.status) {
+            setRefreshedModel({
+              status: data.result.status,
+              lastVerifiedAt: data.result.lastCheckedAt || Date.now(),
+              evidence: data.result.evidence || baseVerificationModel.evidence,
+              sourceUrl: data.result.sourceUrl || baseVerificationModel.sourceUrl,
+            });
+          }
+        })
+        .catch(() => {})
+        .finally(() => setIsRefreshing(false));
+    }
+  }, [opportunity?.id]);
+
+  const verificationModel = refreshedModel || baseVerificationModel;
+  const statusBadge = getStatusBadgeConfig(verificationModel.status);
+  const timeAgoStr = formatTimeAgo(verificationModel.lastVerifiedAt);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in duration-200">
@@ -125,10 +178,20 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h2 className="text-lg font-bold text-slate-100">{opportunity.companyName}</h2>
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-500/40 backdrop-blur-sm">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Verified ATS: {opportunity.verification.sourceType.toUpperCase()}</span>
+              <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-bold border backdrop-blur-sm ${statusBadge.badgeClass}`}>
+                <span>{statusBadge.label}</span>
               </div>
+              {isRefreshing ? (
+                <div className="inline-flex items-center gap-1 text-[11px] font-mono text-cyan-400 animate-pulse">
+                  <RefreshCw className="w-3 h-3 animate-spin text-cyan-400" />
+                  <span>Refreshing verification...</span>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-400">
+                  <Clock className="w-3 h-3 text-slate-500" />
+                  <span>Last verified: {timeAgoStr}</span>
+                </div>
+              )}
               <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.06] text-cyan-200 border border-white/15 backdrop-blur-sm">
                 <span>✨ Aar-Paar Crystal View</span>
               </div>
@@ -332,6 +395,67 @@ export const OpportunityDetailModal: React.FC<OpportunityDetailModalProps> = ({
             <span className="font-bold text-cyan-300 text-sm mt-1">
               {opportunity.fitment.overallScore}% ({opportunity.fitment.overallGrade})
             </span>
+          </div>
+        </div>
+
+        {/* Prompt 62: Dual-Timezone Application Deadline Panel */}
+        {opportunity.deadlineAt && (
+          <div className="mt-4 p-4 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 flex items-center justify-between flex-wrap gap-3 text-xs font-mono shadow-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-cyan-950/60 border border-cyan-500/30 text-cyan-300">
+                <Clock className="w-4 h-4 text-cyan-400" />
+              </div>
+              <div>
+                <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider block">Official Application Deadline</span>
+                <div className="flex items-center gap-2 flex-wrap text-slate-200 mt-0.5">
+                  <span className="font-bold text-white">Official: {dualDeadline.officialText}</span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-300">Local: {dualDeadline.localText}</span>
+                </div>
+              </div>
+            </div>
+            <div className={`px-3 py-1 rounded-xl text-xs font-bold font-mono border ${
+              dualDeadline.isUrgent 
+                ? 'bg-rose-950/60 text-rose-300 border-rose-500/40 animate-pulse' 
+                : 'bg-cyan-950/60 text-cyan-300 border-cyan-500/30'
+            }`}>
+              {dualDeadline.timeLeftStr}
+            </div>
+          </div>
+        )}
+
+        {/* Prompt 63: Verification Evidence & Freshness SLA Dossier */}
+        <div className="mt-4 p-4 rounded-2xl bg-white/[0.035] backdrop-blur-xl border border-white/10 flex flex-col gap-2.5 text-xs font-mono shadow-sm">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span className="font-bold text-slate-200">Verification Model & Evidence</span>
+            </div>
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${statusBadge.badgeClass}`}>
+              {statusBadge.label}
+            </span>
+          </div>
+
+          <p className="text-[11.5px] text-slate-300 leading-relaxed bg-black/30 p-2.5 rounded-xl border border-white/[0.06]">
+            {verificationModel.evidence}
+          </p>
+
+          <div className="flex items-center justify-between flex-wrap gap-2 text-[10.5px] text-slate-400 pt-1">
+            <div className="truncate max-w-md">
+              <span className="text-slate-500">Source: </span>
+              <a 
+                href={verificationModel.sourceUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-cyan-400 hover:text-cyan-300 underline font-normal truncate"
+              >
+                {verificationModel.sourceUrl}
+              </a>
+            </div>
+            <div>
+              <span className="text-slate-500">Freshness Window: </span>
+              <strong className="text-slate-200">{Math.round(getFreshnessWindowMs(opportunity.verification?.sourceType) / 3600000)}h SLA</strong>
+            </div>
           </div>
         </div>
 

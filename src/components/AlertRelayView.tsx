@@ -13,6 +13,7 @@ import { DailyDigestStudio } from './DailyDigestStudio';
 import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { FollowUpCadenceService } from '../services/followUpCadenceService';
 import { EmailDraftType } from '../services/emailDraftService';
+import { ClosureAlertService } from '../services/closureAlertService';
 import { 
   BellRing, 
   Mail, 
@@ -60,7 +61,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'inbox' | 'inbound_webhooks' | 'daily_digest'>('inbox');
   const [selectedEmailId, setSelectedEmailId] = useState<string>(simulatedEmails[0]?.id || '');
-  const [activeTierFilter, setActiveTierFilter] = useState<'all' | 'gold' | 'slate' | 'neon' | 'royal' | 'followup'>('all');
+  const [activeTierFilter, setActiveTierFilter] = useState<'all' | 'closure' | 'gold' | 'slate' | 'neon' | 'royal' | 'followup'>('all');
   const [sendSuccessToast, setSendSuccessToast] = useState<string | null>(null);
 
   // Dynamic 7-day Follow-Up Cadence alerts (Prompt 21)
@@ -85,11 +86,37 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
   // Filtered emails
   const filteredEmails = combinedEmails.filter(email => {
     if (activeTierFilter === 'all') return true;
+    if (activeTierFilter === 'closure') return email.type === 'closure_alert';
     if (activeTierFilter === 'followup') return email.type === 'followup_reminder';
     return email.tier === activeTierFilter;
   });
 
+  const closureAlertCount = combinedEmails.filter(e => e.type === 'closure_alert').length;
+
   const selectedEmail = combinedEmails.find(e => e.id === selectedEmailId) || combinedEmails[0];
+
+  // Prompt 67: Manual Trigger for a live closure alert simulation on a tracked opportunity
+  const handleTriggerTestClosureAlert = () => {
+    const opp = opportunities[0];
+    if (!opp) return;
+
+    // Track the opportunity so the invariant passes
+    RadarEngine.trackOpportunity(opp.id, true);
+
+    const res = ClosureAlertService.dispatchClosureAlertIfTracked({
+      opportunity: opp,
+      previousStatus: opp.verificationStatusModel?.status || 'OPEN_VERIFIED',
+      newStatus: 'CLOSED_EARLY_BY_PORTAL',
+      evidence: 'Portal redirect to homepage detected: /careers instead of active requisition page.',
+      detectedAt: Date.now(),
+    });
+
+    if (res.alert) {
+      setSelectedEmailId(res.alert.id);
+      setSendSuccessToast(`[Prompt 67] Closure Alert Dispatched: CLOSED_EARLY_BY_PORTAL`);
+      setTimeout(() => setSendSuccessToast(null), 4000);
+    }
+  };
 
   // Manual Trigger for a live flash alert simulation (Req #5)
   const handleTriggerTestFlash = (tier: 'gold' | 'slate' | 'neon' | 'royal') => {
@@ -343,6 +370,15 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               <span>Simulate OA Alert</span>
             </button>
+
+            <button
+              onClick={handleTriggerTestClosureAlert}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800 font-semibold transition-colors cursor-pointer shadow-sm"
+              title="Test Prompt 67: Trigger closure alert for tracked opportunity"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+              <span>Simulate Closure Alert</span>
+            </button>
           </div>
         </div>
 
@@ -469,6 +505,12 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                 All
               </button>
               <button
+                onClick={() => setActiveTierFilter('closure')}
+                className={`px-2 py-0.5 rounded ${activeTierFilter === 'closure' ? 'bg-rose-500 text-white font-bold' : 'text-rose-400/80 hover:text-rose-300'}`}
+              >
+                Closure ({closureAlertCount})
+              </button>
+              <button
                 onClick={() => setActiveTierFilter('followup')}
                 className={`px-2 py-0.5 rounded ${activeTierFilter === 'followup' ? 'bg-amber-400 text-slate-950 font-bold' : 'text-amber-400/80 hover:text-amber-300'}`}
               >
@@ -498,8 +540,10 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
             ) : (
               filteredEmails.map(email => {
                 const isSelected = email.id === selectedEmailId;
+                const isClosure = email.type === 'closure_alert';
                 const isFollowUp = email.type === 'followup_reminder';
                 const tierBadge = 
+                  isClosure ? 'bg-rose-950 text-rose-300 border-rose-800 animate-pulse' :
                   isFollowUp ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse' :
                   email.tier === 'gold' ? 'bg-amber-950 text-amber-300 border-amber-800' :
                   email.tier === 'neon' ? 'bg-cyan-950 text-cyan-300 border-cyan-800' :
@@ -513,6 +557,8 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                     className={`p-3 rounded-xl border transition-all cursor-pointer ${
                       isSelected
                         ? 'border-purple-500 bg-purple-950/30'
+                        : isClosure
+                        ? 'border-rose-900/60 bg-rose-950/20 hover:border-rose-700'
                         : isFollowUp
                         ? 'border-amber-900/50 bg-amber-950/20 hover:border-amber-700'
                         : 'border-slate-800/80 bg-slate-950/60 hover:border-slate-700'
@@ -520,7 +566,7 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                   >
                     <div className="flex items-center justify-between gap-1 mb-1">
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase font-bold border ${tierBadge}`}>
-                        {isFollowUp ? '⏰ FOLLOW-UP (7D)' : `${email.tier.toUpperCase()} TIER`}
+                        {isClosure ? '⚠️ CLOSURE ALERT' : isFollowUp ? '⏰ FOLLOW-UP (7D)' : `${email.tier.toUpperCase()} TIER`}
                       </span>
                       <span className="text-[10px] text-slate-500 font-mono">
                         {new Date(email.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -595,6 +641,61 @@ export const AlertRelayView: React.FC<AlertRelayViewProps> = ({
                     <div className="font-bold text-slate-100 text-sm">{selectedEmail.companyName} — {selectedEmail.jobTitle}</div>
                   </div>
                 </div>
+
+                {/* Prompt 67: Automated Requisition Closure Alert Callout */}
+                {(selectedEmail.type === 'closure_alert' || selectedEmail.closureDetails) && (
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-rose-950/40 via-slate-950 to-amber-950/20 border border-rose-800/80 shadow-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-rose-900/60 border border-rose-600 flex items-center justify-center text-rose-400">
+                          <AlertTriangle className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <span className="text-[10px] uppercase font-mono font-bold tracking-wider text-rose-400 block">
+                            Requisition Closure Event Detected
+                          </span>
+                          <span className="text-sm font-bold text-rose-200">
+                            {(selectedEmail.closureDetails?.newStatus || 'CLOSED').replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-700">
+                        CLOSURE RELAY
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 border-t border-rose-900/40 text-[11px] font-mono">
+                      <div className="p-2.5 rounded-lg bg-slate-950/70 border border-rose-900/50">
+                        <span className="text-rose-400 block text-[10px] uppercase font-bold mb-1">
+                          What Changed:
+                        </span>
+                        <span className="text-slate-200 font-sans text-xs">
+                          {selectedEmail.closureDetails?.whatChanged || 'Status transitioned to closed/removed on official employer portal.'}
+                        </span>
+                      </div>
+
+                      <div className="p-2.5 rounded-lg bg-slate-950/70 border border-rose-900/50">
+                        <span className="text-amber-400 block text-[10px] uppercase font-bold mb-1">
+                          When Detected:
+                        </span>
+                        <span className="text-slate-200 font-sans text-xs">
+                          {selectedEmail.closureDetails?.detectedAtFormatted || new Date(selectedEmail.timestamp).toUTCString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedEmail.closureDetails?.evidence && (
+                      <div className="p-2.5 rounded-lg bg-slate-950/70 border border-rose-900/50 text-[11px] font-mono">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold mb-0.5">
+                          Verification Evidence & Audit Trail:
+                        </span>
+                        <span className="text-slate-300 font-mono text-[10px] break-all">
+                          {selectedEmail.closureDetails.evidence}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {selectedEmail.actionAdvisorPoints && selectedEmail.actionAdvisorPoints.length > 0 && (
                   <div className="space-y-2">

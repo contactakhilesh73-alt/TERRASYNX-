@@ -51,6 +51,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Mode: Sign Up (Registration) vs Sign In (Existing Candidate)
   const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup');
   const [activeTab, setActiveTab] = useState<'password' | 'email' | 'phone' | 'google'>('password');
+  // SMS OTP tab visibility: hidden from screen buttons for now as requested, full code remains intact internally
+  const SHOW_PHONE_SMS_TAB = false;
   
   // Registration fields
   const [fullName, setFullName] = useState('');
@@ -431,22 +433,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <Mail className="w-3 h-3" />
                 <span>Email OTP</span>
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('phone');
-                  setErrorMessage(null);
-                  setSuccessMessage(null);
-                }}
-                className={`flex-1 py-2 px-2 text-center flex items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer shrink-0 ${
-                  activeTab === 'phone'
-                    ? 'border-cyan-400 text-cyan-400 font-semibold'
-                    : 'border-transparent text-slate-400 hover:text-slate-300'
-                }`}
-              >
-                <Phone className="w-3 h-3" />
-                <span>SMS OTP</span>
-              </button>
+              {SHOW_PHONE_SMS_TAB && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('phone');
+                    setErrorMessage(null);
+                    setSuccessMessage(null);
+                  }}
+                  className={`flex-1 py-2 px-2 text-center flex items-center justify-center gap-1 border-b-2 transition-colors cursor-pointer shrink-0 ${
+                    activeTab === 'phone'
+                      ? 'border-cyan-400 text-cyan-400 font-semibold'
+                      : 'border-transparent text-slate-400 hover:text-slate-300'
+                  }`}
+                >
+                  <Phone className="w-3 h-3" />
+                  <span>SMS OTP</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => {

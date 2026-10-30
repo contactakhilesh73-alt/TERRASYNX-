@@ -34,16 +34,35 @@ import { StudentProfile, AuthUserSession } from './types';
 // Export ConfirmationResult type for UI consumers
 export type { ConfirmationResult };
 
-// Public Firebase Client configuration (dynamically populated from VITE_FIREBASE_* env vars)
+// Safe environment variable retriever for both Vite browser and Node.js server runtimes
+function getSafeEnv(key: string, defaultValue: string): string {
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key]!;
+    }
+  } catch {
+    // Ignore
+  }
+  try {
+    if (typeof import.meta !== 'undefined' && (import.meta as any)?.env && (import.meta as any).env[key]) {
+      return (import.meta as any).env[key];
+    }
+  } catch {
+    // Ignore
+  }
+  return defaultValue;
+}
+
+// Public Firebase Client configuration (dynamically populated from VITE_FIREBASE_* env vars with applet fallbacks)
 export const firebaseConfig = {
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "terrasynx-9d99f",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:159428697286:web:02dcaa8e57e677acf7cbc7",
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBELVmC49SJTI_2fCPhjZqDLg0FrwllZxo",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "terrasynx-9d99f.firebaseapp.com",
-  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "terrasynx-9d99f.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "159428697286",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-JZHBR6NX0X",
+  projectId: getSafeEnv("VITE_FIREBASE_PROJECT_ID", "sincere-planet-zjk7s"),
+  appId: getSafeEnv("VITE_FIREBASE_APP_ID", "1:824121224635:web:932244f2d874c7e726689e"),
+  apiKey: getSafeEnv("VITE_FIREBASE_API_KEY", "AIzaSyDEJKRl7Zhp61uWzJlOf32_ddCO1RNDI0o"),
+  authDomain: getSafeEnv("VITE_FIREBASE_AUTH_DOMAIN", "sincere-planet-zjk7s.firebaseapp.com"),
+  firestoreDatabaseId: getSafeEnv("VITE_FIREBASE_FIRESTORE_DATABASE_ID", "ai-studio-627a627c-3bc4-4c9b-af1a-32547bc62dcf"),
+  storageBucket: getSafeEnv("VITE_FIREBASE_STORAGE_BUCKET", "sincere-planet-zjk7s.firebasestorage.app"),
+  messagingSenderId: getSafeEnv("VITE_FIREBASE_MESSAGING_SENDER_ID", "824121224635"),
+  measurementId: getSafeEnv("VITE_FIREBASE_MEASUREMENT_ID", ""),
   oAuthClientId: "824121224635-5q8g6ermqppeqovgp099i2hrqodl42hd.apps.googleusercontent.com",
 };
 

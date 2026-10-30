@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { Opportunity, OperationalMode, ApplicationStage, StudentProfile, AuthUserSession } from './types';
 import { RadarEngine } from './services/radarEngine';
 import { Header } from './components/Header';
+import { DateTimeStatusBar } from './components/DateTimeStatusBar';
 import { RadarView } from './components/RadarView';
 import { KanbanPipeline } from './components/KanbanPipeline';
 import { OpportunityDetailModal } from './components/OpportunityDetailModal';
@@ -513,6 +514,13 @@ export default function App() {
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onSignInWithGoogle={handleGoogleSignIn}
         onSignOut={handleSignOut}
+      />
+
+      {/* Prompt 62: Server-Synchronized DateTimeStatusBar shown under the header on every page after login */}
+      <DateTimeStatusBar
+        currentUser={currentUser}
+        activeOpportunitiesCount={opportunities.length}
+        urgentDeadlinesCount={urgentCount}
       />
 
       {/* Main Tactical Workstation Container */}

@@ -3,13 +3,19 @@
  * Conforming strictly to SYSTEM_SPEC (Rules #1-#5, Req #1-#22)
  */
 
-import { Opportunity, StudentProfile, AlertEmailSimulation, ApplicationStage } from '../types';
+import { Opportunity, StudentProfile, AlertEmailSimulation, ApplicationStage, OpportunityVerificationStatus } from '../types';
 import { VerificationEngine } from './verificationEngine';
 import { FitmentRecalculator } from './fitmentRecalculator';
 import { AtsLiveService } from './atsLiveService';
 import { AtsClosureDetectionService } from './atsClosureDetectionService';
 import { logger } from '../utils/logger';
 import { sanitizeOpportunityUrls, resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
+import { 
+  resolveVerificationStatus, 
+  isClosedStatus, 
+  CLOSED_GRACE_PERIOD_MS 
+} from './verificationStatusService';
+import { ClosureAlertService } from './closureAlertService';
 
 const STORAGE_KEYS = {
   OPPORTUNITIES: 'terrasynx_opportunities_v1',
@@ -17,6 +23,7 @@ const STORAGE_KEYS = {
   MUTED_ALERTS: 'terrasynx_muted_alerts_v1',
   SIMULATED_EMAILS: 'terrasynx_sent_emails_v1',
   ARCHIVED_IDS: 'terrasynx_archived_jobs_v1',
+  TRACKED_OPPS: 'terrasynx_tracked_opps_v1',
 };
 
 // Default Initial Student Profile (General, non-hardcoded template)
@@ -252,10 +259,21 @@ export class RadarEngine {
     let modified = false;
 
     this.opportunities = this.opportunities.map(opp => {
-      // If deadline has passed and job is still in 'discovered', mark as archived
-      if (opp.deadlineAt <= currentEpoch && opp.stage === 'discovered') {
-        modified = true;
-        return { ...opp, stage: 'archived' };
+      // Prompt 63: Status model & Grace Period Archiving
+      // Closed items stay visible with a Closed bar for a grace period of several hours (6h), then move to archive.
+      const statusModel = resolveVerificationStatus(opp, currentEpoch);
+      
+      if (isClosedStatus(statusModel.status)) {
+        if (!opp.closedAt) {
+          opp = { ...opp, closedAt: statusModel.closedAt || currentEpoch };
+          modified = true;
+        }
+
+        const elapsedSinceClosed = currentEpoch - (opp.closedAt || currentEpoch);
+        if (elapsedSinceClosed > CLOSED_GRACE_PERIOD_MS && opp.stage === 'discovered') {
+          modified = true;
+          return { ...opp, stage: 'archived', isArchived: true };
+        }
       }
       return opp;
     });
@@ -306,6 +324,9 @@ export class RadarEngine {
     if (!opp) return;
 
     opp.stage = nextStage;
+    if (nextStage !== 'archived') {
+      this.trackOpportunity(jobId, true);
+    }
     if (nextStage === 'applied') {
       opp.appliedAt = Date.now();
       // Auto set 7-day follow-up reminder (Req #3)
@@ -404,6 +425,99 @@ export class RadarEngine {
     } catch {
       return [];
     }
+  }
+
+  // Prompt 67: Add alert to Alert Relay storage
+  public static addAlertEmail(email: AlertEmailSimulation): void {
+    const existing = this.getSimulatedEmails();
+    if (!existing.some(e => e.id === email.id)) {
+      existing.unshift(email);
+      if (typeof localStorage !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEYS.SIMULATED_EMAILS, JSON.stringify(existing.slice(0, 50)));
+        } catch {}
+      }
+      this.notify();
+    }
+  }
+
+  // Prompt 67: User opportunity tracking management
+  public static trackOpportunity(jobId: string, isTracked: boolean = true): void {
+    if (!jobId) return;
+    const list = this.getTrackedOpportunityIds();
+    const set = new Set(list);
+    if (isTracked) {
+      set.add(jobId);
+    } else {
+      set.delete(jobId);
+    }
+    const updated = Array.from(set);
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEYS.TRACKED_OPPS, JSON.stringify(updated));
+      } catch {}
+    }
+    const opp = this.opportunities.find(o => o.id === jobId);
+    if (opp) {
+      opp.isTracked = isTracked;
+    }
+    this.notify();
+  }
+
+  public static isTracked(jobId: string): boolean {
+    if (!jobId) return false;
+    const opp = this.opportunities.find(o => o.id === jobId);
+    if (opp?.isTracked) return true;
+    return this.getTrackedOpportunityIds().includes(jobId);
+  }
+
+  public static getTrackedOpportunityIds(): string[] {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.TRACKED_OPPS);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Prompt 67: Update verification status on an opportunity and notify if closure status detected
+  public static updateOpportunityVerification(
+    jobId: string,
+    newStatus: OpportunityVerificationStatus,
+    evidence?: string,
+    detectedAt: number = Date.now()
+  ): void {
+    const opp = this.opportunities.find(o => o.id === jobId);
+    if (!opp) return;
+
+    const previousStatus = opp.verificationStatusModel?.status || opp.closureStatus || 'OPEN_VERIFIED';
+
+    opp.verificationStatusModel = {
+      status: newStatus,
+      lastVerifiedAt: detectedAt,
+      evidence: evidence || `Status verified as ${newStatus}`,
+      sourceUrl: opp.officialApplyUrl,
+      closedAt: isClosedStatus(newStatus) ? (opp.closedAt || detectedAt) : undefined,
+    };
+
+    if (newStatus === 'POSSIBLY_CLOSED') {
+      opp.possiblyClosed = true;
+      opp.closureStatus = 'POSSIBLY_CLOSED';
+    }
+
+    // Prompt 67: When a tracked opportunity changes to POSSIBLY_CLOSED, CLOSED_EARLY_BY_PORTAL,
+    // REMOVED_BY_PORTAL or CANCELLED_OR_POSTPONED, add an Alert Relay message for users tracking it.
+    ClosureAlertService.dispatchClosureAlertIfTracked({
+      opportunity: opp,
+      previousStatus,
+      newStatus,
+      evidence,
+      detectedAt,
+    });
+
+    this.persistOpportunities();
+    this.notify();
   }
 
   // Student Profile Management (Req #18)

@@ -2,6 +2,31 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Prompt 64: Admin authentication helper
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == 'kakhileshsingh310@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Prompt 64: Sources collection (name, officialUrls, category, country, parserType)
+    // Public read; Writes strictly admin-only.
+    match /sources/{sourceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Prompt 64 & Prompt 66: Records collection (verified facts, evidence, lastVerifiedAt, status, curatedOn, sourceUrl)
+    // Public read; Writes allowed for admin or verification updates from Janch crawler.
+    match /records/{recordId} {
+      allow read: if true;
+      allow write: if isAdmin() || (
+        resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'lastVerifiedAt', 'evidence', 'verifiedFacts'])
+      );
+    }
+
+    // Student Private Dossier & Verified Profiles (User-isolated)
     match /students/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
 
@@ -12,6 +37,13 @@ service cloud.firestore {
       match /applications/{applicationId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+    }
+
+    // Prompt 68: Hackathon Intake Submissions Queue
+    match /hackathon_submissions/{submissionId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'officialUrl', 'organizer', 'submittedAt']);
+      allow update, delete: if isAdmin();
     }
   }
 }

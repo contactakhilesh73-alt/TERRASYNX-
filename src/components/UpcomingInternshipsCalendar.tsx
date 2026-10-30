@@ -1647,6 +1647,24 @@ export const UpcomingInternshipsCalendar: React.FC<UpcomingInternshipsCalendarPr
                               <span>{getCountryFlag(cycle.country)} {cycle.country}</span>
                             </span>
                           )}
+
+                          {/* Prompt 64: Curated Verification Status Tag */}
+                          {cycle.officialCareersUrl && cycle.officialCareersUrl.trim().length > 0 ? (
+                            <span 
+                              className="text-[9px] font-mono font-bold text-amber-300 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/40 flex items-center gap-1"
+                              title={`Status: UNVERIFIED_CURATED • Source: ${cycle.officialCareersUrl}`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                              <span>UNVERIFIED_CURATED</span>
+                            </span>
+                          ) : (
+                            <span 
+                              className="text-[9px] font-mono font-bold text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-slate-700"
+                              title="No verifiable official source found; marked UNKNOWN."
+                            >
+                              <span>UNKNOWN</span>
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs text-indigo-400 font-mono font-semibold block mt-0.5">
                           {cycle.programTitle}

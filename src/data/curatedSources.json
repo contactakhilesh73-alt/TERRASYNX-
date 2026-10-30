@@ -1,0 +1,1685 @@
+[
+  {
+    "id": "src_hackathon_nasa",
+    "name": "NASA",
+    "officialUrls": [
+      "https://www.spaceappschallenge.org"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_colosseum___solana_foundation",
+    "name": "Colosseum & Solana Foundation",
+    "officialUrls": [
+      "https://www.colosseum.org"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_cal_hacks__uc_berkeley_",
+    "name": "Cal Hacks (UC Berkeley)",
+    "officialUrls": [
+      "https://calhacks.io"
+    ],
+    "category": "hackathon",
+    "country": "United States",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_university_of_pennsylvania",
+    "name": "University of Pennsylvania",
+    "officialUrls": [
+      "https://pennapps.com"
+    ],
+    "category": "hackathon",
+    "country": "United States",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_ethglobal",
+    "name": "ETHGlobal",
+    "officialUrls": [
+      "https://ethglobal.com/events"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_google_developer_groups__gdg_",
+    "name": "Google Developer Groups (GDG)",
+    "officialUrls": [
+      "https://developers.google.com/community/gdsc-solution-challenge"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_mit_techx",
+    "name": "MIT TechX",
+    "officialUrls": [
+      "https://hackmit.org"
+    ],
+    "category": "hackathon",
+    "country": "United States",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_university_of_waterloo___techvibes",
+    "name": "University of Waterloo & Techvibes",
+    "officialUrls": [
+      "https://hackthenorth.com"
+    ],
+    "category": "hackathon",
+    "country": "Canada",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_stanford_university",
+    "name": "Stanford University",
+    "officialUrls": [
+      "https://treehacks.com"
+    ],
+    "category": "hackathon",
+    "country": "United States",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_junction",
+    "name": "Junction",
+    "officialUrls": [
+      "https://hackjunction.com"
+    ],
+    "category": "hackathon",
+    "country": "Finland",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_microsoft",
+    "name": "Microsoft",
+    "officialUrls": [
+      "https://imaginecup.microsoft.com"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_major_league_hacking",
+    "name": "Major League Hacking",
+    "officialUrls": [
+      "https://ghw.mlh.com"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_ministry_of_education___aicte",
+    "name": "Ministry of Education & AICTE",
+    "officialUrls": [
+      "https://sih.gov.in"
+    ],
+    "category": "hackathon",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_chainlink",
+    "name": "Chainlink",
+    "officialUrls": [
+      "https://chain.link/hackathon"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_google___devpost",
+    "name": "Google & Devpost",
+    "officialUrls": [
+      "https://devpost.com"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_tata_consultancy_services__tcs_",
+    "name": "Tata Consultancy Services (TCS)",
+    "officialUrls": [
+      "https://codevita.tcsapps.com"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_hackathon_meta",
+    "name": "Meta",
+    "officialUrls": [
+      "https://www.facebook.com/codingcompetitions/hacker-cup"
+    ],
+    "category": "hackathon",
+    "country": "Online/Global",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_harvard_university",
+    "name": "Harvard University",
+    "officialUrls": [
+      "https://college.harvard.edu/financial-aid"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_massachusetts_institute_of_technology__m",
+    "name": "Massachusetts Institute of Technology (MIT)",
+    "officialUrls": [
+      "https://sfs.mit.edu/undergraduate-students/types-of-aid/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_princeton_university",
+    "name": "Princeton University",
+    "officialUrls": [
+      "https://admission.princeton.edu/cost-aid"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_yale_university",
+    "name": "Yale University",
+    "officialUrls": [
+      "https://finaid.yale.edu/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_amherst_college",
+    "name": "Amherst College",
+    "officialUrls": [
+      "https://www.amherst.edu/admission/financial_aid"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_dartmouth_college",
+    "name": "Dartmouth College",
+    "officialUrls": [
+      "https://admissions.dartmouth.edu"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_bowdoin_college",
+    "name": "Bowdoin College",
+    "officialUrls": [
+      "https://www.bowdoin.edu/student-aid/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_brown_university",
+    "name": "Brown University",
+    "officialUrls": [
+      "https://finaid.brown.edu/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_university_of_notre_dame",
+    "name": "University of Notre Dame",
+    "officialUrls": [
+      "https://financialaid.nd.edu/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_washington_and_lee_university",
+    "name": "Washington and Lee University",
+    "officialUrls": [
+      "https://www.wlu.edu"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_cornell_university__tata_trust_",
+    "name": "Cornell University (Tata Trust)",
+    "officialUrls": [
+      "https://admissions.cornell.edu"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_university_of_toronto",
+    "name": "University of Toronto",
+    "officialUrls": [
+      "https://future.utoronto.ca/pearson/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "Canada",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_duke_university",
+    "name": "Duke University",
+    "officialUrls": [
+      "https://ousf.duke.edu"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_the_jardine_foundation__oxford___cambrid",
+    "name": "The Jardine Foundation (Oxford & Cambridge)",
+    "officialUrls": [
+      "https://www.jardine-foundation.org"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "UK",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_government_of_india__msje___mota_",
+    "name": "Government of India (MSJE / MoTA)",
+    "officialUrls": [
+      "https://nosmsje.gov.in/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_government_of_jharkhand",
+    "name": "Government of Jharkhand",
+    "officialUrls": [
+      "https://maranggomke.jharkhand.gov.in/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "UK",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_government_of_maharashtra__sjsa_",
+    "name": "Government of Maharashtra (SJSA)",
+    "officialUrls": [
+      "https://sjsa.maharashtra.gov.in/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_government_of_andhra_pradesh___telangana",
+    "name": "Government of Andhra Pradesh & Telangana",
+    "officialUrls": [
+      "https://telanganaepass.cgg.gov.in/"
+    ],
+    "category": "pre_university_full_ride",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_google",
+    "name": "Google",
+    "officialUrls": [
+      "https://careers.google.com/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_microsoft",
+    "name": "Microsoft",
+    "officialUrls": [
+      "https://careers.microsoft.com/students/us/en"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_amazon",
+    "name": "Amazon",
+    "officialUrls": [
+      "https://www.amazon.jobs"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_uber",
+    "name": "Uber",
+    "officialUrls": [
+      "https://uber.com/careers/university"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_goldman_sachs",
+    "name": "Goldman Sachs",
+    "officialUrls": [
+      "https://goldmansachs.com/careers/students/programs"
+    ],
+    "category": "quant_hft",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_meta",
+    "name": "Meta",
+    "officialUrls": [
+      "https://www.metacareers.com"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_apple",
+    "name": "Apple",
+    "officialUrls": [
+      "https://apple.com/jobs/us/students.html"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_salesforce",
+    "name": "Salesforce",
+    "officialUrls": [
+      "https://salesforce.com/company/careers/university-recruiting"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_adobe",
+    "name": "Adobe",
+    "officialUrls": [
+      "https://adobe.com/careers/university.html"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_cisco",
+    "name": "Cisco",
+    "officialUrls": [
+      "https://www.cisco.com/c/en/us/about/careers.html"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_netflix",
+    "name": "Netflix",
+    "officialUrls": [
+      "https://jobs.netflix.com"
+    ],
+    "category": "tech_giant",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_nvidia",
+    "name": "Nvidia",
+    "officialUrls": [
+      "https://nvidia.com/en-us/about-nvidia/careers/university-recruiting"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_oracle",
+    "name": "Oracle",
+    "officialUrls": [
+      "https://oracle.com/corporate/careers/students-grads"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_ibm",
+    "name": "IBM",
+    "officialUrls": [
+      "https://ibm.com/careers/entry-level"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_sap",
+    "name": "SAP",
+    "officialUrls": [
+      "https://jobs.sap.com/content/Students-and-Graduates"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_intel",
+    "name": "Intel",
+    "officialUrls": [
+      "https://jobs.intel.com/en/students"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_stripe",
+    "name": "Stripe",
+    "officialUrls": [
+      "https://stripe.com/jobs/university"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_openai",
+    "name": "OpenAI",
+    "officialUrls": [
+      "https://openai.com/careers"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_anthropic",
+    "name": "Anthropic",
+    "officialUrls": [
+      "https://anthropic.com/careers"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_databricks",
+    "name": "Databricks",
+    "officialUrls": [
+      "https://www.databricks.com/company/careers"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_snowflake",
+    "name": "Snowflake",
+    "officialUrls": [
+      "https://careers.snowflake.com"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_palantir_technologies",
+    "name": "Palantir Technologies",
+    "officialUrls": [
+      "https://palantir.com/careers/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_jane_street",
+    "name": "Jane Street",
+    "officialUrls": [
+      "https://www.janestreet.com/join-jane-street/"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_citadel",
+    "name": "Citadel",
+    "officialUrls": [
+      "https://citadel.com/careers/students"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_d__e__shaw",
+    "name": "D. E. Shaw",
+    "officialUrls": [
+      "https://deshaw.com/careers/students"
+    ],
+    "category": "quant_hft",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_two_sigma",
+    "name": "Two Sigma",
+    "officialUrls": [
+      "https://www.twosigma.com/careers/"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_morgan_stanley",
+    "name": "Morgan Stanley",
+    "officialUrls": [
+      "https://www.morganstanley.com/careers"
+    ],
+    "category": "quant_hft",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_jpmorgan_chase___co_",
+    "name": "JPMorgan Chase & Co.",
+    "officialUrls": [
+      "https://careers.jpmorgan.com/students"
+    ],
+    "category": "quant_hft",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_hudson_river_trading",
+    "name": "Hudson River Trading",
+    "officialUrls": [
+      "https://www.hudsonrivertrading.com/careers/"
+    ],
+    "category": "quant_hft",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_imc",
+    "name": "IMC",
+    "officialUrls": [
+      "https://www.imc.com/us/careers/"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_optiver",
+    "name": "Optiver",
+    "officialUrls": [
+      "https://optiver.com/working-at-optiver/career-opportunities/"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_jump",
+    "name": "Jump",
+    "officialUrls": [
+      "https://www.jumptrading.com/careers/"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_tower_research",
+    "name": "Tower Research",
+    "officialUrls": [
+      "https://www.tower-research.com/open-positions"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_five_rings",
+    "name": "Five Rings",
+    "officialUrls": [
+      "https://fiverings.com/careers/"
+    ],
+    "category": "quant_hft",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_atlassian",
+    "name": "Atlassian",
+    "officialUrls": [
+      "https://atlassian.com/company/careers/students"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_spotify",
+    "name": "Spotify",
+    "officialUrls": [
+      "https://spotifyjobs.com/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_linkedin",
+    "name": "LinkedIn",
+    "officialUrls": [
+      "https://careers.linkedin.com/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_x__twitter_",
+    "name": "X (Twitter)",
+    "officialUrls": [
+      "https://careers.x.com"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_snap_inc_",
+    "name": "Snap Inc.",
+    "officialUrls": [
+      "https://careers.snap.com"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_pinterest",
+    "name": "Pinterest",
+    "officialUrls": [
+      "https://pinterestcareers.com/students"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_airbnb",
+    "name": "Airbnb",
+    "officialUrls": [
+      "https://careers.airbnb.com"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_doordash",
+    "name": "DoorDash",
+    "officialUrls": [
+      "https://careers.doordash.com/students"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_robinhood",
+    "name": "Robinhood",
+    "officialUrls": [
+      "https://careers.robinhood.com"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_coinbase",
+    "name": "Coinbase",
+    "officialUrls": [
+      "https://coinbase.com/careers/university"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_figma",
+    "name": "Figma",
+    "officialUrls": [
+      "https://figma.com/careers"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_cloudflare",
+    "name": "Cloudflare",
+    "officialUrls": [
+      "https://www.cloudflare.com/careers/"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_datadog",
+    "name": "Datadog",
+    "officialUrls": [
+      "https://datadoghq.com/careers/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_gitlab",
+    "name": "GitLab",
+    "officialUrls": [
+      "https://about.gitlab.com/jobs/"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_qualcomm",
+    "name": "Qualcomm",
+    "officialUrls": [
+      "https://www.qualcomm.com/company/careers"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_texas_instruments",
+    "name": "Texas Instruments",
+    "officialUrls": [
+      "https://careers.ti.com/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_amd",
+    "name": "AMD",
+    "officialUrls": [
+      "https://amd.com/en/corporate/careers/university-relations"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_samsung_r_d",
+    "name": "Samsung R&D",
+    "officialUrls": [
+      "https://research.samsung.com/careers"
+    ],
+    "category": "internship",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_paypal",
+    "name": "PayPal",
+    "officialUrls": [
+      "https://paypal.com/us/webapps/mpp/jobs/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_intuit",
+    "name": "Intuit",
+    "officialUrls": [
+      "https://intuit.com/careers/students"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_twilio",
+    "name": "Twilio",
+    "officialUrls": [
+      "https://www.twilio.com/company/jobs"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_zoom_video_communications",
+    "name": "Zoom Video Communications",
+    "officialUrls": [
+      "https://zoom.careers/students"
+    ],
+    "category": "internship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_hcltech",
+    "name": "HCLTech",
+    "officialUrls": [
+      "https://www.hcltechbee.com"
+    ],
+    "category": "early_career_12th",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_reliance_foundation",
+    "name": "Reliance Foundation",
+    "officialUrls": [
+      "https://www.scholarships.reliancefoundation.org"
+    ],
+    "category": "scholarship",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_wipro",
+    "name": "Wipro",
+    "officialUrls": [
+      "https://careers.wipro.com/wilp"
+    ],
+    "category": "early_career_12th",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_l_or_al",
+    "name": "L'Oréal",
+    "officialUrls": [
+      "https://www.loreal.com/en/careers/"
+    ],
+    "category": "scholarship",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_tata_consultancy_services",
+    "name": "Tata Consultancy Services",
+    "officialUrls": [
+      "https://www.tcs.com/careers"
+    ],
+    "category": "early_career_12th",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_infosys",
+    "name": "Infosys",
+    "officialUrls": [
+      "https://infyspringboard.onwingspan.com"
+    ],
+    "category": "early_career_12th",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_jardine_foundation__oxford___cambridge_",
+    "name": "Jardine Foundation (Oxford & Cambridge)",
+    "officialUrls": [
+      "https://www.jardine-foundation.org"
+    ],
+    "category": "global_full_ride",
+    "country": "UK",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_duke___unc_chapel_hill",
+    "name": "Duke & UNC Chapel Hill",
+    "officialUrls": [
+      "https://robertsonscholars.org"
+    ],
+    "category": "global_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_schmidt_futures___rhodes_trust",
+    "name": "Schmidt Futures & Rhodes Trust",
+    "officialUrls": [
+      "https://www.risefortheworld.org"
+    ],
+    "category": "global_full_ride",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_new_york_university_abu_dhabi",
+    "name": "New York University Abu Dhabi",
+    "officialUrls": [
+      "https://nyuad.nyu.edu/en/admissions/undergraduate/financial-support.html"
+    ],
+    "category": "global_full_ride",
+    "country": "UAE",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_the_thiel_foundation",
+    "name": "The Thiel Foundation",
+    "officialUrls": [
+      "https://thielfellowship.org"
+    ],
+    "category": "global_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_unc_chapel_hill__morehead_cain_",
+    "name": "UNC Chapel Hill (Morehead-Cain)",
+    "officialUrls": [
+      "https://www.moreheadcain.org"
+    ],
+    "category": "global_full_ride",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_cern",
+    "name": "CERN",
+    "officialUrls": [
+      "https://careers.cern/summer"
+    ],
+    "category": "scientific_lab",
+    "country": "Switzerland",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_eth_zurich",
+    "name": "ETH Zurich",
+    "officialUrls": [
+      "https://inf.ethz.ch/studies/summer-research-fellowship.html"
+    ],
+    "category": "scientific_lab",
+    "country": "Switzerland",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_desy",
+    "name": "DESY",
+    "officialUrls": [
+      "https://summerstudents.desy.de"
+    ],
+    "category": "scientific_lab",
+    "country": "Germany",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_riken",
+    "name": "RIKEN",
+    "officialUrls": [
+      "https://www.riken.jp/en/careers/"
+    ],
+    "category": "scientific_lab",
+    "country": "Japan",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_max_planck_institute__mpi_sws_",
+    "name": "Max Planck Institute (MPI-SWS)",
+    "officialUrls": [
+      "https://www.mpi-sws.org"
+    ],
+    "category": "scientific_lab",
+    "country": "Germany",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_weizmann_institute_of_science",
+    "name": "Weizmann Institute of Science",
+    "officialUrls": [
+      "https://www.weizmann.ac.il/feinberg/academics/undergraduate-summer-programs"
+    ],
+    "category": "scientific_lab",
+    "country": "Israel",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_fermilab",
+    "name": "Fermilab",
+    "officialUrls": [
+      "https://internships.fnal.gov"
+    ],
+    "category": "scientific_lab",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_caltech",
+    "name": "Caltech",
+    "officialUrls": [
+      "https://sfp.caltech.edu/undergraduate-research/programs/surf"
+    ],
+    "category": "scientific_lab",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_tifr",
+    "name": "TIFR",
+    "officialUrls": [
+      "https://www.tifr.res.in/~vsrp/"
+    ],
+    "category": "scientific_lab",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_drdo",
+    "name": "DRDO",
+    "officialUrls": [
+      "https://www.drdo.gov.in"
+    ],
+    "category": "scientific_lab",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_isro",
+    "name": "ISRO",
+    "officialUrls": [
+      "https://www.isro.gov.in"
+    ],
+    "category": "scientific_lab",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_epfl",
+    "name": "EPFL",
+    "officialUrls": [
+      "https://www.epfl.ch/schools/sv/education/summer-research-program/"
+    ],
+    "category": "scientific_lab",
+    "country": "Switzerland",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_stanford_university",
+    "name": "Stanford University",
+    "officialUrls": [
+      "https://surf.stanford.edu"
+    ],
+    "category": "scientific_lab",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_outreachy",
+    "name": "Outreachy",
+    "officialUrls": [
+      "https://www.outreachy.org/apply/"
+    ],
+    "category": "open_source_grant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_google_summer_of_code",
+    "name": "Google Summer of Code",
+    "officialUrls": [
+      "https://summerofcode.withgoogle.com"
+    ],
+    "category": "open_source_grant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_linux_foundation__lfx_",
+    "name": "Linux Foundation (LFX)",
+    "officialUrls": [
+      "https://lfx.linuxfoundation.org/tools/mentorship/"
+    ],
+    "category": "open_source_grant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_major_league_hacking__mlh_",
+    "name": "Major League Hacking (MLH)",
+    "officialUrls": [
+      "https://fellowship.mlh.io"
+    ],
+    "category": "open_source_grant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_google_season_of_docs",
+    "name": "Google Season of Docs",
+    "officialUrls": [
+      "https://developers.google.com/season-of-docs"
+    ],
+    "category": "open_source_grant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_mitacs_globalink",
+    "name": "Mitacs Globalink",
+    "officialUrls": [
+      "https://www.mitacs.ca/our-programs/globalink-research-internship-students/"
+    ],
+    "category": "academic_fellowship",
+    "country": "Canada",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_daad_germany",
+    "name": "DAAD Germany",
+    "officialUrls": [
+      "https://www.daad.de/en/study-and-research-in-germany/scholarships/"
+    ],
+    "category": "academic_fellowship",
+    "country": "Germany",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_kaist___snu_korea",
+    "name": "KAIST & SNU Korea",
+    "officialUrls": [
+      "https://www.kaist.ac.kr/en/"
+    ],
+    "category": "academic_fellowship",
+    "country": "South Korea",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_ntu_singapore",
+    "name": "NTU Singapore",
+    "officialUrls": [
+      "https://www.ntu.edu.sg"
+    ],
+    "category": "academic_fellowship",
+    "country": "Singapore",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_campus_france__charpak_",
+    "name": "Campus France (Charpak)",
+    "officialUrls": [
+      "https://www.inde.campusfrance.org/charpak-lab-scholarship"
+    ],
+    "category": "academic_fellowship",
+    "country": "France",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_s_n__bose_scholars_program",
+    "name": "S.N. Bose Scholars Program",
+    "officialUrls": [
+      "https://iusstf.org.in"
+    ],
+    "category": "academic_fellowship",
+    "country": "India to USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_google_deepmind",
+    "name": "Google DeepMind",
+    "officialUrls": [
+      "https://deepmind.google/about/careers/"
+    ],
+    "category": "frontier_ai",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_microsoft_research",
+    "name": "Microsoft Research",
+    "officialUrls": [
+      "https://www.microsoft.com/en-us/research/careers/"
+    ],
+    "category": "frontier_ai",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_servicenow",
+    "name": "ServiceNow",
+    "officialUrls": [
+      "https://careers.servicenow.com/early-career"
+    ],
+    "category": "tech_giant",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_woven_by_toyota",
+    "name": "Woven by Toyota",
+    "officialUrls": [
+      "https://woven.toyota/en/internship/"
+    ],
+    "category": "internship",
+    "country": "Japan",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_max_planck_institute",
+    "name": "Max Planck Institute",
+    "officialUrls": [
+      "https://cis.mpg.de/internships/"
+    ],
+    "category": "scientific_lab",
+    "country": "Germany",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_national_university_of_singapore",
+    "name": "National University of Singapore",
+    "officialUrls": [
+      "https://nusgs.nus.edu.sg/irisnus"
+    ],
+    "category": "academic_fellowship",
+    "country": "Singapore",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_mycareersfuture_singapore__govtech___wsg",
+    "name": "MyCareersFuture Singapore (GovTech / WSG)",
+    "officialUrls": [
+      "https://www.mycareersfuture.gov.sg"
+    ],
+    "category": "internship",
+    "country": "Singapore",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_oist",
+    "name": "OIST",
+    "officialUrls": [
+      "https://oist.jp/admissions"
+    ],
+    "category": "scientific_lab",
+    "country": "Japan",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_academia_sinica",
+    "name": "Academia Sinica",
+    "officialUrls": [
+      "https://tiip.dia.sinica.edu.tw"
+    ],
+    "category": "scientific_lab",
+    "country": "Taiwan",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_reserve_bank_of_india",
+    "name": "Reserve Bank of India",
+    "officialUrls": [
+      "https://opportunities.rbi.org.in"
+    ],
+    "category": "academic_fellowship",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_deloitte",
+    "name": "Deloitte",
+    "officialUrls": [
+      "https://www.deloitte.com/global/en/careers.html"
+    ],
+    "category": "internship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_niti_aayog",
+    "name": "NITI Aayog",
+    "officialUrls": [
+      "https://niti.gov.in/internship"
+    ],
+    "category": "academic_fellowship",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_meti_japan",
+    "name": "METI Japan",
+    "officialUrls": [
+      "https://internshipprogram.go.jp/english/"
+    ],
+    "category": "scientific_lab",
+    "country": "Japan",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_rhodes_trust",
+    "name": "Rhodes Trust",
+    "officialUrls": [
+      "https://www.rhodeshouse.ox.ac.uk/scholarships/the-rhodes-scholarship/"
+    ],
+    "category": "scholarship",
+    "country": "UK",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_gates_cambridge_trust",
+    "name": "Gates Cambridge Trust",
+    "officialUrls": [
+      "https://www.gatescambridge.org/apply/"
+    ],
+    "category": "scholarship",
+    "country": "UK",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_stanford_university__knight_hennessy_",
+    "name": "Stanford University (Knight-Hennessy)",
+    "officialUrls": [
+      "https://knight-hennessy.stanford.edu/admission/planning-apply"
+    ],
+    "category": "scholarship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_schwarzman_scholars",
+    "name": "Schwarzman Scholars",
+    "officialUrls": [
+      "https://www.schwarzmanscholars.org/admissions/"
+    ],
+    "category": "scholarship",
+    "country": "China",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_usief__fulbright_commission_",
+    "name": "USIEF (Fulbright Commission)",
+    "officialUrls": [
+      "https://www.usief.org.in/Fulbright-Nehru-Fellowships.aspx"
+    ],
+    "category": "scholarship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_commonwealth_scholarship_commission",
+    "name": "Commonwealth Scholarship Commission",
+    "officialUrls": [
+      "https://cscuk.fcdo.gov.uk/apply/"
+    ],
+    "category": "scholarship",
+    "country": "UK",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_inlaks_shivdasani_foundation",
+    "name": "Inlaks Shivdasani Foundation",
+    "officialUrls": [
+      "https://www.inlaksfoundation.org/scholarships/"
+    ],
+    "category": "scholarship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_european_commission__erasmus__",
+    "name": "European Commission (Erasmus+)",
+    "officialUrls": [
+      "https://erasmus-plus.ec.europa.eu/opportunities/opportunities-for-individuals/students/erasmus-mundus-joint-masters"
+    ],
+    "category": "scholarship",
+    "country": "Europe",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_mext__government_of_japan_",
+    "name": "MEXT (Government of Japan)",
+    "officialUrls": [
+      "https://www.studyinjapan.go.jp/en/planning/scholarship/mext-scholarship/"
+    ],
+    "category": "scholarship",
+    "country": "Japan",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_vanderbilt_university",
+    "name": "Vanderbilt University",
+    "officialUrls": [
+      "https://www.vanderbilt.edu/scholarships/signature-scholarships/cornelius-vanderbilt/"
+    ],
+    "category": "scholarship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_university_of_southern_california__usc_",
+    "name": "University of Southern California (USC)",
+    "officialUrls": [
+      "https://admission.usc.edu/apply/scholarships/"
+    ],
+    "category": "scholarship",
+    "country": "USA",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_anitab_org",
+    "name": "AnitaB.org",
+    "officialUrls": [
+      "https://ghc.anitab.org/"
+    ],
+    "category": "scholarship",
+    "country": "Global/Remote",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  },
+  {
+    "id": "src_program_anitab_org_india",
+    "name": "AnitaB.org India",
+    "officialUrls": [
+      "https://ghcindia.anitab.org/"
+    ],
+    "category": "scholarship",
+    "country": "India",
+    "parserType": "official_page_watcher",
+    "createdAt": 1792877756015
+  }
+]

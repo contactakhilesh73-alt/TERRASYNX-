@@ -9,6 +9,17 @@ import { CompanyLogo } from './CompanyLogo';
 import { LinkHealthBadge } from './LinkHealthBadge';
 import { resolveCanonicalApplyUrl } from '../utils/portalUrlResolver';
 import { AppliedDossierService } from '../services/appliedDossierService';
+import { formatDualDeadline } from '../utils/timeService';
+import { 
+  resolveVerificationStatus, 
+  getStatusBadgeConfig, 
+  formatTimeAgo, 
+  isClosedStatus, 
+  isWithinGracePeriod, 
+  getGracePeriodRemainingMs, 
+  formatGracePeriodRemaining, 
+  getFreshnessWindowMs 
+} from '../services/verificationStatusService';
 import { 
   ShieldCheck, 
   Clock, 
@@ -25,7 +36,10 @@ import {
   Zap,
   FileEdit,
   Mail,
-  AlertTriangle
+  AlertTriangle,
+  Lock,
+  XCircle,
+  Trash2
 } from 'lucide-react';
 
 interface OpportunityCardProps {
@@ -90,6 +104,15 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
 
   const isApplied = opportunity.stage === 'applied' || opportunity.stage === 'assessment' || opportunity.stage === 'interview' || opportunity.stage === 'offer';
   const appliedRecord = isApplied ? AppliedDossierService.getRecordByOpportunityId(opportunity.id) : undefined;
+  const dualDeadline = formatDualDeadline(opportunity.deadlineAt);
+
+  // Prompt 63: Verification Status Model, Freshness Window & Grace Period Archiving
+  const verificationModel = resolveVerificationStatus(opportunity);
+  const statusBadge = getStatusBadgeConfig(verificationModel.status);
+  const timeAgoStr = formatTimeAgo(verificationModel.lastVerifiedAt);
+  const isClosed = isClosedStatus(verificationModel.status);
+  const withinGrace = isWithinGracePeriod(opportunity);
+  const graceRemaining = getGracePeriodRemainingMs(opportunity);
 
   return (
     <div 
@@ -140,15 +163,43 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
               <p className="text-[11px] text-slate-400 font-mono mt-0.5">
                 {opportunity.department}
               </p>
+
+              {/* Prompt 63: Verification Status Badge & Last Verified Time Ago */}
+              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                <span 
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-mono font-bold border ${statusBadge.badgeClass}`}
+                  title={`Status: ${statusBadge.label}\nEvidence: ${verificationModel.evidence}\nFreshness Window: ${Math.round(getFreshnessWindowMs(opportunity.verification?.sourceType) / 3600000)}h`}
+                >
+                  {statusBadge.iconName === 'check' && <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />}
+                  {statusBadge.iconName === 'clock' && <Clock className="w-2.5 h-2.5 text-amber-400" />}
+                  {statusBadge.iconName === 'alert-triangle' && <AlertTriangle className="w-2.5 h-2.5 text-rose-400" />}
+                  {statusBadge.iconName === 'alert' && <AlertTriangle className="w-2.5 h-2.5 text-amber-400" />}
+                  {statusBadge.iconName === 'lock' && <Lock className="w-2.5 h-2.5 text-slate-400" />}
+                  {statusBadge.iconName === 'x' && <XCircle className="w-2.5 h-2.5 text-red-400" />}
+                  {statusBadge.iconName === 'trash' && <Trash2 className="w-2.5 h-2.5 text-red-400" />}
+                  {statusBadge.iconName === 'info' && <Info className="w-2.5 h-2.5 text-cyan-400" />}
+                  <span>{statusBadge.label}</span>
+                </span>
+                <span 
+                  className="text-[9.5px] font-mono text-slate-400 flex items-center gap-1"
+                  title={`Observed on: ${new Date(verificationModel.lastVerifiedAt).toLocaleString()}\nSource: ${verificationModel.sourceUrl}`}
+                >
+                  <span>•</span>
+                  <span>Last verified: {timeAgoStr}</span>
+                </span>
+              </div>
             </div>
           </div>
 
           {/* Live Dynamic Urgency Countdown Badge (Req #1 & Rule #3) */}
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold flex-shrink-0 ${
-            isUrgent 
-              ? 'bg-red-950/70 text-red-300 border border-red-800/80 animate-pulse' 
-              : 'bg-slate-800/80 text-slate-300 border border-slate-700'
-          }`}>
+          <div 
+            title={`Official Deadline: ${dualDeadline.officialText}\nYour Local Time: ${dualDeadline.localText}`}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold flex-shrink-0 cursor-help ${
+              isUrgent 
+                ? 'bg-red-950/70 text-red-300 border border-red-800/80 animate-pulse' 
+                : 'bg-slate-800/80 text-slate-300 border border-slate-700'
+            }`}
+          >
             <Clock className={`w-3.5 h-3.5 ${isUrgent ? 'text-red-400' : 'text-slate-400'}`} />
             <span>{timeLeftStr}</span>
           </div>
@@ -300,6 +351,21 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
             </div>
           )}
         </div>
+
+        {/* Prompt 62: Dual-Timezone Deadline Display (Official & Local) */}
+        <div 
+          className="mt-3 px-3 py-1.5 rounded-xl bg-white/[0.025] backdrop-blur-sm border border-white/[0.08] flex items-center justify-between flex-wrap gap-2 text-[10.5px] font-mono text-slate-400"
+          title={`Official Closing: ${dualDeadline.officialText}\nYour Local Time: ${dualDeadline.localText}`}
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Clock className="w-3 h-3 text-cyan-400 shrink-0" />
+            <span className="text-slate-500">Official:</span>
+            <span className="text-slate-200 font-semibold truncate">{dualDeadline.officialText.replace(' IST (UTC+05:30)', ' IST')}</span>
+          </div>
+          <div className="text-slate-400 text-[10px] truncate">
+            Local: <span className="text-cyan-300 font-medium">{dualDeadline.localText}</span>
+          </div>
+        </div>
       </div>
 
       {/* Applied Provenance Status Banner (Gmail Identity & Route Tracking) */}
@@ -321,6 +387,26 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           }`}>
             {appliedRecord?.submissionRoute === 'direct_official_ats' ? '🏢 Official ATS Portal' : '⚡ TERRASYNX Assistant'}
           </span>
+        </div>
+      )}
+
+      {/* Prompt 63: Closed Grace Period Bar (Stays visible for several hours before moving to archive) */}
+      {isClosed && withinGrace && (
+        <div className="mt-3 p-2.5 rounded-xl bg-gradient-to-r from-rose-950/90 via-slate-900 to-rose-950/90 border border-rose-500/50 text-rose-200 flex items-center justify-between gap-2 text-xs font-mono shadow-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <Lock className="w-4 h-4 text-rose-400 shrink-0" />
+            <div className="min-w-0 truncate">
+              <span className="font-bold text-rose-300 block truncate">
+                CLOSED • {verificationModel.status.replace(/_/g, ' ')}
+              </span>
+              <span className="text-[10px] text-rose-300/80 block truncate" title={verificationModel.evidence}>
+                {verificationModel.evidence}
+              </span>
+            </div>
+          </div>
+          <div className="px-2 py-0.5 rounded bg-rose-900/70 border border-rose-600 text-[10px] font-bold text-rose-200 shrink-0">
+            Archive in: {formatGracePeriodRemaining(graceRemaining)}
+          </div>
         </div>
       )}
 

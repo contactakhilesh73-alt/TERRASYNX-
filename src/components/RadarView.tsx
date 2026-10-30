@@ -248,6 +248,11 @@ export const RadarView: React.FC<RadarViewProps> = ({
         return false;
       }
 
+      // Prompt 63: Filter out permanently archived listings (after grace period expires)
+      if (opp.isArchived || opp.stage === 'archived') {
+        return false;
+      }
+
       // Tab filter
       const hoursRemaining = (opp.deadlineAt - Date.now()) / (1000 * 60 * 60);
 

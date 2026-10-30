@@ -18,6 +18,27 @@ export type OpportunityType = 'internship' | 'new-grad' | 'full-time' | 'fellows
 
 export type WorkMode = 'remote' | 'hybrid' | 'on-site';
 
+// Prompt 63: Opportunity Verification Status Model
+export type OpportunityVerificationStatus = 
+  | 'OPEN_VERIFIED'
+  | 'OPEN_NOT_RECENTLY_VERIFIED'
+  | 'CLOSING_SOON'
+  | 'POSSIBLY_CLOSED'
+  | 'CLOSED_EARLY_BY_PORTAL'
+  | 'DEADLINE_PASSED'
+  | 'REMOVED_BY_PORTAL'
+  | 'CANCELLED_OR_POSTPONED'
+  | 'UNKNOWN';
+
+export interface OpportunityVerificationModel {
+  status: OpportunityVerificationStatus;
+  lastVerifiedAt: number;        // Epoch ms of verification
+  evidence: string;              // Short text of what was observed
+  sourceUrl: string;             // Canonical source URL where verified
+  closedAt?: number;             // Timestamp in ms when marked closed (for grace period tracking)
+  isArchived?: boolean;          // True when grace period expired and moved to archive
+}
+
 // Cryptographic & Origin Verification Proof (Strict Rule #2 & Req #2)
 export interface VerificationProof {
   verified: boolean;
@@ -28,6 +49,8 @@ export interface VerificationProof {
   sslStatus: 'A+' | 'A' | 'VALID';
   noFeeGuarantee: boolean;        // 100% free authentic opportunity (no-scam guarantee)
   requisitionId: string;         // Official company job requisition identifier
+  // Prompt 63: Embedded verification model
+  statusModel?: OpportunityVerificationModel;
 }
 
 // Student Eligibility Matrix (Req #1)
@@ -139,6 +162,14 @@ export interface Opportunity {
   closureStatus?: 'ACTIVE' | 'POSSIBLY_CLOSED';
   consecutiveMissingFetches?: number;
   lastSeenInApiAt?: number;
+
+  // Prompt 63: Verification Status Model & Grace Period Archiving
+  verificationStatusModel?: OpportunityVerificationModel;
+  closedAt?: number;
+  isArchived?: boolean;
+
+  // Prompt 67: User tracking flag
+  isTracked?: boolean;
 
   // Funded Company Discovery Signals (Prompt 27)
   isNewlyFunded?: boolean;
@@ -303,10 +334,22 @@ export interface AuthUserSession {
   verifiedAt?: number;
 }
 
-// Email Digest & Alert Payload Interface (Req #5, #6, #10)
+// Prompt 67: Closure Alert Statuses & Details
+export type ClosureAlertStatus = 'POSSIBLY_CLOSED' | 'CLOSED_EARLY_BY_PORTAL' | 'REMOVED_BY_PORTAL' | 'CANCELLED_OR_POSTPONED';
+
+export interface OpportunityClosureDetails {
+  previousStatus: string;
+  newStatus: ClosureAlertStatus;
+  detectedAt: number;
+  detectedAtFormatted: string;
+  whatChanged: string;
+  evidence: string;
+}
+
+// Email Digest & Alert Payload Interface (Req #5, #6, #10, Prompt 67)
 export interface AlertEmailSimulation {
   id: string;
-  type: 'discovery_alert' | 'submission_receipt' | 'oa_action_required' | 'offer_milestone' | 'otp_verification' | 'janch_pass_audit' | 'action_roadmap' | 'followup_reminder';
+  type: 'discovery_alert' | 'submission_receipt' | 'oa_action_required' | 'offer_milestone' | 'otp_verification' | 'janch_pass_audit' | 'action_roadmap' | 'followup_reminder' | 'closure_alert';
   tier: 'gold' | 'slate' | 'neon' | 'royal';
   subject: string;
   recipientEmail: string;
@@ -319,6 +362,7 @@ export interface AlertEmailSimulation {
   companyDomain?: string;
   actionUrl: string;
   actionAdvisorPoints?: string[];
+  closureDetails?: OpportunityClosureDetails;
 }
 
 // Insider Contact & Recruiter Bridge Models (Req #15)
@@ -1116,7 +1160,7 @@ export interface CompanyRedFlagReport {
 // ============================================================================
 
 export type HackathonMode = 'online' | 'in-person' | 'hybrid';
-export type HackathonSource = 'devpost-live' | 'recurring-series';
+export type HackathonSource = 'devpost-live' | 'recurring-series' | 'community-submission';
 export type HackathonStatusTab = 'OPEN_NOW' | 'UPCOMING' | 'PASSED';
 export type HackathonStatus = 'NOT_ANNOUNCED' | 'ANNOUNCED_UNCONFIRMED' | 'ANNOUNCED_VERIFIED' | 'PASSED' | 'UNKNOWN';
 export type HackathonType = 'hackathon' | 'coding-contest'; // Prompt 51
@@ -1150,5 +1194,48 @@ export interface Hackathon {
   detectedOn?: string; // Prompt 46: "Detected on the official page on <date>"
   isStale?: boolean; // Prompt 46: Labeled stale if a fetch fails but keeping last verified snapshot
 }
+
+// ============================================================================
+// PROMPT 68: HACKATHON INTAKE & VERIFICATION QUEUE
+// ============================================================================
+
+export type HackathonSubmissionStatus = 'pending' | 'verified' | 'rejected';
+
+export interface HackathonSubmissionVerification {
+  isAllowedUrl: boolean;
+  allowlistReason?: string;
+  datesDetected?: {
+    startDate?: string;
+    endDate?: string;
+    datesText?: string;
+    deadline?: string;
+  };
+  dateConfidence?: DateConfidence;
+  extractedFrom?: 'json-ld' | 'page-watcher' | 'meta' | 'fallback';
+  verifiedAt: number;
+  message: string;
+}
+
+export interface HackathonSubmission {
+  id: string;
+  name: string;
+  officialUrl: string;
+  organizer: string;
+  submittedAt: number;
+  status: HackathonSubmissionStatus;
+  submitterEmail?: string;
+  mode?: HackathonMode;
+  country?: string;
+  themes?: string[];
+  verificationResult?: HackathonSubmissionVerification;
+  verifiedHackathon?: Hackathon;
+}
+
+export interface HackathonCoverageInfo {
+  trackingSourcesCount: number;
+  lastRun: string;
+  lastRunEpoch: number;
+}
+
 
 
