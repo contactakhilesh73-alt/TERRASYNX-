@@ -4,7 +4,13 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { AiOrchestrationEngine, ChatMessage, AiEngineStatus, AiProviderMode } from '../services/aiOrchestrationEngine';
+import { 
+  AiOrchestrationEngine, 
+  ChatMessage, 
+  AiEngineStatus, 
+  AiProviderMode,
+  MARKET_AI_CONSENSUS_ROSTER 
+} from '../services/aiOrchestrationEngine';
 import { StudentProfile } from '../types';
 import { 
   Sparkles, 
@@ -22,7 +28,8 @@ import {
   Trash2,
   Bot,
   User,
-  Zap
+  Zap,
+  Lock
 } from 'lucide-react';
 
 interface InteractiveCopilotStudioProps {
@@ -30,12 +37,12 @@ interface InteractiveCopilotStudioProps {
 }
 
 const QUICK_PROMPTS = [
-  '🏆 ETHGlobal / SIH me Rank 1 winner banne ke liye kya build karu?',
-  '🚀 Over-the-top features to beat other competitors in hackathons',
-  '🧭 System ke saare portals aur applied application dossiers kahan hain?',
-  '📄 How should I tailor my resume for a Tier-1 Systems role?',
-  '⚡ What patterns are tested in Stripe & Google Online Assessments?',
-  '🤝 Draft a 300-char LinkedIn referral note for campus alumni',
+  '🏆 What high-impact project should I build to place Rank 1 in ETHGlobal or SIH?',
+  '🚀 What over-the-top technical capabilities outrank competitors in hackathons?',
+  '🧭 What is the 8-Block Verification Dossier and how does it protect applicants?',
+  '📄 How should I tailor my resume for a Tier-1 Systems Engineering role?',
+  '⚡ What coding patterns are tested in Stripe & Google Online Assessments?',
+  '🤝 Draft a high-conversion 300-char LinkedIn alumni referral note',
 ];
 
 export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> = ({ studentProfile }) => {
@@ -412,6 +419,59 @@ export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> =
               >
                 Save Key
               </button>
+            </div>
+          </div>
+
+          {/* Market Multi-AI Consensus Roster & Security Guardrails Deck */}
+          <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
+              <span className="font-bold text-slate-200 flex items-center gap-2">
+                <Cpu className="w-4 h-4 text-cyan-400" />
+                <span>Market Multi-AI Consensus Roster (8 Active Models)</span>
+              </span>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800 text-[10px] text-emerald-300">
+                <Lock className="w-3 h-3 text-emerald-400" />
+                <span>Zero-Mutation Sandbox</span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
+              Every guidance response is synthesized through a cross-verified multi-model framework to prevent biased or single-model hallucination. All models are bound by strict read-only permissions:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
+              {MARKET_AI_CONSENSUS_ROSTER.map((agent) => (
+                <div key={agent.id} className="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/80 flex flex-col justify-between gap-1.5">
+                  <div className="flex items-start justify-between gap-1">
+                    <div>
+                      <div className="font-bold text-slate-200 text-[11px] flex items-center gap-1">
+                        <span>{agent.name}</span>
+                      </div>
+                      <span className="text-[9px] text-cyan-400 font-mono block">{agent.provider}</span>
+                    </div>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-emerald-300 border border-emerald-900 shrink-0">
+                      READ-ONLY
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-sans leading-tight">
+                    {agent.specialization}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Strict Security Guardrail Banner */}
+            <div className="mt-2 p-3 rounded-lg bg-slate-900 border border-cyan-900/40 text-[11px] text-slate-300 space-y-1 font-sans">
+              <div className="flex items-center gap-1.5 font-bold text-cyan-300">
+                <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                <span>Permanent Security Guardrail Policy:</span>
+              </div>
+              <ul className="list-disc list-inside text-[10px] text-slate-400 space-y-0.5 pl-1">
+                <li><strong>Code Mutation Permission:</strong> 0% (DENIED) — Models cannot edit, delete, or modify system files.</li>
+                <li><strong>Database Mutation Permission:</strong> 0% (DENIED) — User and system records are strictly immutable to AI.</li>
+                <li><strong>Data Exfiltration:</strong> BLOCKED — Candidate PII, tokens, and credentials never leave the secure system sandbox.</li>
+                <li><strong>Scope of Access:</strong> Complete real-time read-only platform knowledge to answer student questions and offer career direction.</li>
+              </ul>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@
  * TERRASYNX: Hackathon Fast Apply Assistant & Requirement Inspector Modal
  * 
  * Strict Rules Honored:
- * 1. Checks hackathon requirements against student profile and indicates what is needed ("Kya kya chahiye").
+ * 1. Checks hackathon requirements against student profile and highlights required materials.
  * 2. Pre-fills candidate form accurately using student profile data.
  * 3. Never auto-submits forms autonomously; candidate retains full submission control.
  * 4. Enables automatic tracking of the application whether submitted via Fast Apply or direct official portal with student email.

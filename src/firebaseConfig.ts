@@ -678,6 +678,13 @@ export async function loadStudentProfileCloud(
   return null;
 }
 
+function resolveInternalApiUrl(endpoint: string): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return endpoint;
+  }
+  return `http://localhost:3000${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+}
+
 /**
  * Unified Cloud Application Save:
  * - If user is signed in with Google -> persists to Firestore (`students/{userId}/applications/{opportunityId}`)
@@ -726,7 +733,7 @@ export async function saveApplicationToCloud(
 
   // Also persist in Server Cloud Store for resilience
   try {
-    await fetch('/api/student/applications', {
+    await fetch(resolveInternalApiUrl('/api/student/applications'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId, application: sanitized }),
@@ -770,7 +777,7 @@ export async function loadApplicationsFromCloud(
   // 2. Fetch server applications by userId
   if (userId) {
     try {
-      const res = await fetch(`/api/student/applications/${encodeURIComponent(userId)}`);
+      const res = await fetch(resolveInternalApiUrl(`/api/student/applications/${encodeURIComponent(userId)}`));
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.applications)) {
@@ -791,7 +798,7 @@ export async function loadApplicationsFromCloud(
     const cleanEmail = userEmail.toLowerCase().trim();
     if (cleanEmail) {
       try {
-        const res = await fetch(`/api/student/applications/by-email/${encodeURIComponent(cleanEmail)}`);
+        const res = await fetch(resolveInternalApiUrl(`/api/student/applications/by-email/${encodeURIComponent(cleanEmail)}`));
         if (res.ok) {
           const data = await res.json();
           if (data.success && Array.isArray(data.applications)) {

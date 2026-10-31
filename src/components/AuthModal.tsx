@@ -13,7 +13,9 @@ import {
   UserPlus,
   LogIn,
   Lock,
-  Info
+  Info,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { 
   sendOtpCode, 
@@ -212,7 +214,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const res = await sendOtpCode('email', cleanEmail);
       setEmailOtpSent(true);
       setEmailCooldown(res.cooldownSeconds || 20);
-      setSuccessMessage(`Verification code has been sent to ${cleanEmail}. Please check your inbox or spam folder.`);
+      setSuccessMessage(res.message || `Verification code has been sent to ${cleanEmail}. Please check your inbox or spam folder.`);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to dispatch email verification code.');
     } finally {
@@ -578,6 +580,81 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <div className="flex-1 font-mono text-[11px] leading-tight">{successMessage}</div>
                 </div>
+              )}
+
+              {/* TAB 0: PASSWORD AUTH (DIRECT & UNIVERSAL) */}
+              {activeTab === 'password' && (
+                <form onSubmit={handlePasswordAuth} className="space-y-3.5">
+                  <div>
+                    <label className="block text-xs font-mono font-medium text-slate-300 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Email Address *</span>
+                      </span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="student@gmail.com or university email"
+                      value={emailAddress}
+                      onChange={(e) => setEmailAddress(e.target.value)}
+                      disabled={isLoading}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-medium text-slate-300 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <KeyRound className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>Password *</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
+                      >
+                        {showPassword ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                        <span>{showPassword ? 'Hide' : 'Show'}</span>
+                      </button>
+                    </label>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Enter minimum 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={isLoading}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 text-xs font-mono placeholder:text-slate-600 focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+
+                  <div className="pt-1">
+                    <button
+                      type="submit"
+                      disabled={isLoading || !emailAddress || !password}
+                      className="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 text-xs font-bold font-mono flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-lg shadow-cyan-950/40"
+                    >
+                      {isLoading ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Authenticating...</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{authMode === 'signup' ? 'Create Candidate Account' : 'Sign In with Password'}</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Universal Access: Works for any personal or college email with zero OTP dependencies.</span>
+                  </div>
+                </form>
               )}
 
               {/* TAB 1: PHONE OTP */}
