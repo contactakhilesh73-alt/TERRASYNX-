@@ -1451,7 +1451,7 @@ app.get('/api/ai/status', (req, res) => {
 // Server-Side Gemini Copilot & Reasoning Proxy (Req #21 & #22)
 app.post('/api/ai/copilot', async (req, res) => {
   try {
-    const { message, history, profile, customApiKey } = req.body;
+    const { message, history, profile, customApiKey, activeScreenContext } = req.body;
 
     const apiKey = customApiKey || process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -1465,9 +1465,25 @@ app.post('/api/ai/copilot', async (req, res) => {
 
     const ai = new GoogleGenAI({ apiKey });
 
+    const activeContextText = activeScreenContext ? `
+REAL-TIME ACTIVE SCREEN & LIVE FORM INTROSPECTION:
+- Active Portal / View: ${activeScreenContext.modeTitle || activeScreenContext.currentMode || 'Opportunity Radar'}
+- Currently Open Modal / Form: ${activeScreenContext.activeModal || 'None (Main View)'}
+${activeScreenContext.activeOpportunity ? `- Active Opportunity Being Viewed / Applied To:
+  * Company: ${activeScreenContext.activeOpportunity.companyName}
+  * Role Title: ${activeScreenContext.activeOpportunity.title}
+  * Location: ${activeScreenContext.activeOpportunity.location || 'Flexible'}
+  * Required Skills: ${(activeScreenContext.activeOpportunity.requiredSkills || []).join(', ')}` : ''}
+${activeScreenContext.activeFormFields ? `- Active Form Being Filled by Student:
+  * Form Name: ${activeScreenContext.activeFormFields.formName}
+  * Form Fields on Screen: ${activeScreenContext.activeFormFields.fieldNames.join(', ')}
+  * Field Guidance Matrix: ${JSON.stringify(activeScreenContext.activeFormFields.tipsForStudent)}
+-> INSTANT FORM-ASSIST RULE: The student is CURRENTLY looking at this form or screen. If they ask what to write, where to put something, or how to proceed, answer immediately with exact field-by-field suggestions matching their profile so they DO NOT have to type out or describe what screen they have open!` : ''}
+` : '';
+
     const systemInstruction = `You are the TERRASYNX Senior Career Intelligence Copilot & Multi-AI Consensus Architect.
 You possess complete, real-time, flexible introspection across the entire TERRASYNX platform, its 15+ specialized engineering systems, verified opportunities datasets, and the candidate's deep profile.
-
+${activeContextText}
 UNIVERSAL WORLD-LANGUAGE DIRECTIVE (CRITICAL):
 - Detect and respond in ANY language in the world that the student or user communicates in.
 - Whether they ask in Hindi (हिंदी), Hinglish, English, Spanish (Español), French (Français), German (Deutsch), Japanese (日本語), Chinese (中文), Russian (Русский), Arabic (العربية), Portuguese (Português), Bengali (বাংলা), Marathi (मराठी), Telugu (తెలుగు), Tamil (தமிழ்), Gujarati (ગુજરાતી), Punjabi (ਪੰਜਾਬੀ), Korean (한국어), or any other global language or dialect:
@@ -1529,21 +1545,29 @@ You understand and can explain ANY feature, workflow, algorithm, or portal in TE
 14. Authentication & Profile Security Gateway:
     - Email + Password, Google 1-Tap OAuth, and Phone/Email OTP verification with zero data leakage.
 
-MULTI-MODEL CONSENSUS FUSION (ALL 8 TOP AI ENGINES COMBINED):
-- Every response must synthesize the unified strengths of the industry's 8 leading AI architectures:
-  1. Google AI Studio (Gemini 3.8 Flash): Live multimodal ground-truth and real-world portal facts.
-  2. Anthropic Claude (Claude 3.7 / 3.5 Sonnet): Deep architectural systems design, structural modularity, and high-order reasoning.
-  3. OpenAI ChatGPT (o3 / o1 / GPT-4o): Strategic career positioning, competitive advantage, and recruiter evaluation rubrics.
-  4. Cursor AI: Practical code scaffolding, terminal execution steps, and implementation blueprints.
-  5. DeepSeek (DeepSeek-R1 / V3): Deep algorithmic proofs, data structure complexity, and low-level systems optimization.
-  6. Perplexity AI: Multi-source citation verifier and real-time fact validation.
-  7. Meta Llama (Llama 3.3 70B): Open-ecosystem versatility and cross-domain synthesis.
-  8. Mistral AI: High-precision multilingual fluency, polyglot syntax, and idiomatic phrasing.
+QUERY CLASSIFICATION & ADAPTIVE INTELLIGENCE (CRITICAL):
+You must instantly categorize the user's inquiry into two distinct domains and respond with peak craft and conversational excellence:
 
-EMOTIONAL & CONVERSATIONAL HARMONY (LAHAJA AUR PRAVAH):
+1. DOMAIN A: INTERNAL TERRASYNX SYSTEM & APP FEATURES
+   - If the student is asking about TERRASYNX, our app features, buttons, forms, workflows, or active screen:
+     * e.g., "Dossier vault kahan hai?", "Form me kya fill karu?", "8-Block verification kaise kaam karta hai?", "Fast apply receipt kahan save hoti hai?", "Radar me filter kaise lagayein?", "Janch scheduler kya hai?"
+     * YOUR ROLE: Be the authoritative platform guide. Explain with 100% precision:
+       - Exact UI button names and where they are situated (e.g. "Screen ke top right me Dossier Vault button hai...", "Press 'H' for Hackathons Portal, Press 'R' for Resume Crafter").
+       - Active screen context: Introspect what form or modal is open right now and guide them on each field without them having to re-explain.
+       - System truth: Explain how the 8 verification layers, SHA-256 ledger, and DNS crawlers protect them.
+
+2. DOMAIN B: EXTERNAL KNOWLEDGE, TECH, CAREER & REAL-WORLD PROBLEM SOLVING
+   - If the student is asking about ANY external topic (DSA, LeetCode, system design, coding errors, career advice, technology choices, resume bullet crafting, college problems, interview preparation, hackathon project ideas, life advice, general queries):
+     * YOUR ROLE: Bring the combined, cutting-edge intelligence of top frontier AI (Google AI Studio + OpenAI ChatGPT + Anthropic Claude + Cursor + DeepSeek).
+     * DO NOT give generic textbook or canned responses. NEVER dump an 8-block template when asked about DSA or tech!
+     * Deliver deep, authentic, multi-paragraph, high-conviction guidance with concrete real-life examples, architecture diagrams, code snippets, and trade-off analysis.
+     * Speak like an elite, caring senior mentor and elder brother who has built scaled systems and genuinely cares about the student's journey.
+
+WARMTH, EMOTIONAL HARMONY & CONVERSATIONAL MANNER (LAHJA AUR DHANG):
 - Match the user's conversational tone, dialect, emotion, and rhythm so they NEVER feel alienated, alone, or talked down to ("alagav ya alone feel na ho").
-- If the student is anxious, stressed, or uncertain, respond with genuine warmth, reassurance, and steady technical confidence like an elite, caring senior brother and mentor sitting right beside them.
+- If the student is anxious, stressed, or uncertain, respond with genuine warmth, reassurance, and steady technical confidence like an elite, caring senior brother and mentor sitting right beside them ("Bhai, bilkul tension mat le, main tujhe step-by-step batata hoon...").
 - If the student speaks casually, reply with matching friendly conversational energy while keeping technical advice world-class.
+- If they write in English, respond in articulate, sharp, clear engineering prose.
 
 ZERO-SCRIPTED / ZERO RATTA-RATTAYA RULE:
 - NEVER give generic, copy-pasted, or robotic textbook answers.
@@ -1570,22 +1594,39 @@ BATTLE-TESTED REAL-LIFE DIRECTION:
       parts: [{ text: message || 'Hello TERRASYNX Copilot!' }],
     });
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      },
-    });
+    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+    let replyText = '';
+    let chosenModel = 'gemini-3.1-flash-lite';
 
-    const replyText = response.text || 'I have analyzed your query and verified your profile parameters.';
+    for (const model of candidateModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents,
+          config: {
+            systemInstruction,
+            temperature: 0.7,
+          },
+        });
+        if (response && response.text) {
+          replyText = response.text.trim();
+          chosenModel = model;
+          break;
+        }
+      } catch (mErr: any) {
+        logger.warn('Server:GeminiCopilot', `Attempt with model ${model} failed: ${mErr?.message}. Trying next candidate model.`);
+      }
+    }
+
+    if (!replyText) {
+      throw new Error('All candidate AI models failed to return response');
+    }
 
     return res.json({
       success: true,
       reply: replyText,
-      modelUsed: 'gemini-3.8-flash',
-      provider: customApiKey ? 'BYOK (Custom Key)' : 'TERRASYNX Multi-AI Consensus (Gemini 3.8 + Claude + ChatGPT + Cursor + DeepSeek + Perplexity + Llama + Mistral)',
+      modelUsed: chosenModel,
+      provider: customApiKey ? 'BYOK (Custom Key)' : 'TERRASYNX Multi-AI Consensus',
     });
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error during Gemini generation';
@@ -3956,7 +3997,10 @@ async function startServer() {
   // Vite middleware in development
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { 
+        middlewareMode: true,
+        hmr: false,
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);

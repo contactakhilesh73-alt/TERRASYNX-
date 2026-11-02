@@ -121,4 +121,51 @@ describe('Multi-Model AI Consensus Engine & Security Guardrails', () => {
     expect(message.content).toContain('AppliedDossierVaultModal.tsx');
     expect(duration).toBeLessThan(100); // Sub-100ms local execution
   });
+
+  it('introspects active screen and form context to guide the student without them typing the context', () => {
+    const activeFormContext = {
+      currentMode: 'radar',
+      modeTitle: 'Opportunity Radar',
+      activeModal: 'Fast Apply Submission Form',
+      activeOpportunity: {
+        id: 'opp_stripe_sys_2026',
+        title: 'Software Engineer Intern - Systems',
+        companyName: 'Stripe',
+        location: 'Seattle, WA / Remote',
+        requiredSkills: ['Go', 'TypeScript', 'Distributed Systems'],
+      },
+      activeFormFields: {
+        formName: 'Fast Apply Form',
+        fieldNames: ['Full Legal Name', 'Candidate Email', 'Graduation Year', 'Work Authorization Selection', 'Resume Version'],
+        tipsForStudent: {
+          'Full Legal Name': 'Official name from university records',
+          'Work Authorization Selection': 'F-1 OPT/CPT Eligible',
+          'Resume Version': 'ATS-tailored systems resume',
+        },
+      },
+    };
+
+    // Test Hindi flow
+    const hindiResponse = AiOrchestrationEngine.generateDeterministicResponse(
+      'Bhai is form me kya likhu aur kaise fill karu?',
+      mockProfile,
+      activeFormContext
+    );
+    expect(hindiResponse).toContain('Active Screen Introspection');
+    expect(hindiResponse).toContain('Stripe');
+    expect(hindiResponse).toContain('Software Engineer Intern - Systems');
+    expect(hindiResponse).toContain('Full Legal Name');
+    expect(hindiResponse).toContain('Work Authorization Selection');
+
+    // Test English flow
+    const englishResponse = AiOrchestrationEngine.generateDeterministicResponse(
+      'How should I fill this active form?',
+      mockProfile,
+      activeFormContext
+    );
+    expect(englishResponse).toContain('Active Screen Introspection');
+    expect(englishResponse).toContain('Stripe');
+    expect(englishResponse).toContain('Software Engineer Intern - Systems');
+    expect(englishResponse).toContain('Akhilesh Singh');
+  });
 });

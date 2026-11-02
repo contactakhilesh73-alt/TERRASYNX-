@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { StudentProfile } from '../types';
+import { StudentProfile, ActiveScreenContext } from '../types';
 import { InteractiveCopilotStudio } from './InteractiveCopilotStudio';
 import { 
   X, 
@@ -22,11 +22,13 @@ interface CopilotGuideModalProps {
   isOpen: boolean;
   onClose: () => void;
   studentProfile?: StudentProfile;
+  activeContext?: ActiveScreenContext;
 }
 
 export const CopilotGuideModal: React.FC<CopilotGuideModalProps> = ({ 
   isOpen, 
   onClose,
+  activeContext,
   studentProfile = {
     id: 'student_alex',
     fullName: 'Alex Chen',
@@ -95,7 +97,7 @@ export const CopilotGuideModal: React.FC<CopilotGuideModalProps> = ({
 
         {/* Tab 1: Interactive Copilot & Multi-AI Studio */}
         {modalTab === 'copilot' && (
-          <InteractiveCopilotStudio studentProfile={studentProfile} />
+          <InteractiveCopilotStudio studentProfile={studentProfile} activeContext={activeContext} />
         )}
 
         {/* Tab 2: System Onboarding & 5 Strict Rules */}

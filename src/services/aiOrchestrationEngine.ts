@@ -11,7 +11,7 @@
  * - 100% Autonomous Algorithmic Core with zero downtime fallback
  */
 
-import { StudentProfile, Opportunity } from '../types';
+import { StudentProfile, Opportunity, ActiveScreenContext } from '../types';
 import { RadarEngine } from './radarEngine';
 import { HACKATHONS_DATABASE } from './hackathonsService';
 import { HackathonBlueprintService } from './hackathonBlueprintService';
@@ -200,6 +200,7 @@ export class AiOrchestrationEngine {
   private static providerMode: AiProviderMode = 'auto_orchestration';
   private static byokKey: string = '';
   private static chatHistory: ChatMessage[] = [];
+  private static activeContext: ActiveScreenContext | null = null;
   private static lastLatencyMs: number = 0;
   private static totalQueries: number = 0;
   private static fallbackCount: number = 0;
@@ -324,13 +325,61 @@ Here is what you can ask me:
     this.notify();
   }
 
+  public static setActiveContext(context: ActiveScreenContext | null): void {
+    this.activeContext = context;
+    this.notify();
+  }
+
+  public static getActiveContext(): ActiveScreenContext | null {
+    return this.activeContext;
+  }
+
   /**
    * Deep System & Opportunity Introspection Engine
    * Generates highly analytical, authentic responses dynamically referencing exact
-   * system components, hackathon prize tiers, winning edge features, and code modules.
+   * active screen context, form fields, hackathon prize tiers, winning edge features, and code modules.
    */
-  public static generateDeterministicResponse(query: string, profile: StudentProfile): string {
+  public static generateDeterministicResponse(query: string, profile: StudentProfile, contextOverride?: ActiveScreenContext): string {
     const q = query.toLowerCase();
+    const activeCtx = contextOverride || this.activeContext;
+    const isHindiQuery = /kya|kaise|karo|batao|kahan|kyu|hai|kaun|bhai|isme|kya likhu|kya bharein/i.test(q);
+
+    // 0. ACTIVE FORM & SCREEN INTROSPECTION ASSISTANCE (Instant Form Guidance)
+    if (activeCtx && (q.includes('form') || q.includes('fill') || q.includes('kya likhu') || q.includes('kya bharein') || q.includes('enter') || q.includes('field') || q.includes('kahan') || q.includes('guide') || q.includes('help') || q.includes('active') || q.includes('this') || q.includes('screen'))) {
+      if (isHindiQuery) {
+        return `### 📝 **Active Screen Introspection: ${activeCtx.activeModal || activeCtx.modeTitle}**
+
+Maine aapki active screen ko introspect kar liya hai:
+- **Current View:** \`${activeCtx.modeTitle}\`${activeCtx.activeModal ? ` -> Modal: \`${activeCtx.activeModal}\`` : ''}
+${activeCtx.activeOpportunity ? `- **Company & Role:** **${activeCtx.activeOpportunity.companyName}** (${activeCtx.activeOpportunity.title})` : ''}
+
+#### ✍️ **Kahan Aur Kya Fill Karna Hai (Step-by-Step Field Guide):**
+${activeCtx.activeFormFields ? activeCtx.activeFormFields.fieldNames.map((f, i) => `${i + 1}. **${f}:** ${activeCtx.activeFormFields?.tipsForStudent[f] || `Aapke profile context se automatically pre-fill ho jayega.`}`).join('\n') : `
+1. **Full Legal Name:** \`${profile.fullName || 'Aapka Naam'}\` (University certificate se match hona chahiye).
+2. **Degree & Batch:** \`${profile.degree || 'Computer Science'} (${profile.graduationYear || 2026})\`.
+3. **Primary Skills:** \`${(profile.primarySkills || ['TypeScript', 'Python', 'Go']).slice(0, 4).join(', ')}\`.
+4. **Work Authorization:** \`${profile.workAuthorization || 'F-1 Eligible'}\` (Sponsorship requirements check karein).
+5. **Resume Version:** ATS Resume Crafter Studio se exported version use karein.`}
+
+💡 *Direct Advice:* Aapko form ke baare me alag se likhkar batane ki zaroorat nahi hai; humne aapka active screen aur profile read kar liya hai!`;
+      }
+
+      return `### 📝 **Active Screen Introspection: ${activeCtx.activeModal || activeCtx.modeTitle}**
+
+Active Screen & Form Context Detected:
+- **Current View:** \`${activeCtx.modeTitle}\`${activeCtx.activeModal ? ` -> Modal: \`${activeCtx.activeModal}\`` : ''}
+${activeCtx.activeOpportunity ? `- **Target Opportunity:** **${activeCtx.activeOpportunity.companyName}** — ${activeCtx.activeOpportunity.title}` : ''}
+
+#### ✍️ **Field-by-Field Instructions for Candidate ${profile.fullName || 'Candidate'}:**
+${activeCtx.activeFormFields ? activeCtx.activeFormFields.fieldNames.map((f, i) => `${i + 1}. **${f}:** ${activeCtx.activeFormFields?.tipsForStudent[f] || `Autofilled from verified candidate profile.`}`).join('\n') : `
+1. **Full Legal Name:** \`${profile.fullName || 'Candidate'}\` (Matches university records).
+2. **Degree & Major:** \`${profile.degree || 'Computer Science'}\`.
+3. **Graduation Year:** \`${profile.graduationYear || 2026}\`.
+4. **Core Technical Skills:** \`${(profile.primarySkills || ['TypeScript', 'Python', 'Go']).slice(0, 4).join(', ')}\`.
+5. **Work Authorization:** \`${profile.workAuthorization || 'Global / F-1 Eligible'}\`.`}
+
+💡 *Pro-Tip:* All fields align directly with recruiter verification filters to ensure 100% submission compliance without manual re-typing.`;
+    }
 
     // 1. SPECIFIC HACKATHON QUERIES (ETHGlobal, Solana, SIH, MLH, GDG, Imagine Cup, Cal Hacks)
     const matchedHack = HACKATHONS_DATABASE.find(h => {
@@ -383,7 +432,6 @@ ${blueprint.strategy.judgingRubricBreakdown.map(r => `- **${r.criteria} (${r.wei
     // 2. GENERAL HACKATHON WINNING STRATEGY & RUBRICS
     if (q.includes('hackathon') || q.includes('winner') || q.includes('rank 1') || q.includes('prize') || q.includes('judges')) {
       return `### 🎯 **Master Blueprint for Placing Rank 1 in Top Global Hackathons**
-*(Synthesized from Claude 3.7 System Design, Cursor AI Scaffolding & Judge Rubrics)*
 
 #### 1. Why 90% of Hackathon Projects Fail to Win:
 - **Trivial API Wrappers:** Projects that just call an AI LLM with a basic text input box get scored low on technical depth (10-15%).
@@ -412,7 +460,6 @@ ${blueprint.strategy.judgingRubricBreakdown.map(r => `- **${r.criteria} (${r.wei
 
       if (isHindiQuery) {
         return `### 🛡️ **TERRASYNX 8-Block Verification Dossier & Career Direction**
-*(Synthesized via Multi-AI Consensus: Claude 3.7 + ChatGPT o3 + Gemini 3.8 + Cursor)*
 
 Candidate Profile: **${profile.fullName || 'Student'}** (${profile.degree || 'Computer Science'}, Class of ${profile.graduationYear || 2026})
 Target Roles: **${(profile.preferredRoles || ['Distributed Systems', 'Software Engineering']).join(', ')}**
@@ -437,7 +484,6 @@ Internet par 70% postings fake ya "ghost jobs" hoti hain jahan apply karne ke ba
       }
 
       return `### 🛡️ **TERRASYNX 8-Block Verification Dossier & Career Architecture**
-*(Synthesized via Multi-AI Consensus: Claude 3.7 + ChatGPT o3 + Gemini 3.8 + Cursor)*
 
 Candidate Profile: **${profile.fullName || 'Candidate'}** (${profile.degree || 'Computer Science'}, Class of ${profile.graduationYear || 2026})
 Target Stack: **${(profile.preferredRoles || ['Distributed Systems', 'Software Engineering']).join(', ')}**
@@ -553,9 +599,10 @@ Candidate: **${profile.fullName || 'Student'}** (${profile.degree || 'Computer S
   }
 
   // Dispatch message through multi-AI orchestration pipeline
-  public static async sendMessage(userMessage: string, profile: StudentProfile): Promise<ChatMessage> {
+  public static async sendMessage(userMessage: string, profile: StudentProfile, contextOverride?: ActiveScreenContext): Promise<ChatMessage> {
     const startTime = performance.now();
     this.totalQueries += 1;
+    const activeCtx = contextOverride || this.activeContext;
 
     // Add user message immediately to chat history
     const userMsg: ChatMessage = {
@@ -570,7 +617,7 @@ Candidate: **${profile.fullName || 'Student'}** (${profile.degree || 'Computer S
 
     // If forced to deterministic core, handle immediately
     if (this.providerMode === 'deterministic_core') {
-      const reply = this.generateDeterministicResponse(userMessage, profile);
+      const reply = this.generateDeterministicResponse(userMessage, profile, activeCtx || undefined);
       this.lastLatencyMs = Math.round(performance.now() - startTime);
       const assistantMsg: ChatMessage = {
         id: `asst_${Date.now()}`,
@@ -587,7 +634,7 @@ Candidate: **${profile.fullName || 'Student'}** (${profile.degree || 'Computer S
       return assistantMsg;
     }
 
-    // Attempt Server / BYOK Gemini Call
+    // Attempt Server / BYOK Gemini Call with Real-Time Screen Context
     try {
       const response = await fetch('/api/ai/copilot', {
         method: 'POST',
@@ -597,6 +644,7 @@ Candidate: **${profile.fullName || 'Student'}** (${profile.degree || 'Computer S
           history: this.chatHistory.slice(-5),
           profile,
           customApiKey: this.providerMode === 'byok_custom' ? this.byokKey : undefined,
+          activeScreenContext: activeCtx,
         }),
       });
 
@@ -626,7 +674,7 @@ Candidate: **${profile.fullName || 'Student'}** (${profile.degree || 'Computer S
     // Graceful Handover to Deep System Knowledge Core
     this.fallbackCount += 1;
     this.lastLatencyMs = Math.round(performance.now() - startTime);
-    const fallbackReply = this.generateDeterministicResponse(userMessage, profile);
+    const fallbackReply = this.generateDeterministicResponse(userMessage, profile, activeCtx || undefined);
 
     const fallbackMsg: ChatMessage = {
       id: `asst_${Date.now()}`,

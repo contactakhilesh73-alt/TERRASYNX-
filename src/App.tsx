@@ -3,9 +3,10 @@
  * Conforming strictly to SYSTEM_SPEC (Rules #1-#5, Req #1-#22)
  */
 
-import React, { useState, useEffect } from 'react';
-import { Opportunity, OperationalMode, ApplicationStage, StudentProfile, AuthUserSession } from './types';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Opportunity, OperationalMode, ApplicationStage, StudentProfile, AuthUserSession, ActiveScreenContext } from './types';
 import { RadarEngine } from './services/radarEngine';
+import { AiOrchestrationEngine } from './services/aiOrchestrationEngine';
 import { Header } from './components/Header';
 import { DateTimeStatusBar } from './components/DateTimeStatusBar';
 import { RadarView } from './components/RadarView';
@@ -425,6 +426,132 @@ export default function App() {
     return h <= 72 && h > 0;
   }).length;
   const appliedCount = opportunities.filter(o => o.stage !== 'discovered' && o.stage !== 'archived').length;
+
+  // Real-Time Active Screen & Form Introspection Context for Multi-AI Copilot
+  const currentActiveContext: ActiveScreenContext = useMemo(() => {
+    let activeModal: string | undefined = undefined;
+    let activeOpp: Opportunity | null = null;
+    let activeFormFields: { formName: string; fieldNames: string[]; tipsForStudent: Record<string, string> } | undefined = undefined;
+
+    if (fastApplyOpp) {
+      activeModal = 'Fast Apply Submission Form';
+      activeOpp = fastApplyOpp;
+      activeFormFields = {
+        formName: 'Fast Apply Form',
+        fieldNames: [
+          'Candidate Full Legal Name',
+          'Candidate Email',
+          'Graduation Year',
+          'Work Authorization Selection',
+          'Resume File / Version',
+          'GitHub Portfolio Handle',
+          'LinkedIn Profile URL'
+        ],
+        tipsForStudent: {
+          'Candidate Full Legal Name': 'Enter your official university name as per identity documents',
+          'Candidate Email': 'Use your student .edu or primary contact Gmail',
+          'Graduation Year': `Selected: ${studentProfile.graduationYear || 2026}`,
+          'Work Authorization Selection': `Current status: ${studentProfile.workAuthorization}`,
+          'Resume File / Version': 'Select your ATS-tailored resume with matching keywords'
+        }
+      };
+    } else if (coverLetterOpp) {
+      activeModal = 'Personalized Cover Letter Studio';
+      activeOpp = coverLetterOpp;
+    } else if (emailDraftOpp) {
+      activeModal = 'Outreach & Referral Email Studio';
+      activeOpp = emailDraftOpp;
+    } else if (redFlagOpp) {
+      activeModal = 'Company Red-Flag & Due Diligence Radar';
+      activeOpp = redFlagOpp;
+    } else if (researchOpp) {
+      activeModal = '6-Axis Deep Company Research Dossier';
+      activeOpp = researchOpp;
+    } else if (selectedDossierOpp) {
+      activeModal = '8-Block Verification Dossier';
+      activeOpp = selectedDossierOpp;
+    } else if (selectedOpp) {
+      activeModal = 'Opportunity Quick View';
+      activeOpp = selectedOpp;
+    } else if (isOnboardingOpen) {
+      activeModal = 'Student Candidate Onboarding & Profile Editor';
+      activeFormFields = {
+        formName: 'Student Profile Onboarding',
+        fieldNames: ['Full Legal Name', 'University/College', 'Degree', 'Graduation Year', 'Primary Technical Skills', 'Target Roles', 'Work Authorization'],
+        tipsForStudent: {
+          'Primary Technical Skills': 'List core languages (TypeScript, Python, Go) first',
+          'Target Roles': 'Select 2-3 specific engineering archetypes matching your strengths',
+          'Work Authorization': 'Select F-1 OPT/CPT or domestic matching your legal status'
+        }
+      };
+    } else if (isAuthModalOpen) {
+      activeModal = 'Authentication & Security Gateway';
+    } else if (isDossierVaultOpen) {
+      activeModal = 'Applied Dossier Vault';
+    } else if (isAtsDiscoveryOpen) {
+      activeModal = 'Inbound ATS Discovery Tool';
+    }
+
+    const modeTitles: Record<string, string> = {
+      radar: 'Opportunity Radar',
+      pipeline: 'Kanban Pipeline',
+      evaluator: '10-D Fitment Studio',
+      resume: 'ATS Resume Crafter Studio',
+      alerts: 'Email & Alert Relay',
+      insider: 'Alumni & Insider Bridge',
+      profile: 'Profile & Context Studio',
+      internships: 'Corporate Internships Portal',
+      scholarships: 'Merit Scholarships Portal',
+      research_fellowships: 'Research Fellowships Portal',
+      open_source: 'Open Source Programs',
+      hackathons: 'Global Hackathons Portal',
+      analytics: 'Conversion Analytics',
+      calendar: 'Interview Calendar Scheduler',
+      mock_interview: 'Mock Interview Studio',
+      offer_evaluator: 'Offer Compensation Evaluator',
+      career_launchpad: 'Career Launchpad',
+      network_graph: 'Alumni Referral Network',
+      recruiter_radar: 'Recruiter Intelligence Radar',
+      referral_tracker: 'Referral Lifecycle Tracker',
+      story_bank: 'Behavioral STAR Story Bank',
+    };
+
+    return {
+      currentMode,
+      modeTitle: modeTitles[currentMode] || currentMode,
+      activeModal,
+      activeOpportunity: activeOpp ? {
+        id: activeOpp.id,
+        title: activeOpp.title,
+        companyName: activeOpp.companyName,
+        department: activeOpp.department,
+        location: activeOpp.location,
+        salarySnippet: activeOpp.compensation ? `${activeOpp.compensation.range} (${activeOpp.compensation.period})` : undefined,
+        requiredSkills: activeOpp.fitment ? [...(activeOpp.fitment.matchedSkills || []), ...(activeOpp.fitment.missingSkills || [])] : [],
+        description: activeOpp.description,
+      } : undefined,
+      activeFormFields,
+    };
+  }, [
+    currentMode,
+    fastApplyOpp,
+    coverLetterOpp,
+    emailDraftOpp,
+    redFlagOpp,
+    researchOpp,
+    selectedDossierOpp,
+    selectedOpp,
+    isOnboardingOpen,
+    isAuthModalOpen,
+    isDossierVaultOpen,
+    isAtsDiscoveryOpen,
+    studentProfile,
+  ]);
+
+  // Synchronize active screen context with global AI orchestration core
+  useEffect(() => {
+    AiOrchestrationEngine.setActiveContext(currentActiveContext);
+  }, [currentActiveContext]);
 
   if (!currentUser) {
     return (
@@ -922,6 +1049,7 @@ export default function App() {
         isOpen={isCopilotOpen}
         onClose={() => setIsCopilotOpen(false)}
         studentProfile={studentProfile}
+        activeContext={currentActiveContext}
       />
 
       {/* Cryptographic Authenticity Proof Modal (Strict Rule #2) */}
@@ -1015,6 +1143,19 @@ export default function App() {
         completion={profileGateCompletion}
         targetOpportunityTitle={profileGateTargetTitle}
       />
+
+      {/* Floating Global AI Copilot Trigger (Bottom-Right) */}
+      <button
+        onClick={() => setIsCopilotOpen(true)}
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold text-xs shadow-2xl shadow-cyan-950/90 border border-cyan-400/50 hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+        title="Open TERRASYNX AI Copilot"
+      >
+        <div className="relative">
+          <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+        </div>
+        <span className="tracking-wide font-mono font-bold">Ask AI Copilot</span>
+      </button>
 
     </div>
   );

@@ -168,11 +168,11 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="text-slate-700">|</span>
           <button
             onClick={onOpenCopilot}
-            className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
-            title="Ask in-app companion"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 hover:text-white transition-all cursor-pointer shadow-sm shadow-cyan-950"
+            title="Ask TERRASYNX AI Copilot"
           >
             <Sparkles className="w-3.5 h-3.5 animate-pulse text-amber-400" />
-            <span className="hidden sm:inline">Copilot Guide</span>
+            <span className="font-semibold text-[11px] font-mono">Ask AI Copilot</span>
           </button>
           <span className="text-slate-700">|</span>
           <button

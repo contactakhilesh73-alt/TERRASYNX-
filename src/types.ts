@@ -442,6 +442,28 @@ export type OperationalMode =
 
 export type NavigationMode = OperationalMode;
 
+// Real-Time Active Screen & Form Introspection Context for AI Copilot
+export interface ActiveScreenContext {
+  currentMode: OperationalMode | string;
+  modeTitle: string;
+  activeModal?: string;
+  activeOpportunity?: {
+    id: string;
+    title: string;
+    companyName: string;
+    department?: string;
+    location?: string;
+    salarySnippet?: string;
+    requiredSkills?: string[];
+    description?: string;
+  };
+  activeFormFields?: {
+    formName: string;
+    fieldNames: string[];
+    tipsForStudent: Record<string, string>;
+  };
+}
+
 // Assessment & Interview Calendar Models (Phase 4 Point 2)
 export type CalendarEventType = 'oa_test' | 'technical_interview' | 'system_design' | 'recruiter_screen' | 'follow_up_deadline';
 

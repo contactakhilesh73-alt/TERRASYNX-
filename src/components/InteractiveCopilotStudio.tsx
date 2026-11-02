@@ -11,7 +11,7 @@ import {
   AiProviderMode,
   MARKET_AI_CONSENSUS_ROSTER 
 } from '../services/aiOrchestrationEngine';
-import { StudentProfile } from '../types';
+import { StudentProfile, ActiveScreenContext } from '../types';
 import { 
   Sparkles, 
   Send, 
@@ -34,6 +34,7 @@ import {
 
 interface InteractiveCopilotStudioProps {
   studentProfile: StudentProfile;
+  activeContext?: ActiveScreenContext;
 }
 
 const QUICK_PROMPTS = [
@@ -45,7 +46,7 @@ const QUICK_PROMPTS = [
   '🤝 Draft a high-conversion 300-char LinkedIn alumni referral note',
 ];
 
-export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> = ({ studentProfile }) => {
+export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> = ({ studentProfile, activeContext }) => {
   const [activeTab, setActiveTab] = useState<'chat' | 'orchestration'>('chat');
   const [messages, setMessages] = useState<ChatMessage[]>(AiOrchestrationEngine.getChatHistory());
   const [inputMessage, setInputMessage] = useState<string>('');
@@ -78,7 +79,7 @@ export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> =
     setIsSending(true);
 
     try {
-      await AiOrchestrationEngine.sendMessage(query, studentProfile);
+      await AiOrchestrationEngine.sendMessage(query, studentProfile, activeContext);
     } catch {
       // Handled gracefully via fallback
     } finally {
@@ -114,17 +115,17 @@ export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> =
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-100 text-sm">TERRASYNX Copilot & Multi-AI Core</span>
+              <span className="font-bold text-slate-100 text-sm">TERRASYNX AI Copilot</span>
               <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                 engineStatus.providerMode === 'deterministic_core'
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
               }`}>
-                {engineStatus.providerMode === 'deterministic_core' ? '100% Autonomous Core' : 'Multi-AI Orchestrated'}
+                {engineStatus.providerMode === 'deterministic_core' ? 'Autonomous Core' : 'AI Connected'}
               </span>
             </div>
             <span className="text-[11px] text-slate-400 font-sans block">
-              Req #19, #20, #21, #22: Server-side Gemini 3.8 Flash, BYOK Gateway & Deterministic Zero-Downtime Core.
+              Autonomous Career Intelligence, Instant Form-Assist & Application Mentorship.
             </span>
           </div>
         </div>
@@ -163,6 +164,32 @@ export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> =
       {/* Tab 1: Conversational Chat Pane */}
       {activeTab === 'chat' && (
         <div className="space-y-3">
+          {/* Active Screen & Form Introspection Awareness Banner */}
+          {activeContext && (
+            <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] animate-fadeIn">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                <span className="text-slate-400 font-sans">Active Screen Detected:</span>
+                <span className="font-bold text-cyan-300 font-mono">
+                  {activeContext.activeModal || activeContext.modeTitle}
+                </span>
+                {activeContext.activeOpportunity && (
+                  <span className="text-slate-300 font-medium truncate max-w-[240px]">
+                    ({activeContext.activeOpportunity.companyName} • {activeContext.activeOpportunity.title})
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => handleSend(`How do I fill this ${activeContext.activeModal || activeContext.modeTitle} form for my profile?`)}
+                disabled={isSending}
+                className="self-start sm:self-auto px-2.5 py-1 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-500/40 font-mono text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+              >
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>Guide Me on This Screen</span>
+              </button>
+            </div>
+          )}
+
           {/* Quick Prompt Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[10px]">
             <span className="text-slate-500 shrink-0 flex items-center gap-1">
@@ -422,57 +449,29 @@ export const InteractiveCopilotStudio: React.FC<InteractiveCopilotStudioProps> =
             </div>
           </div>
 
-          {/* Market Multi-AI Consensus Roster & Security Guardrails Deck */}
+          {/* System Security & Candidate Privacy Guardrails */}
           <div className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
               <span className="font-bold text-slate-200 flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-cyan-400" />
-                <span>Market Multi-AI Consensus Roster (8 Active Models)</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Security & Candidate Privacy Guardrails</span>
               </span>
               <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-800 text-[10px] text-emerald-300">
                 <Lock className="w-3 h-3 text-emerald-400" />
-                <span>Zero-Mutation Sandbox</span>
+                <span>Protected Sandbox</span>
               </div>
             </div>
 
             <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-              Every guidance response is synthesized through a cross-verified multi-model framework to prevent biased or single-model hallucination. All models are bound by strict read-only permissions:
+              All assistance is generated within an isolated read-only sandbox. Your data, submissions, and code remain 100% private and protected:
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
-              {MARKET_AI_CONSENSUS_ROSTER.map((agent) => (
-                <div key={agent.id} className="p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/80 flex flex-col justify-between gap-1.5">
-                  <div className="flex items-start justify-between gap-1">
-                    <div>
-                      <div className="font-bold text-slate-200 text-[11px] flex items-center gap-1">
-                        <span>{agent.name}</span>
-                      </div>
-                      <span className="text-[9px] text-cyan-400 font-mono block">{agent.provider}</span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-emerald-300 border border-emerald-900 shrink-0">
-                      READ-ONLY
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-sans leading-tight">
-                    {agent.specialization}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            {/* Strict Security Guardrail Banner */}
-            <div className="mt-2 p-3 rounded-lg bg-slate-900 border border-cyan-900/40 text-[11px] text-slate-300 space-y-1 font-sans">
-              <div className="flex items-center gap-1.5 font-bold text-cyan-300">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                <span>Permanent Security Guardrail Policy:</span>
-              </div>
-              <ul className="list-disc list-inside text-[10px] text-slate-400 space-y-0.5 pl-1">
-                <li><strong>Code Mutation Permission:</strong> 0% (DENIED) — Models cannot edit, delete, or modify system files.</li>
-                <li><strong>Database Mutation Permission:</strong> 0% (DENIED) — User and system records are strictly immutable to AI.</li>
-                <li><strong>Data Exfiltration:</strong> BLOCKED — Candidate PII, tokens, and credentials never leave the secure system sandbox.</li>
-                <li><strong>Scope of Access:</strong> Complete real-time read-only platform knowledge to answer student questions and offer career direction.</li>
-              </ul>
-            </div>
+            <ul className="list-disc list-inside text-[11px] text-slate-300 space-y-1 pl-1 font-sans">
+              <li><strong>Zero Code Mutation:</strong> AI cannot alter or modify system or candidate files.</li>
+              <li><strong>Zero Database Modification:</strong> All user records, resumes, and application ledgers are strictly immutable.</li>
+              <li><strong>Zero Data Exfiltration:</strong> Session tokens and candidate credentials never leave your browser sandbox.</li>
+              <li><strong>Full Candidate Authority:</strong> Forms are never submitted autonomously; you always retain submission control.</li>
+            </ul>
           </div>
         </div>
       )}
